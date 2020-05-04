@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Log Out
+Comment=Log off desktop environment
+Exec=pkill -f dwm
+Terminal=false
+Type=Application

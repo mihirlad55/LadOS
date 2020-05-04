@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+sleep 2
+export XAUTHORITY=/home/mihirlad55/.Xauthority
+export DISPLAY=:0
+
+default_mon="eDP1"
+
+monitors=$(xrandr --listmonitors | tail -n -2 |  grep -o '[^ ]\+$')
+
+IFS=$'\n'
+
+for mon in $monitors; do
+    if [ $mon = $default_mon ]; then
+        continue
+    fi
+
+    echo Trying to fix output $mon...
+    xrandr --output $mon --mode 1920x1080 --above eDP1 --primary -v -d :0
+    res=$?
+
+    if [ $res -eq 0 ]; then
+        echo "Succesfully fixed output $mon"
+        echo "Exiting..."
+        exit
+    else
+        echo "Failed to fix output for $mon"
+    fi
+done
+

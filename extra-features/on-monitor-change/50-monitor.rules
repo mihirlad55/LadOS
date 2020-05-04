@@ -1,0 +1,7 @@
+ACTION=="change" \
+, KERNEL=="card0" \
+, ENV{SYSTEMD_USER_WANTS}+="on-monitor-change@$env{SEQNUM}.service" \
+, ENV{DISPLAY}=":0" \
+, ENV{XAUTHORITY}="/home/mihirlad55/.Xauthority" \
+, TAG+="systemd" \
+, RUN+="/usr/local/bin/fix-monitor-layout"

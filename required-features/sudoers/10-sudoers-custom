@@ -1,0 +1,13 @@
+# No password for udevadm
+Cmnd_Alias PASSWORDLESS = /bin/udevadm
+
+# Give wheel sudo privilege
+%wheel ALL=(ALL) ALL
+%wheel ALL=(ALL) NOPASSWD: PASSWORDLESS
+# No password for restarting wifi
+%wheel ALL=NOPASSWD:/usr/bin/systemctl restart wpa_supplicant@wlp2s0.service
+
+# Set default editor
+Defaults editor=/bin/nvim
+
+

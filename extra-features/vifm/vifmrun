@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+export FIFO_PATH="/tmp/vifm-ueberzug-$PPID"
+
+function cleanup () {
+    rm -rf $FIFO_PATH &> /dev/null
+    pkill -P $PPID &> /dev/null
+    unset $FIFO
+}
+
+
+rm -rf $FIFO_PATH &> /dev/null
+mkfifo $FIFO_PATH
+
+trap cleanup EXIT
+
+tail --follow $FIFO_PATH | ueberzug layer --silent -p bash &
+
+vifm
+cleanup

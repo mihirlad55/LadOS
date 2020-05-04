@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Lock Screen
+Comment=Lock Screen
+Exec=/home/mihirlad55/.scripts/lock
+Terminal=false
+Type=Application

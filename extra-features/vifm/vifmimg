@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+readonly ID_PREVIEW="preview"
+readonly TMP_DIR="/tmp/ueberzug$PWD/"
+
+function draw() {
+    declare -p -A cmd=([action]=add [identifier]="$ID_PREVIEW" [x]="$2" \
+        [y]="$3" [width]="$4" [height]="$5" [path]="$IMG_PATH") > "$FIFO_PATH"
+}
+
+function clear_preview() {
+    declare -p -A cmd=([action]=remove [identifier]="$ID_PREVIEW") \
+        > "$FIFO_PATH"
+}
+
+
+if [[ -e "$FIFO_PATH" ]]; then
+    [[ ! -d "$TMP_DIR" ]] && mkdir -p "$TMP_DIR"
+
+    if [[ "$1" = "image" ]]; then
+        IMG_PATH="${PWD}/${6}"
+    else
+        IMG_PATH="${TMP_DIR}${6}.png"
+        IMG_PATH_NOEXT="${TMP_DIR}${6}"
+    fi
+
+    if [[ ! -f "$IMG_PATH" ]]; then
+        case "$1" in
+            image)
+                ln -sf "$6" "$IMG_PATH" ;;
+            font)
+                fontpreview -i "$6" -o "$IMG_PATH" ;;
+            pdf)
+                pdftoppm -png -singlefile "$6" "$IMG_PATH_NOEXT" ;;
+            video)
+                ffmpegthumbnailer -i "$6" -o "$IMG_PATH" -s 0 -q 10 ;;
+            audio)
+                ffmpeg -i "$6" "$IMG_PATH" -y &> /dev/null ;;
+            epub)
+                epub-thumbnailer "$6" "$IMG_PATH" 1024 ;;
+            clear)
+                clear_preview ;;
+        esac
+    fi
+
+    draw "$@"
+fi
+

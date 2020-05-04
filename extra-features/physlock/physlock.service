@@ -1,0 +1,9 @@
+[Unit]
+Description=Lock session using physlock
+
+[Service]
+User=mihirlad55
+ExecStart=/usr/bin/physlock -l
+
+[Install]
+WantedBy=sleep.target 

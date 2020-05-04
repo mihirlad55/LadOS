@@ -1,0 +1,13 @@
+[Unit]
+Description=Custom Monitor Script %i
+After=graphical.target
+
+[Service]
+ExecStart=/usr/local/bin/restart-polybar
+Type=simple
+
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

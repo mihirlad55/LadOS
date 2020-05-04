@@ -1,0 +1,7 @@
+#!/usr/bin/sh
+
+port="$1"
+pid=$(lsof -i:${port} -t) && \
+    kill $pid
+
+

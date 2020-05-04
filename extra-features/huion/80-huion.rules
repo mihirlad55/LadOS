@@ -1,0 +1,5 @@
+ACTION=="add" \
+, ATTRS{idProduct}=="006e" \
+, ATTRS{idVendor}=="256c" \
+, ENV{DISPLAY}=":0" \
+, RUN+="/usr/local/bin/adjust-huion.sh"
