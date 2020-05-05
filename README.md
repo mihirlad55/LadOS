@@ -1,3 +1,4 @@
-# arch-install
+# LadOS
 
-Install and setup scripts for Arch Linux
+This repo contains setup/install scripts to install a heavily-riced version of
+Arch Linux.
