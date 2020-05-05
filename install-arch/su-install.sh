@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 
 BASE_DIR=$(dirname "$0")
-FEATURES_DIR="$BASE_DIR/../features"
+REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
+EXTRA_FEATURES_DIR="$BASE_DIR/../extra-features"
 
 function pause() {
     read -p "Press enter to continue..."
@@ -23,7 +24,7 @@ function prompt() {
 function install_yay() {
     echo "Installing yay..."
 
-    $FEATURES_DIR/yay/install.sh
+    $REQUIRED_FEATURES_DIR/2-yay/install.sh
 
     echo "Done installing yay"
 }
@@ -64,8 +65,24 @@ function install_packages() {
     sudo pacman -S ${pacman_packages[@]}
 }
 
-function install_features() {
-    local features=($(ls $FEATURES_DIR))
+function install_required_features() {
+    local features=($(ls $REQUIRED_FEATURES_DIR))
+
+    echo "Installing required features..."
+    for feature in ${features[@]}; do
+        if ! (echo $feature | grep "yay" || echo $feature | grep "sudoers"); then
+            echo "Installing $feature..."
+            $REQUIRED_FEATURES_DIR/$feature/install.sh
+        fi
+    done
+
+    echo "Done installing required features"
+}
+
+function install_extra_features() {
+    local features=($(ls $EXTRA_FEATURES_DIR))
+
+    echo "Installing extra features..."
 
     local i=1
     for feature in ${features[@]}; do
@@ -89,9 +106,11 @@ function install_features() {
     for feature in ${features[@]}; do
         if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
             echo "Installing $feature..."
-            $FEATURES_DIR/$feature/install.sh
+            $EXTRA_FEATURES_DIR/$feature/install.sh
         fi
     done
+
+    echo "Done installing extra features"
 }
 
 
@@ -99,4 +118,6 @@ install_yay
 
 install_packages
 
-install_features
+install_required_features
+
+install_extra_features

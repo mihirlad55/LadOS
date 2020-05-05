@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 BASE_DIR=$(dirname "$0")
-FEATURES_DIR="$BASE_DIR/../features"
+REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
 function pause() {
     read -p "Press enter to continue..."
@@ -113,7 +113,7 @@ function setup_sudo_and_su() {
     pacman -Syyu
 
     echo "Installing sudo..."
-    $FEATURES_DIR/sudoers/install.sh
+    $REQUIRED_FEATURES_DIR/1-sudoers/install.sh
 
     usermod -a -G wheel "$username"
     echo "Added $username to group wheel"
