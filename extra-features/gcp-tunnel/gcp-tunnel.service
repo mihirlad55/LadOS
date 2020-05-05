@@ -5,11 +5,7 @@ After=sshd.service
 After=network.target
 
 [Service]
-Environment=HOSTNAME=
-Environment=REMOTE_USERNAME=
-Environment=LOCAL_PORT=
-Environment=REMOTE_PORT=
-Environment=PRIVATE_KEY_PATH=/root/.ssh/id_rsa
+EnvironmentFile=/etc/gcp-tunnel.env
 
 ExecStartPre=-/usr/bin/ssh ${REMOTE_USERNAME}@${HOSTNAME} \
     -o StrictHostKeyChecking=no -p $LOCAL_PORT \
