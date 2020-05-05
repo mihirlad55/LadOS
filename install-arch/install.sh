@@ -2,6 +2,8 @@
 
 BASE_DIR=$(dirname "$0")
 
+WIFI_ENABLED=1
+
 function pause() {
     read -p "Press enter to continue..."
 }
@@ -62,6 +64,8 @@ function setup_wifi() {
 
     wpa_supplicant -B -i${adapter} -c $conf_path
     dhcpcd
+
+    WIFI_ENABLED=0
 }
 
 function update_system_clock() {
@@ -99,6 +103,11 @@ function generate_fstab() {
 function start_chroot_install() {
     install -Dm 755 $BASE_DIR/chroot-install.sh /mnt/root/chroot-install.sh
     cp -r $BASE_DIR/../* /mnt/root/arch-install/
+
+    if $WIFI_ENABLED; then
+        mkdir -p /mnt/etc/wpa_supplicant
+        install -Dm 644 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+    fi
     arch-chroot /mnt "/root/arch-install/install-arch/chroot-install.sh"
 }
 
