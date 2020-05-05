@@ -23,6 +23,7 @@ firefox,Backup browser,system,extra
 fontpreview-git,Font previews in vifm,aur,extra
 franz-bin,For web apps,aur,extra
 gdb,C Debugger,system,extra
+geoclue2,For redshift location,system,required
 gimp,Main image editor,system,extra
 git,Cause git,system,required
 gpick,Color picker,system,extra
@@ -79,8 +80,12 @@ thefuck,When I fuck up,system,extra
 tigervnc,VNC viewer,system,extra
 tmux,Terminal multiplexer,system,extra
 transmission-cli,Torrenting,system,extra
+ttf-comfortaa,Cool font,aur,extra
+ttf-fantasque-sans-mono,Cool font,system,extra
+ttf-iosevka,Cool font,aur,extra
 ttf-opensans,Good font,system,required
 ttf-roboto,Good font,system,required
+ttf-weather-icons,Weather icons for polybar,aur,required
 ttf-yosemite-san-francisco-font-git,Cool font,aur,required
 unzip,Unzipping files,system,required
 valgrind,C debugging tool,system,extra
@@ -89,6 +94,7 @@ vlc,Main video viewer,system,extra
 watchman,Watching commands,system,extra
 wpa_supplicant,WiFi,system,required
 x11vnc,For VNC control,system,extra
+xautolock,Auto screenlock,system,required
 xbindkeys,Main custom keybinds,system,required
 xclip,Interfacing with X11 clipboard,system,required
 xdotool,Interfacing with window manager,system,extra
@@ -109,8 +115,3 @@ zathura-pdf-poppler,Main PDF viewer,system,extra
 zip,Zipping files,system,required
 zsh,Main shell,system,required
 zsh-syntax-highlighting,It's in the name,system,required
-ttf-fantasque-sans-mono,Cool font,system,extra
-ttf-comfortaa,Cool font,aur,extra
-ttf-iosevka,Cool font,aur,extra
-ttf-weather-icons,Weather icons for polybar,aur,required
-xautolock,Auto screenlock,system,required
