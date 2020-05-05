@@ -23,3 +23,7 @@ if ! egrep /etc/mkinitcpio.conf -e "plymouth" > /dev/null; then
 else
     echo "Plymouth hook already added to mkinitcpio.conf"
 fi
+
+sudo mkinitcpio -P linux
+
+echo "Done"
