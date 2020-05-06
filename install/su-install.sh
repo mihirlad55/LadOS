@@ -24,7 +24,7 @@ function prompt() {
 function install_yay() {
     echo "Installing yay..."
 
-    $REQUIRED_FEATURES_DIR/2-yay/install.sh
+    $REQUIRED_FEATURES_DIR/*yay/install.sh
 
     echo "Done installing yay"
 }

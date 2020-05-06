@@ -101,14 +101,13 @@ function generate_fstab() {
 }
 
 function start_chroot_install() {
-    install -Dm 755 $BASE_DIR/chroot-install.sh /mnt/root/chroot-install.sh
-    cp -r $BASE_DIR/../* /mnt/root/arch-install/
+    cp -r $BASE_DIR/../* /mnt/root/LadOS/
 
     if $WIFI_ENABLED; then
         mkdir -p /mnt/etc/wpa_supplicant
         install -Dm 644 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
-    arch-chroot /mnt "/root/arch-install/install-arch/chroot-install.sh"
+    arch-chroot /mnt "/root/LadOS/install/chroot-install.sh"
 }
 
 

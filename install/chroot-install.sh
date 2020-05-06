@@ -76,7 +76,7 @@ function setup_hosts() {
     echo "Setting up default hosts file..."
 
     echo "127.0.0.1\tlocalhost" >> /etc/hosts
-    echo "::1\tlocalhost" >> /etc/hosts
+    echo "::1\tlocalhost" > /etc/hosts
 
     echo "Opening hosts file for additional configuration..."
     pause
@@ -119,7 +119,7 @@ function setup_sudo_and_su() {
     echo "Added $username to group wheel"
 
     echo "Changing user to $username..."
-    su -l -c -P "/root/arch-install/install-arch/su-install.sh" $username
+    su -l -c -P "/root/LadOS/install/su-install.sh" $username
 }
 
 set_timezone
