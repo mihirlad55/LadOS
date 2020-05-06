@@ -1,0 +1,13 @@
+[Unit]
+Description=Dunst Notification Manager
+
+[Service]
+ExecStart=dunst
+
+Type=simple
+
+RestartSec=3
+Restart=always
+
+[Install]
+WantedBy=default.target

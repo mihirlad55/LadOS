@@ -1,0 +1,13 @@
+[Unit]
+Description=Redshift
+
+[Service]
+ExecStart=redshift
+
+Type=simple
+
+RestartSec=3
+Restart=always
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,11 @@
+[Unit]
+Description=Notifies user about package updates every hour
+
+[Timer]
+OnStartupSec=10
+OnUnitActiveSec=3600
+
+Unit=update-notify.service
+
+[Install]
+WantedBy=default.target

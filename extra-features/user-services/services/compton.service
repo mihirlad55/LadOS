@@ -1,0 +1,12 @@
+[Unit]
+Description=Compton compositor
+
+[Service]
+ExecStart=compton --config %h/.config/compton.conf
+Type=simple
+
+RestartSec=3
+Restart=always
+
+[Install]
+WantedBy=default.target

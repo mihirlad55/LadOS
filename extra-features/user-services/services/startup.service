@@ -1,0 +1,13 @@
+[Unit]
+Description=Startup script
+
+[Service]
+ExecStart=%h/.startup
+
+Type=oneshot
+
+RestartSec=3
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,12 @@
+[Unit]
+Description=Restore desktop wallpaper using nitrogen on startup
+
+[Service]
+ExecStart=nitrogen --restore
+Type=oneshot
+
+RestartSec=3
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

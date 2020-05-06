@@ -1,0 +1,14 @@
+[Unit]
+Description=Polybar
+
+[Service]
+ExecStartPre=sleep 4s
+ExecStart=%h/.scripts/polybar/launch-polybar
+
+Type=forking
+
+RestartSec=3
+Restart=always
+
+[Install]
+WantedBy=default.target

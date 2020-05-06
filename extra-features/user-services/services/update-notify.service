@@ -1,0 +1,9 @@
+[Unit]
+Description=Package update notification
+
+[Service]
+ExecStart=%h/.scripts/dunst/update-notification
+Type=simple
+
+[Install]
+WantedBy=default.target

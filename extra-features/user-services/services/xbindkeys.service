@@ -1,0 +1,12 @@
+[Unit]
+Description=Xbindkeys
+
+[Service]
+ExecStart=xbindkeys -n
+
+Type=simple
+RestartSec=3
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
