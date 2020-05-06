@@ -21,6 +21,14 @@ function prompt() {
     done
 }
 
+function enable_community_repo() {
+    echo "Enabling community repo..."
+    
+    $REQUIRED_FEATURES_DIR/*enable-community-pacman/install.sh
+
+    echo "Enabled community repo"
+}
+
 function install_yay() {
     echo "Installing yay..."
 
@@ -113,6 +121,8 @@ function install_extra_features() {
     echo "Done installing extra features"
 }
 
+
+enable_community_repo
 
 install_yay
 

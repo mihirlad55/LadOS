@@ -7,6 +7,27 @@ function pause() {
     read -p "Press enter to continue..."
 }
 
+function update_mkinitcpio_modules() {
+    NEW_MODULES=("$1")
+    echo "Adding ${NEW_MODULES[@]} to /etc/mkinitcpio.conf, if not present"
+    source /etc/mkinitcpio.conf
+    for module in ${NEW_MODULES[@]}; do
+        if ! echo ${MODULES[@]} | grep "$module" > /dev/null; then
+            echo $MODULES
+            echo "$module not found in mkinitcpio.conf"
+
+            echo "Adding $module to mkinitcpio.conf"
+            MODULES=( "${MODULES[@]}" "$module" )
+        else
+            echo "$module found in mkinitcpio.conf."
+        fi
+    done
+
+    echo "Updating /etc/mkinitcpio.conf..."
+    MODULES_LINE="MODULES=(${MODULES[@]})"
+    sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
+}
+
 function set_timezone() {
     local CURR_DIR="$PWD"
 
@@ -83,6 +104,21 @@ function setup_hosts() {
     vi /etc/hosts
 }
 
+function update_mkinitcpio() {
+    pci_info=$(lspci | cut -d' ' -f2- | grep -e '^VGA' -e '3D' -e 'Display')
+    NEW_MODULES=()
+
+    if echo $pci_info | grep -i 'amd'; then
+        NEW_MODULES=("${NEW_MODULES[@]}" "amdgpu")
+    fi
+
+    if echo $pci_info | grep -i 'intel'; then
+        NEW_MODULES=("${NEW_MODULES[@]}" "i915")
+    fi
+
+    update_mkinitcpio_modules "${NEW_MODULES[@]}"
+}
+
 function create_initramfs() {
     echo "Making initframfs..."
     mkinitcpio -P linux
@@ -131,6 +167,8 @@ set_locale
 set_hostname
 
 setup_hosts
+
+update_mkinitcpio
 
 create_initframfs
 
