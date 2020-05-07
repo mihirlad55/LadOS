@@ -38,6 +38,7 @@ systemctl --user enable xautolock.service
 systemctl --user enable xbindkeys.service
 systemctl --user enable startup.service
 systemctl --user enable insync.service
+systemctl --user enable spotify-listener.service
 
 echo "Editing logind.conf to kill user processes on logout..."
 sudo sed -i /etc/systemd/logind.conf -e "s/^KillUserProcesses=.*$/KillUserProcesses=yes/"
