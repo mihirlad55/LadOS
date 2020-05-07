@@ -119,4 +119,3 @@ youtube-dl,Downloading youtube videos,system,extra
 zathura-pdf-poppler,Main PDF viewer,system,extra
 zip,Zipping files,system,required
 zsh,Main shell,system,required
-zsh-syntax-highlighting,It's in the name,system,required
