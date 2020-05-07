@@ -28,8 +28,8 @@ if [[ "$EDITOR" != "" ]]; then
     $EDITOR $BASE_DIR/refind-options.conf
     $EDITOR $BASE_DIR/refind-manual.conf
 else
-    vi $BASE_DIR/refind-options.conf
-    vi $BASE_DIR/refind-manual.conf
+    vim $BASE_DIR/refind-options.conf
+    vim $BASE_DIR/refind-manual.conf
 fi
 
 echo "Copying configuration files to /boot/EFI/refind/..."

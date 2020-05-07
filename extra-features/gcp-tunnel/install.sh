@@ -20,7 +20,7 @@ read -p "Press enter to continue..."
 if [[ "$EDITOR" != "" ]]; then
     $EDITOR $BASE_DIR/gcp-tunnel.env
 else
-    vi $BASE_DIR/gcp-tunnel.env
+    vim $BASE_DIR/gcp-tunnel.env
 fi
 
 if ! sudo test -e "/root/.ssh/id_rsa"; then

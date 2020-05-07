@@ -26,7 +26,7 @@ read -p "Press enter to continue..."
 if [[ "$EDITOR" != "" ]]; then
     $EDITOR $BASE_DIR/arch.conf
 else
-    vi $BASE_DIR/arch.conf
+    vim $BASE_DIR/arch.conf
 fi
 
 sudo install -Dm 755 $BASE_DIR/arch.conf /boot/loader/entries/arch.conf

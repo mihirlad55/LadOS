@@ -71,7 +71,7 @@ function set_locale() {
     echo "Opening /etc/locale.gen... Uncomment the correct locale..."
     pause
 
-    vi /etc/locale.gen
+    vim /etc/locale.gen
 
     locale-gen
 
@@ -101,7 +101,7 @@ function setup_hosts() {
 
     echo "Opening hosts file for additional configuration..."
     pause
-    vi /etc/hosts
+    vim /etc/hosts
 }
 
 function update_mkinitcpio() {
