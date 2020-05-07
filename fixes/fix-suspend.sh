@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/bash
 
 
 sudo sed -i 's/#HandleLidSwitch=suspend/HandleLidSwitch=suspend/' /etc/systemd/logind.conf

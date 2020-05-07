@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/bash
 
 echo "Starting bluetooth service..."
 systemctl start bluetooth

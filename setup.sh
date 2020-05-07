@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/bash
 
 BASE_DIR=$(dirname "$0")
 FIXES_DIR="$BASE_DIR/fixes"

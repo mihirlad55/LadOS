@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/bash
 
 # Disable system journal being stored in RAM
 echo "Disable system journal..."

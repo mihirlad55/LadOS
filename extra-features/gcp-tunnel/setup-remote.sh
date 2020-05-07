@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/usr/bin/bash
 
 REMOTE_USER="portforward"
 useradd -m $REMOTE_USER
