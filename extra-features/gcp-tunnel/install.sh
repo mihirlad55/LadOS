@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 
 port=$(egrep /etc/ssh/sshd_config -e "^Port [0-9]*$")
 echo -n "Enter a port to run sshd on (blank to leave default: $port): "

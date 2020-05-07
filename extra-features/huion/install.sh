@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 
 sudo rmmod hid-kye
 sudo rmmod hid-uclogic

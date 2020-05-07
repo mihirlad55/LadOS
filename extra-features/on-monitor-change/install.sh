@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 
 sudo install -Dm 755 $BASE_PATH/50-monitor.rules /etc/udev/rules.d/50-monitor.rules
 sudo install -Dm 755 $BASE_PATH/restart-polybar /usr/local/bin/restart-polybar

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 EXTRA_FEATURES_DIR="$BASE_DIR/../extra-features"
 

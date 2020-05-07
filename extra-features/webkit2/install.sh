@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 
 sudo pacman -S lightdm-webkit2-greeter --needed
 yay -S lightdm-webkit2-theme-material2 --needed

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 
 shopt -s expand_aliases
 echo "Installing custom touchpad configuration for X11..."

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 
 echo "Enabling multilib repo..."
 sudo sed -i 's/#*\[multilib\]/\[multilib\]/' /etc/pacman.conf
