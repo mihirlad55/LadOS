@@ -2,7 +2,8 @@
 
 BASE_DIR=$(dirname "$0")
 
-( [[ "$USER" = "root" ]] || [[ ! command -v sudo ]] ) && alias sudo=
+shopt -s expand_aliases
+( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
 sudo pacman -S wpa_supplicant dhcpcd --needed
 
