@@ -2,7 +2,7 @@
 
 BASE_DIR="$(dirname "$0")"
 
-sudo pacman -S openvpn --needed
+sudo pacman -S openvpn --needed --noconfirm
 
 
 echo "To start the vpn, run systemctl start openvpn-client@miami"

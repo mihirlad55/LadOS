@@ -68,9 +68,9 @@ function install_packages() {
         fi
     done
 
-    sudo pacman -Syyu
+    sudo pacman -Syu --noconfirm
     
-    sudo pacman -S ${pacman_packages[@]}
+    sudo pacman -S ${pacman_packages[@]} --noconfirm --needed
 }
 
 function install_required_features() {

@@ -6,8 +6,8 @@ sudo rmmod hid-kye
 sudo rmmod hid-uclogic
 sudo rmmod hid-huion
 
-sudo pacman -S linux-headers at xf86-input-wacom --needed
-yay -S digimend-kernel-drivers-dkms-git
+sudo pacman -S linux-headers at xf86-input-wacom --needed --noconfirm
+yay -S digimend-kernel-drivers-dkms-git --noconfirm
 
 sudo systemctl enable atd
 sudo systemctl start atd

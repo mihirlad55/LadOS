@@ -3,7 +3,7 @@
 BASE_DIR="$(dirname "$0")"
 
 echo "Installing physlock..."
-sudo pacman -S physlock --needed
+sudo pacman -S physlock --needed --noconfirm
 
 echo "Copying physlock.service..."
 sudo install -Dm 644 $BASE_PATH/physlock.service /etc/systemd/system/physlock.service

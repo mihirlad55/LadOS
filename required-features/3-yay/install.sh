@@ -16,7 +16,7 @@ gpg --recv-keys 4E7160ED4AC8EE1D
 
 # Install necessary packages
 echo "Installing necessary packages..."
-sudo pacman -S --needed base-devel git wget yajl
+sudo pacman -S --needed --noconfirm base-devel git wget yajl
 
 # Clone package-query
 echo "Cloning package-query..."
@@ -26,7 +26,7 @@ git clone https://aur.archlinux.org/package-query.git
 # Make package
 echo "Making package package-query..."
 cd package-query/
-makepkg -si
+makepkg -si --noconfirm
 
 # Clone yay
 echo "Cloning yay..."
@@ -36,7 +36,7 @@ git clone https://aur.archlinux.org/yay.git
 # Make package
 echo "Making yay..."
 cd yay/
-makepkg -si
+makepkg -si --noconfirm
 
 # Clean up
 echo "Removing files and cleaning up"

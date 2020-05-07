@@ -5,7 +5,7 @@ BASE_DIR="$(dirname "$0")"
 shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
-sudo pacman -S intel-ucode amd-ucode --needed
+sudo pacman -S intel-ucode amd-ucode --needed --noconfirm
 
 sudo bootctl install
 

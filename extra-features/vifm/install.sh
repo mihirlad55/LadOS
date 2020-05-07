@@ -2,9 +2,9 @@
 
 BASE_DIR="$(dirname "$0")"
 
-sudo pacman -S ffmpeg ffmpegthumbnailer vifm --needed
+sudo pacman -S ffmpeg ffmpegthumbnailer vifm --needed --noconfirm
 sudo pip3 install poppler epub-thumbnailer
-yay -S fontpreview
+yay -S fontpreview --needed --noconfirm
 
 git clone https://github.com/marianosimone/epub-thumbnailer $BASE_DIR/epub-thumbnailer
 sudo python $BASE_DIR/epub-thumbnailer/install.py install

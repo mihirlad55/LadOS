@@ -5,7 +5,7 @@ BASE_DIR="$(dirname "$0")"
 shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
-sudo pacman -S wpa_supplicant dhcpcd --needed
+sudo pacman -S wpa_supplicant dhcpcd --needed --noconfirm
 
 sudo install -Dm 644 wpa_supplicant-wlp2s0.conf /etc/wpa_supplicant/wpa_supplicant-wlp2s0.conf
 

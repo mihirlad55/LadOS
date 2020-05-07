@@ -5,7 +5,7 @@ BASE_DIR="$(dirname "$0")"
 shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
-sudo pacman -S refind --needed
+sudo pacman -S refind --needed --noconfirm
 
 sudo refind-install
 

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-sudo pacman -S git zsh xorg-xrdb --needed
+sudo pacman -S git zsh xorg-xrdb --needed --noconfirm
 
 git clone git@github.com:mihirlad55/dotfiles /tmp/dotfiles
 cp -rf /tmp/dotfiles/* $HOME/

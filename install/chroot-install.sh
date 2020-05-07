@@ -146,7 +146,7 @@ function create_user_account() {
 }
 
 function setup_sudo_and_su() {
-    pacman -Syyu
+    pacman -Syyu --noconfirm
 
     echo "Installing sudo..."
     $REQUIRED_FEATURES_DIR/1-sudoers/install.sh

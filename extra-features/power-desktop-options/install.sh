@@ -2,7 +2,7 @@
 
 BASE_DIR="$(dirname "$0")"
 
-sudo pacman -S xdg-utils
+sudo pacman -S xdg-utils --needed --noconfirm
 
 echo "Copying files..."
 sudo install -Dm 644 $BASE_PATH/power-desktop-files/hibernate.desktop /usr/share/applications/hibernate.desktop

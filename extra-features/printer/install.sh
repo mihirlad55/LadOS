@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-sudo pacman -S cups --needed
+sudo pacman -S cups --needed --noconfirm
 
 sudo systemctl enable org.cups.cupsd
 sudo systemctl start org.cups.cupsd

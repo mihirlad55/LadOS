@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-sudo pacman -S redshift geoclue2 --needed
+sudo pacman -S redshift geoclue2 --needed --noconfirm
 
 geoclue_conf_path="/etc/geoclue/geoclue.conf"
 

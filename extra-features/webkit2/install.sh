@@ -2,8 +2,8 @@
 
 BASE_DIR="$(dirname "$0")"
 
-sudo pacman -S lightdm-webkit2-greeter --needed
-yay -S lightdm-webkit2-theme-material2 --needed
+sudo pacman -S lightdm-webkit2-greeter --needed --noconfirm
+yay -S lightdm-webkit2-theme-material2 --needed --noconfirm
 
 echo "Changing greeter session in /etc/lightdm/lightdm.conf"
 sudo sed -i 's/#greeter-session=example-gtk-gnome/greeter-session=lightdm-webkit2-greeter/' /etc/lightdm/lightdm.conf
