@@ -19,7 +19,7 @@ read password
 # Copy config files
 echo "Copying config files..."
 sudo mkdir /etc/openvpn/client
-sudo install -m 644 client/* -r /etc/openvpn/client/
+sudo install -m 644 $BASE_DIR/client/*  /etc/openvpn/client/
 
 sudo touch /etc/openvpn/client/login.conf
 echo $username | sudo tee -a /etc/openvpn/client/login.conf

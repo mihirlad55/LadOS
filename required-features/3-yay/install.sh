@@ -2,19 +2,13 @@
 
 CUR_DIR="$PWD"
 
-echo Receive GPG keys for some packages
-gpg --recv-keys 0FC3042E345AD05D
-
-# Receive key for spotify
-gpg --recv-keys A87FF9DF48BF1C90
-
-# Receive key for bluez-utils-compat
-gpg --recv-keys 06CA9F5D1DCF2659
-
-# i3-wn-patchfonts
-gpg --recv-keys 4E7160ED4AC8EE1D
-
 # Install necessary packages
+
+if command -v yay > /dev/null; then
+    echo "Yay already installed."
+    exit 0
+fi
+
 echo "Installing necessary packages..."
 sudo pacman -S --needed --noconfirm base-devel git wget yajl
 

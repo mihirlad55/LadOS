@@ -15,7 +15,7 @@ echo -n "Enter the path to the root partition (i.e. /dev/sda1): "
 read root_path
 
 swap_path=$(blkid | grep "swap" | cut -d':' -f1)
-partuuid=$(blkid | grep $root_path | egrep -o 'PARTUUID="[a-z0-9\-]*"' | sed -e 's/"//g')
+partuuid=$(blkid | grep $root_path | egrep -o 'PARTUUID="[a-z0-9\-]*"' | sed -e 's/"//g' | cut -d'=' -f2)
 
 options="options root=PARTUUID=$partuuid rw add_efi_memmap resume=$swap_path"
 sed -i $BASE_DIR/arch.conf -e "s;^options root=.*$;$options;"

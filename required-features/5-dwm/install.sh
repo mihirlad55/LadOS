@@ -4,9 +4,9 @@ BASE_DIR="$(dirname "$0")"
 
 CUR_DIR="$PWD"
 
-sudo pacman -S lightdm lightdm-gtk-greeter xorg-server-common --needed --noconfirm
+sudo pacman -S lightdm lightdm-gtk-greeter xorg-server xorg-server-common --needed --noconfirm
 
-git clone git@github.com:mihirlad55/dwm /tmp/dwm
+git clone https://github.com/mihirlad55/dwm /tmp/dwm
 cd /tmp/dwm
 sudo make clean install
 

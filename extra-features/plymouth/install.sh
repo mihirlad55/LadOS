@@ -2,10 +2,10 @@
 
 BASE_DIR="$(dirname "$0")"
 
-yay -S plymouth --needed
+yay -S plymouth --needed --noconfirm
 
-sudo cp -r deus_ex /usr/share/plymouth/themes/
-sudo install -Dm 644 plymouthd.conf /etc/plymouth/plymouthd.conf
+sudo cp -r $BASE_DIR/deus_ex /usr/share/plymouth/themes/
+sudo install -Dm 644 $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf
 
 sudo systemctl disable lightdm
 sudo systemctl enable lightdm-plymouth

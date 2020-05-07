@@ -16,7 +16,7 @@ echo -n "Enter the path to the root partition (i.e. /dev/sda1): "
 read root_path
 
 swap_path=$(blkid | grep "swap" | cut -d':' -f1)
-partuuid=$(blkid | grep $root_path | egrep -o 'PARTUUID="[a-z0-9\-]*"' | sed -e 's/"//g')
+partuuid=$(blkid | grep $root_path | egrep -o 'PARTUUID="[a-z0-9\-]*"' | sed -e 's/"//g' | cut -d'=' -f2)
 
 sed -i $BASE_DIR/refind-options.conf -e "s/root=PARTUUID=[a-z0-9\-]*/root=PARTUUID=$partuuid/"
 sed -i $BASE_DIR/refind-options.conf -e "s;resume=/dev/[a-z0-9]*;resume=$swap_path;"

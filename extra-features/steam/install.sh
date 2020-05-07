@@ -14,7 +14,7 @@ echo "Installing Steam..."
 sudo pacman -S steam --needed --noconfirm
 
 echo "Configuring library paths for steam..."
-sudo install -Dm 644 steam.conf /etc/ld.so.conf.d/steam.conf
+sudo install -Dm 644 $BASE_DIR/steam.conf /etc/ld.so.conf.d/steam.conf
 sudo ldconfig
 
 echo "DONE!"

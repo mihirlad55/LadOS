@@ -7,7 +7,19 @@ shopt -s expand_aliases
 
 sudo pacman -S wpa_supplicant dhcpcd --needed --noconfirm
 
-sudo install -Dm 644 wpa_supplicant-wlp2s0.conf /etc/wpa_supplicant/wpa_supplicant-wlp2s0.conf
+ip link
+echo -n "Enter name of network card: "
+read card
 
-sudo systemctl enable --now wpa_supplicant@wlp2s0.service
+echo "ctrl_interface=/run/wpa_supplicant" | sudo tee /etc/wpa_supplicant/wpa_supplicant-${card}.conf
+echo "update_config=1" | sudo tee -a /etc/wpa_supplicant/wpa_supplicant-${card}.conf
+
+echo "Opening wpa_supplicant file..."
+if command -v sudoedit &> /dev/null; then
+    sudoedit /etc/wpa_supplicant/wpa_supplicant-${card}.conf
+else
+    vim /etc/wpa_supplicant/wpa_supplicant-${card}.conf
+fi
+
+sudo systemctl enable --now wpa_supplicant@${card}.service
 sudo systemctl enable --now dhcpcd.service

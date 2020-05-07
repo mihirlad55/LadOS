@@ -1,9 +1,17 @@
 #!/usr/bin/bash
 
+CURR_DIR="$PWD"
 sudo pacman -S git zsh xorg-xrdb --needed --noconfirm
 
-git clone git@github.com:mihirlad55/dotfiles /tmp/dotfiles
-cp -rf /tmp/dotfiles/* $HOME/
+git clone https://github.com/mihirlad55/dotfiles /tmp/dotfiles
+cd /tmp/dotfiles
+git submodule init
+git submodule update --init
+
+echo "Copying /tmp/dotfiles to $HOME/"
+cp -rf /tmp/dotfiles/. $HOME/
+
+echo "Removing /tmp/dotfiles"
 rm -rf /tmp/dotfiles
 
 # Change shell to zsh

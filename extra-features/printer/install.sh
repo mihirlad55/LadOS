@@ -2,8 +2,7 @@
 
 sudo pacman -S cups --needed --noconfirm
 
-sudo systemctl enable org.cups.cupsd
-sudo systemctl start org.cups.cupsd
+sudo systemctl enable --now org.cups.cupsd
 
 echo -n "Enter printer name: "
 read name

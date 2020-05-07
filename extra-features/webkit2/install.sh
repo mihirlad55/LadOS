@@ -15,4 +15,4 @@ echo "To add backgrounds, copy backgrounds to /usr/share/backgrounds"
 echo "Make sure the avatar and background are readable by everyone"
 
 echo "Copying lightdm-webkit2-greeter.conf to /etc/lightdm"
-sudo install -Dm 644 lightdm-webkit2-greeter.conf /etc/lightdm/lightdm-webkit2-greeter.conf
+sudo install -Dm 644 $BASE_DIR/lightdm-webkit2-greeter.conf /etc/lightdm/lightdm-webkit2-greeter.conf

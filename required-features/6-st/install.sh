@@ -4,7 +4,7 @@ BASE_DIR="$(dirname "$0")"
 
 CUR_DIR="$PWD"
 
-git clone git@github.com:mihirlad55/st /tmp/st
+git clone https://github.com/mihirlad55/st /tmp/st
 cd /tmp/st
 sudo make clean install
 

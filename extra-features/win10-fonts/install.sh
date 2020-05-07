@@ -20,4 +20,4 @@ else
 fi
 
 
-yay -S --mflags --skipinteg ttf-ms-win10 
+yay -S --mflags --skipinteg --needed --noconfirm ttf-ms-win10

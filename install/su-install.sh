@@ -10,7 +10,7 @@ function pause() {
 
 function prompt() {
     while true; do
-        echo "$1 [Y/n]"
+        echo -n "$1 [Y/n] "
         read resp
 
         if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
@@ -40,9 +40,9 @@ function install_yay() {
 function install_packages() {
     echo "Beginning to install pacman packages..."
 
-    local install_extra=1
+    local install_extra=0
     if prompt "Install extra packages as well?"; then
-        install_extra=0
+        install_extra=1
     fi
 
     IFS=$'\n'
@@ -59,18 +59,23 @@ function install_packages() {
 
         echo "$name ($desc)"
 
-        if $install_extra && [[ "$req" = "extra" ]] || [[ "$req" = "required" ]]; then
+        if [[ $install_extra -eq 1 ]] && [[ "$req" = "extra" ]] || [[ "$req" = "required" ]]; then
             if [[ "$typ" = "system" ]]; then
-                pacman_packages=("${package_list[@]}" "$name")
+                pacman_packages=("${pacman_packages[@]}" "$name")
             elif [[ "$typ" = "aur" ]]; then
-                aur_packages=("${package_list[@]}" "$name")
+                aur_packages=("${aur_packages[@]}" "$name")
             fi
         fi
     done
 
+    echo "Syncing pacman"
     sudo pacman -Syu --noconfirm
     
+    echo "Installing pacman packages..."
     sudo pacman -S ${pacman_packages[@]} --noconfirm --needed
+
+    echo "Installing AUR packages..."
+    yay -S ${aur_packages[@]} --noconfirm --needed
 }
 
 function install_required_features() {
@@ -81,6 +86,7 @@ function install_required_features() {
         if ! (echo $feature | grep "yay" || echo $feature | grep "sudoers"); then
             echo "Installing $feature..."
             $REQUIRED_FEATURES_DIR/$feature/install.sh
+	    pause
         fi
     done
 
@@ -98,6 +104,7 @@ function install_extra_features() {
         i=$((i+1))
     done
 
+    IFS=$' '
     echo -n "Enter features to exclude (i.e. 1 2 3): "
     read input
     local exclusions=($input)
@@ -115,6 +122,7 @@ function install_extra_features() {
         if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
             echo "Installing $feature..."
             $EXTRA_FEATURES_DIR/$feature/install.sh
+	    pause
         fi
     done
 

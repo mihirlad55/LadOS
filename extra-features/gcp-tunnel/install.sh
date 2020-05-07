@@ -2,6 +2,8 @@
 
 BASE_DIR="$(dirname "$0")"
 
+sudo pacman -S openssh --needed --noconfirm
+
 port=$(egrep /etc/ssh/sshd_config -e "^Port [0-9]*$")
 echo -n "Enter a port to run sshd on (blank to leave default: $port): "
 read new_port
@@ -31,8 +33,5 @@ fi
 sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
 sudo install -Dm 644 $BASE_DIR/gcp-tunnel.env /etc/gcp-tunnel.env
 
-sudo systemctl enable gcp-tunnel
-sudo systemctl start gcp-tunnel
-
-sudo systemctl enable sshd
-sudo systemctl restart sshd
+sudo systemctl enable --now gcp-tunnel
+sudo systemctl enable --now sshd
