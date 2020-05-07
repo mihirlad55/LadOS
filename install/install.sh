@@ -1,8 +1,8 @@
 #!/bin/sh
 
-BASE_DIR=$(dirname "$0")
+BASE_DIR="$(dirname "$0")"
 
-WIFI_ENABLED=1
+WIFI_ENABLED=0
 
 function pause() {
     read -p "Press enter to continue..."
@@ -10,7 +10,7 @@ function pause() {
 
 function prompt() {
     while true; do
-        echo "$1 [Y/n]"
+        echo -n "$1 [Y/n] "
         read resp
 
         if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
@@ -22,7 +22,7 @@ function prompt() {
 }
 
 function check_efi_mode() {
-    if ls /sys/firmware/efi/efivars; then
+    if ls /sys/firmware/efi/efivars > /dev/null; then
         echo "Verified EFI boot"
     else
         echo "System not booted in EFI mode"
@@ -40,8 +40,10 @@ function setup_partitions() {
 }
 
 function connect_to_internet() {
-    if prompt "Setup WiFi for setup?"; then
-        setup_wifi
+    if ! ping -c 1 www.google.com &> /dev/null; then
+        if prompt "Setup WiFi for setup?"; then
+            setup_wifi
+        fi
     fi
     echo "Waiting for connection to Internet..."
     until ping -c 1 www.google.com &> /dev/null; do sleep 1; done
@@ -54,8 +56,8 @@ function setup_wifi() {
 
     conf_path="/tmp/wpa_supplicant.conf"
 
-    echo "ctrl_interface=/run/wpa_supplicant" >> $conf_path
-    echo "update_config=1" > $conf_path
+    echo "ctrl_interface=/run/wpa_supplicant" > $conf_path
+    echo "update_config=1" >> $conf_path
 
     echo "Opening wpa_supplicant.conf to add network info..."
     pause
@@ -65,10 +67,11 @@ function setup_wifi() {
     wpa_supplicant -B -i${adapter} -c $conf_path
     dhcpcd
 
-    WIFI_ENABLED=0
+    WIFI_ENABLED=1
 }
 
 function update_system_clock() {
+    echo "Updating system clock..."
     timedatectl set-ntp true
 }
 
@@ -80,7 +83,7 @@ function rank_mirrors() {
     curl -s "https://www.archlinux.org/mirrorlist/?country=${country}&protocol=https&use_mirror_status=on" | \
         sed -e 's/^#Server/Server/' -e '/^#/d' | \
         $BASE_DIR/rankmirrors -n 5 -m 1 - \
-        >> /etc/pacman.d/mirrorlist
+        > /etc/pacman.d/mirrorlist
 
     echo "Top 5 $country mirrors saved in /etc/pacman.d/mirrorlist"
 }
@@ -94,19 +97,27 @@ function pacstrap_install() {
         echo "Parititions not mounted on /mnt. Please mount the filesystems."
         exit 1
     fi
+
+    echo "Finished pacstrap install"
 }
 
 function generate_fstab() {
-    genfstab -U /mnt >> /mnt/etc/fstab
+    echo "Generating fstab..."
+    genfstab -U /mnt > /mnt/etc/fstab
+    echo "Fstab generated"
 }
 
 function start_chroot_install() {
+    echo "Copying LadOS to new system"
+    mkdir -p /mnt/root/LadOS
     cp -r $BASE_DIR/../* /mnt/root/LadOS/
 
-    if $WIFI_ENABLED; then
+    if [[ "$WIFI_ENABLED" -eq 1 ]]; then
+	echo "Copying wpa_supplicant to new system..."
         mkdir -p /mnt/etc/wpa_supplicant
         install -Dm 644 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
+    echo "Arch-chrooting to system"
     arch-chroot /mnt "/root/LadOS/install/chroot-install.sh"
 }
 
