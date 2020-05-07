@@ -4,6 +4,9 @@ BASE_DIR="$(dirname "$0")"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 EXTRA_FEATURES_DIR="$BASE_DIR/../extra-features"
 
+source "$BASE_DIR/conf/defaults.sh"
+
+
 function pause() {
     read -p "Press enter to continue..."
 }
@@ -41,7 +44,9 @@ function install_packages() {
     echo "Beginning to install pacman packages..."
 
     local install_extra=0
-    if prompt "Install extra packages as well?"; then
+    if [[ "$DEFAULTS_INSTALL_EXTRA" = "yes" ]]; then
+        install_extra=1
+    elif prompt "Install extra packages as well?"; then
         install_extra=1
     fi
 
@@ -86,7 +91,10 @@ function install_required_features() {
         if ! (echo $feature | grep "yay" || echo $feature | grep "sudoers"); then
             echo "Installing $feature..."
             $REQUIRED_FEATURES_DIR/$feature/install.sh
-	    pause
+
+            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+                pause
+            fi
         fi
     done
 
@@ -98,23 +106,28 @@ function install_extra_features() {
 
     echo "Installing extra features..."
 
-    local i=1
-    for feature in ${features[@]}; do
-        echo "$i. $feature"
-        i=$((i+1))
-    done
+    if [[ "$DEFAULTS_EXCLUDE_FEATURES" != "" ]]; then
+        excluded_features=("${DEFAULTS_EXCLUDE_FEATURES[@]}")
+    else
+        local i=1
+        for feature in ${features[@]}; do
+            echo "$i. $feature"
+            i=$((i+1))
+        done
 
-    IFS=$' '
-    echo -n "Enter features to exclude (i.e. 1 2 3): "
-    read input
-    local exclusions=($input)
-    
-    local selected_features=()
+        IFS=$' '
+        echo -n "Enter features to exclude (i.e. 1 2 3): "
+        read input
+        local exclusions=($input)
+        
+        local selected_features=()
 
-    for i in ${exclusions[@]}; do
-        excluded_feature="${features[$(($i-1))]}"
-        excluded_features=("${excluded_features[@]}" "$excluded_feature")
-    done
+        for i in ${exclusions[@]}; do
+            excluded_feature="${features[$(($i-1))]}"
+            excluded_features=("${excluded_features[@]}" "$excluded_feature")
+        done
+    fi
+
 
     echo "Excluding features ${excluded_features[@]}"
 
@@ -122,11 +135,18 @@ function install_extra_features() {
         if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
             echo "Installing $feature..."
             $EXTRA_FEATURES_DIR/$feature/install.sh
-	    pause
+
+            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+                pause
+            fi
         fi
     done
 
     echo "Done installing extra features"
+}
+
+function remove_temp_sudoers() {
+    sudo rm -f /etc/sudoers.d/20-sudoers-temp
 }
 
 
@@ -139,3 +159,5 @@ install_packages
 install_required_features
 
 install_extra_features
+
+remove_temp_sudoers

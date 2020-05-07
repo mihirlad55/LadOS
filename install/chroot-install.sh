@@ -3,6 +3,9 @@
 BASE_DIR="$(dirname "$0")"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
+soruce "$BASE_DIR/conf/defaults.sh"
+
+
 function pause() {
     read -p "Press enter to continue..."
 }
@@ -30,39 +33,43 @@ function update_mkinitcpio_modules() {
 
 function set_timezone() {
     local CURR_DIR="$PWD"
-
     local zone=
     local num=
 
-    IFS=$'\n'
-    cd /usr/share/zoneinfo
-    while true; do
-        local options=($(ls))
-        local i=1
-        for option in ${options[@]}; do
-            echo "$i. $option"
-            i=$(($i+1))
-        done
-        echo -n "Select closest match: "
-        read num
+    if [[ "$DEFAULTS_TIMEZONE_PATH" != "" ]]; then
+        zone="$DEFAULTS_TIMEZONE_PATH"
+    else
+        IFS=$'\n'
+        cd /usr/share/zoneinfo
+        while true; do
+            local options=($(ls))
+            local i=1
+            for option in ${options[@]}; do
+                echo "$i. $option"
+                i=$(($i+1))
+            done
+            echo -n "Select closest match: "
+            read num
 
-	re='^[0-9]+$'
-	if ! [[ $num =~ $re ]]; then
-            continue
-	fi
-        num=$(($num-1))
-
-	echo $num
-        selection="${options[$num]}"
-	echo "Selected $selection"
-        if [[ -d "$selection" ]]; then
-            echo "Navigating to $selection..."
-            cd $selection
-        elif [[ -e "$selection" ]]; then
-            zone="${PWD}/${selection}"
-            break
+        re='^[0-9]+$'
+        if ! [[ $num =~ $re ]]; then
+                continue
         fi
-    done
+            num=$(($num-1))
+
+        echo $num
+            selection="${options[$num]}"
+        echo "Selected $selection"
+            if [[ -d "$selection" ]]; then
+                echo "Navigating to $selection..."
+                cd $selection
+            elif [[ -e "$selection" ]]; then
+                zone="${PWD}/${selection}"
+                break
+            fi
+        done
+    fi
+
 
     echo "You selected $zone. Now symlinking $zone to /etc/localtime..."
     
@@ -78,11 +85,14 @@ function set_adjtime() {
 }
 
 function set_locale() {
-    echo "Opening /etc/locale.gen... Uncomment the correct locale..."
-    pause
 
-    pacman -S vim --noconfirm --needed
-    vim /etc/locale.gen
+    if [[ "$DEFAULTS_LOCALE" != "" ]]; then
+        sed -i /etc/locale.gen -e "/#$DEFAULTS_LOCALE/s/^# *//"
+    else
+        echo "Opening /etc/locale.gen... Uncomment the correct locale..."
+        pause
+        vim /etc/locale.gen
+    fi
 
     locale-gen
 
@@ -96,8 +106,12 @@ function set_locale() {
 function set_hostname() {
     local hostname
 
-    echo -n "Enter a hostname for this computer: "
-    read hostname
+    if [[ "$DEFAULTS_HOSTNAME" != "" ]]; then
+        hostname="$DEFAULTS_HOSTNAME"
+    else
+        echo -n "Enter a hostname for this computer: "
+        read hostname
+    fi
 
     echo $hostname > /etc/hostname
 
@@ -110,9 +124,15 @@ function setup_hosts() {
     echo "127.0.0.1  localhost" > /etc/hosts
     echo "::1        localhost" >> /etc/hosts
 
-    echo "Opening hosts file for additional configuration..."
-    pause
-    vim /etc/hosts
+    hosts="$(cat $BASE_DIR/cont/hosts)"
+
+    if [[ "$hosts" != "" ]]; then
+        echo "$hosts" >> /etc/hosts
+    elif [[ "$DEFAULTS_EDIT_HOSTS" = "yes" ]]; then
+        echo "Opening hosts file for additional configuration..."
+        pause
+        vim /etc/hosts
+    fi
 }
 
 function update_mkinitcpio() {
@@ -138,21 +158,36 @@ function create_initramfs() {
 
 function set_root_passwd() {
     echo "Set root password"
-    until passwd; do sleep 1s; done
+
+    if [[ "$DEFAULTS_ROOT_PASSWORD" != "" ]]; then
+        echo "root:$DEFAULTS_ROOT_PASSWORD" | chpasswd
+    else
+        until passwd; do sleep 1s; done
+    fi
+
     echo "Root password set"
 }
 
 function create_user_account() {
     echo "Creating new default user account..."
-    echo -n "Enter username: "
-    read username
+
+    if [[ "$DEFAULTS_USERNAME" != "" ]]; then
+        username="$DEFAULTS_USERNAME"
+    else
+        echo -n "Enter username: "
+        read username
+    fi
 
     echo "Creating user $username"
     useradd -m $username
 
-    echo "Set password for $username"
+    if [[ "$DEFAULTS_PASSWORD" != "" ]]; then
+        echo "$username:$DEFAULTS_PASSWORD" | chpasswd
+    else
+        echo "Set password for $username"
 
-    until passwd $username; do sleep 1s; done
+        until passwd $username; do sleep 1s; done
+    fi
 
     echo "Password set for $username"
 }
@@ -162,6 +197,8 @@ function setup_sudo_and_su() {
 
     echo "Installing sudo..."
     $REQUIRED_FEATURES_DIR/1-sudoers/install.sh
+    # Temporary no password prompt for installation
+    echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
 
     usermod -a -G wheel "$username"
     echo "Added $username to group wheel"
@@ -169,12 +206,15 @@ function setup_sudo_and_su() {
     echo "Changing user to $username..."
     cp -r /root/LadOS /home/$username
     chown -R $username /home/$username/LadOS
-    su -P -c "/home/$username/LadOS/install/su-install.sh" - mihirlad55
+    su -P -c "/home/$username/LadOS/install/su-install.sh" - $username
 }
 
 set_timezone
 
 set_adjtime
+
+# To edit config files
+pacman -S vim --noconfirm --needed
 
 set_locale
 

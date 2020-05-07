@@ -4,6 +4,8 @@ BASE_DIR="$(dirname "$0")"
 
 WIFI_ENABLED=0
 
+source "$BASE_DIR/conf/defaults.sh"
+
 function pause() {
     read -p "Press enter to continue..."
 }
@@ -33,15 +35,17 @@ function check_efi_mode() {
 function setup_partitions() {
     echo -ne "Make sure you create the system partitions, format them, and \
         mount root on /mnt with all the filesystems mounted on root\n"
-    if ! prompt "Are the filesystems mounted?"; then
-        echo "Please partition the drive and exit the shell once finished..."
-        bash
+    if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+        if ! prompt "Are the filesystems mounted?"; then
+            echo "Please partition the drive and exit the shell once finished..."
+            bash
+        fi
     fi
 }
 
 function connect_to_internet() {
     if ! ping -c 1 www.google.com &> /dev/null; then
-        if prompt "Setup WiFi for setup?"; then
+        if [[ "$DEFAULTS_USE_WIFI" = "yes" ]] || prompt "Setup WiFi for setup?"; then
             setup_wifi
         fi
     fi
@@ -50,19 +54,29 @@ function connect_to_internet() {
 }
 
 function setup_wifi() {
-    ip link
-    echo -n "Enter name of WiFI adapter: "
-    read adapter
+    local network_conf=$(cat $BASE_DIR/conf/network.conf)
 
     conf_path="/tmp/wpa_supplicant.conf"
 
     echo "ctrl_interface=/run/wpa_supplicant" > $conf_path
     echo "update_config=1" >> $conf_path
 
-    echo "Opening wpa_supplicant.conf to add network info..."
-    pause
+    if [[ "$network_conf" != "" ]]; then
+        echo "$network_conf" >> $conf_path        
+    else
+        echo "Opening wpa_supplicant.conf to add network info..."
+        pause
+        vi $conf_path
+    fi
 
-    vi $conf_path
+    local adapter
+    if [[ "$DEFAULTS_WIFI_ADAPTER" != "" ]]; then
+        local adapter="$DEFAULTS_WIFI_ADAPTER"
+    else
+        ip link
+        echo -n "Enter name of WiFI adapter: "
+        read adapter
+    fi
 
     wpa_supplicant -B -i${adapter} -c $conf_path
     dhcpcd
@@ -76,8 +90,14 @@ function update_system_clock() {
 }
 
 function rank_mirrors() {
-    echo -n "Enter your country code (i.e. US): "
-    read country
+    local country
+
+    if [[ "$DEFAULTS_COUNTRY_CODE" != "" ]]; then
+        country="$DEFAULTS_COUNTRY_CODE"        
+    else
+        echo -n "Enter your country code (i.e. US): "
+        read country
+    fi
 
     echo "Ranking pacman mirrors..."
     curl -s "https://www.archlinux.org/mirrorlist/?country=${country}&protocol=https&use_mirror_status=on" | \
