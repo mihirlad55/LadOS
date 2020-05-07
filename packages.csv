@@ -5,10 +5,11 @@ arc-gtk-theme,GTK theme,system,required
 aspell,Spell check,system,required
 audacity,Audio editing,system,extra
 bluez-utils,Bluetooth,system,required
+chromium,main browser,system,required
 chromium-widevine,widevine patch for Netflix,aur,required
 clang,For C-code formatting,system,extra
 cmatrix,To be a hacker,system,required
-compton-tyrone-git,Compton with blur,aur,required
+compton-tryone-git,Compton with blur,aur,required
 cpulimit,To limit CPU usage on processes,system,required
 cronie,For scheduling tasks,system,required
 cups,Printing,system,extra
@@ -32,15 +33,17 @@ hunspell-en_US,Spell check,system,required
 i3-gaps,Backup window manager,system,extra
 i3lock-color,Lockscreen,system,required
 inkscape,Main SVG editor,system,extra
-insync,Google Drive sync,system,extra
+insync,Google Drive sync,aur,extra
 intel-media-driver,Hardware acceleration,system,required
 intel-ucode,CPU microcode,system,required
 kdenlive,Main video editor,system,extra
 lastpass-cli,Password manager,system,extra
 libreoffice-fresh,Word processing,system,extra
+libsecret,For mailspring,system,extra
 lightdm,Display manager,system,required
 lightdm-webkit2-greeter,Pretty greeter,system,required
 mailspring,Main email client,aur,extra
+man-db,Man pages,system,required
 nautilus,File explorer mainly for thumbnails,system,required
 neovim,Main editor,system,required
 nerd-fonts-complete,Icon fonts,aur,required
@@ -49,6 +52,7 @@ nmap,Network analysis,system,extra
 ntfs-3g,Accessing ntfs drives,system,required
 ntp,Syncing clock over Internet,system,required
 openconnect,School VPN,aur,extra,
+openssh,SSH,system,required
 openvpn,For VPNs,system,required
 pamixer,Volume control,system,required
 papirus-icon-theme,Icon theme for Rofi,system,required
@@ -82,6 +86,7 @@ tmux,Terminal multiplexer,system,extra
 transmission-cli,Torrenting,system,extra
 ttf-comfortaa,Cool font,aur,extra
 ttf-fantasque-sans-mono,Cool font,system,extra
+ttf-font-awesome,Icon font for polybar,system,required
 ttf-iosevka,Cool font,aur,extra
 ttf-opensans,Good font,system,required
 ttf-roboto,Good font,system,required
@@ -95,7 +100,7 @@ watchman,Watching commands,system,extra
 wpa_supplicant,WiFi,system,required
 x11vnc,For VNC control,system,extra
 xautolock,Auto screenlock,system,required
-xbindkeys,Main custom keybinds,system,required
+xbindkeys,Main custom keybinds,aur,required
 xclip,Interfacing with X11 clipboard,system,required
 xdotool,Interfacing with window manager,system,extra
 xf86-video-amdgpu,Graphics driver,system,required
