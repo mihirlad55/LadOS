@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-CURR_DIR="$PWD"
+CUR_DIR="$PWD"
 sudo pacman -S git zsh xorg-xrdb --needed --noconfirm
 
 git clone https://github.com/mihirlad55/dotfiles /tmp/dotfiles
@@ -13,6 +13,8 @@ cp -rf /tmp/dotfiles/. $HOME/
 
 echo "Removing /tmp/dotfiles"
 rm -rf /tmp/dotfiles
+
+cd "$CUR_DIR"
 
 # Change shell to zsh
 chsh -s /usr/bin/zsh
