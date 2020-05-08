@@ -43,8 +43,7 @@ fi
 sudo sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
 
 if ! sudo test -e "/root/.ssh/id_rsa"; then
-    echo "Root's SSH keys are not setup"
-    sudo ssh-keygen
+    echo "Warning: Root's SSH keys are not setup"
 fi
 
 sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
