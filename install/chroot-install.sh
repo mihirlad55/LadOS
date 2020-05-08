@@ -3,7 +3,7 @@
 BASE_DIR="$(dirname "$0")"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
-soruce "$BASE_DIR/conf/defaults.sh"
+source "$BASE_DIR/conf/defaults.sh"
 
 
 function pause() {
@@ -124,7 +124,7 @@ function setup_hosts() {
     echo "127.0.0.1  localhost" > /etc/hosts
     echo "::1        localhost" >> /etc/hosts
 
-    hosts="$(cat $BASE_DIR/cont/hosts)"
+    hosts="$(cat $BASE_DIR/conf/hosts)"
 
     if [[ "$hosts" != "" ]]; then
         echo "$hosts" >> /etc/hosts
