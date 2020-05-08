@@ -139,7 +139,7 @@ function start_chroot_install() {
         install -Dm 644 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
     echo "Arch-chrooting to system"
-    arch-chroot /mnt "/root/LadOS/install/chroot-install.sh"
+    arch-chroot /mnt "/LadOS/install/chroot-install.sh"
 }
 
 
