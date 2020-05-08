@@ -129,8 +129,9 @@ function generate_fstab() {
 
 function start_chroot_install() {
     echo "Copying LadOS to new system"
-    mkdir -p /mnt/root/LadOS
-    cp -r $BASE_DIR/../* /mnt/root/LadOS/
+    mkdir -p /mnt/LadOS
+    cp -r $BASE_DIR/../* /mnt/LadOS
+    chmod -R go=u /mnt/LadOS
 
     if [[ "$WIFI_ENABLED" -eq 1 ]]; then
 	echo "Copying wpa_supplicant to new system..."

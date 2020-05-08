@@ -204,9 +204,7 @@ function setup_sudo_and_su() {
     echo "Added $username to group wheel"
 
     echo "Changing user to $username..."
-    cp -r /root/LadOS /home/$username
-    chown -R $username /home/$username/LadOS
-    su -P -c "/home/$username/LadOS/install/su-install.sh" - $username
+    su -P -c "/LadOS/install/su-install.sh" - $username
 }
 
 set_timezone
