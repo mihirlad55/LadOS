@@ -3,6 +3,7 @@
 BASE_DIR="$(dirname "$0")"
 
 INSTALL_PATH="$HOME/.local/share/systemd/user"
+TARGET_PATH="$HOME/.config/systemd/user/default.target.wants"
 SERVICE_PATH="$BASE_DIR/services"
 
 mkdir -p $INSTALL_PATH
@@ -23,22 +24,23 @@ install -Dm 644 $SERVICE_PATH/xbindkeys.service $INSTALL_PATH/xbindkeys.service
 install -Dm 644 $SERVICE_PATH/startup.service $INSTALL_PATH/startup.service
 
 echo "Enabling services..."
-systemctl --user enable battery-check-notify.service
-systemctl --user enable compton.service
-systemctl --user enable dunst.service
-systemctl --user enable nitrogen-delayed.service
-systemctl --user enable nitrogen.service
-systemctl --user enable polybar.service
-systemctl --user enable redshift.service
-systemctl --user enable startup-application@slack.service
-systemctl --user enable startup-application@mailspring.service
-systemctl --user enable startup-application@franz.service
-systemctl --user enable update-notify.timer
-systemctl --user enable xautolock.service
-systemctl --user enable xbindkeys.service
-systemctl --user enable startup.service
-systemctl --user enable insync.service
-systemctl --user enable spotify-listener.service
+ln -sP $INSTALL_PATH/battery-check-notify.service $TARGET_PATH/battery-check-notify.service
+ln -sP $INSTALL_PATH/compton.service $TARGET_PATH/compton.service
+ln -sP $INSTALL_PATH/dunst.service $TARGET_PATH/dunst.service
+ln -sP $INSTALL_PATH/nitrogen-delayed.service $TARGET_PATH/nitrogen-delayed.service
+ln -sP $INSTALL_PATH/nitrogen.service $TARGET_PATH/nitrogen.service
+ln -sP $INSTALL_PATH/polybar.service $TARGET_PATH/polybar.service
+ln -sP $INSTALL_PATH/redshift.service $TARGET_PATH/redshift.service
+ln -sP $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@slack.service
+ln -sP $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@mailspring.service
+ln -sP $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@franz.service
+ln -sP $INSTALL_PATH/update-notify.timer $TARGET_PATH/update-notify.timer
+ln -sP $INSTALL_PATH/xautolock.service $TARGET_PATH/xautolock.service
+ln -sP $INSTALL_PATH/xbindkeys.service $TARGET_PATH/xbindkeys.service
+ln -sP $INSTALL_PATH/startup.service $TARGET_PATH/startup.service
+
+ln -sP /usr/lib/systemd/user/insync.service $TARGET_PATH/insync.service
+ln -sP /usr/lib/systemd/user/spotify-listener.service $TARGET_PATH/spotify-listener.service
 
 echo "Editing logind.conf to kill user processes on logout..."
 sudo sed -i /etc/systemd/logind.conf -e "s/^KillUserProcesses=.*$/KillUserProcesses=yes/"
