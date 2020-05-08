@@ -13,16 +13,17 @@ if [[ "$new_port" != "" ]]; then
     sudo sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
 fi
 
-sed -i $BASE_DIR/gcp-tunnel.env \
+cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
+sed -i /tmp/gcp-tunnel.env \
     -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
 
 echo "Opening environment file for updates..."
 read -p "Press enter to continue..."
 
 if [[ "$EDITOR" != "" ]]; then
-    $EDITOR $BASE_DIR/gcp-tunnel.env
+    $EDITOR /tmp/gcp-tunnel.env
 else
-    vim $BASE_DIR/gcp-tunnel.env
+    vim /tmp/gcp-tunnel.env
 fi
 
 if ! sudo test -e "/root/.ssh/id_rsa"; then
@@ -31,7 +32,9 @@ if ! sudo test -e "/root/.ssh/id_rsa"; then
 fi
 
 sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
-sudo install -Dm 644 $BASE_DIR/gcp-tunnel.env /etc/gcp-tunnel.env
+sudo install -Dm 644 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
+
+rm /tmp/gcp-tunnel.env
 
 sudo systemctl enable --now gcp-tunnel
 sudo systemctl enable --now sshd
