@@ -2,29 +2,45 @@
 
 BASE_DIR="$(dirname "$0")"
 
+source "$BASE_DIR/gcp-tunnel.env"
+
+
 sudo pacman -S openssh --needed --noconfirm
 
 port=$(egrep /etc/ssh/sshd_config -e "^Port [0-9]*$")
-echo -n "Enter a port to run sshd on (blank to leave default: $port): "
-read new_port
 
-if [[ "$new_port" != "" ]]; then
-    port="$new_port"
-    sudo sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
-fi
+if [[ "$HOSTNAME" =  "" ]] ||
+    [[ "$REMOTE_USERNAME" = "" ]] ||
+    [[ "$LOCAL_PORT" = "" ]] ||
+    [[ "$REMOTE_PORT" = "" ]] ||
+    [[ "$PRIVATE_KEY_PATH" = "" ]]; then
 
-cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
-sed -i /tmp/gcp-tunnel.env \
-    -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
+    echo -n "Enter a port to run sshd on (blank to leave default: $port): "
+    read new_port
 
-echo "Opening environment file for updates..."
-read -p "Press enter to continue..."
+    if [[ "$new_port" != "" ]]; then
+        port="$new_port"
+    fi
 
-if [[ "$EDITOR" != "" ]]; then
-    $EDITOR /tmp/gcp-tunnel.env
+    cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
+    sed -i /tmp/gcp-tunnel.env \
+        -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
+
+    echo "Opening environment file for updates..."
+    read -p "Press enter to continue..."
+
+    if [[ "$EDITOR" != "" ]]; then
+        $EDITOR /tmp/gcp-tunnel.env
+    else
+        vim /tmp/gcp-tunnel.env
+    fi
 else
-    vim /tmp/gcp-tunnel.env
+    port="$LOCAL_PORT"
+
+    cp "$BASE_DIR/gcp-tunnel.env" "/tmp/gcp-tunnel.env"
 fi
+
+sudo sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
 
 if ! sudo test -e "/root/.ssh/id_rsa"; then
     echo "Root's SSH keys are not setup"
