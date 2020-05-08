@@ -46,5 +46,7 @@ sed -i $HOME/.doom.d/config.el -e \
 
 echo "Name and email have been set for Doom Emacs"
 
-echo "Remember to setup SSH Keys"
-echo "Also, add an OpenWeatherMap API key in .apikeys/openweathermap.key"
+echo "Installing neovim plugins..."
+nvim -c "PlugInstall | qa"
+
+echo "Done installing dotfiles"
