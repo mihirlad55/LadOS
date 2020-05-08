@@ -10,19 +10,21 @@ sudo pacman -S refind --needed --noconfirm
 sudo refind-install
 
 sudo mkdir -p /boot/EFI/refind/themes
-sudo git clone https://github.com/kgoettler/ursamajor-rEFInd.git /boot/EFI/refind/themes/rEFInd-minimal
+sudo rm -rf /boot/EFI/refind/themes/rEFInd-minimal
+sudo git clone https://github.com/andersfischernielsen/rEFInd-minimal-black.git /boot/EFI/refind/themes/rEFInd-minimal
 
-echo -n "Enter the path to the root partition (i.e. /dev/sda1): "
-read root_path
+swap_path=$(cat /etc/fstab | grep -P -B 1 \
+    -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | head -n1 | sed 's/# *//')
+root_path=$(cat /etc/fstab | grep -P -B 1 \
+    -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | head -n1 | sed 's/# *//')
 
-swap_path=$(blkid | grep "swap" | cut -d':' -f1)
 partuuid=$(blkid -s PARTUUID -o value $root_path)
 
 cp $BASE_DIR/refind-options.conf /tmp/refind-options.conf
 cp $BASE_DIR/refind-manual.conf /tmp/refind-manual.conf
 
 sed -i /tmp/refind-options.conf -e "s/root=PARTUUID=[a-z0-9\-]*/root=PARTUUID=$partuuid/"
-sed -i /tmp/refind-options.conf -e "s;resume=/dev/[a-z0-9]*;resume=$swap_path;"
+sed -i /tmp/refind-options.conf -e "s;resume=;resume=$swap_path;"
 
 echo "Opening configuration files for any changes. The root PARTUUID has already been set along with the swap paritition path for resume"
 read -p "Press enter to continue..."
@@ -44,9 +46,9 @@ rm /tmp/refind-options.conf
 rm /tmp/refind-manual.conf
 
 echo "
-include themes/rEFInd-minimal/theme.conf
-include refind-options.conf
 include refind-manual.conf
+include refind-options.conf
+include themes/rEFInd-minimal/theme.conf
 " | sudo tee -a /boot/EFI/refind/refind.conf
 
 echo "Done"
