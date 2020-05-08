@@ -1,5 +1,7 @@
 [Unit]
 Description=Startup script
+StartLimitInterval=20
+StartLimitBurst=5
 
 [Service]
 ExecStart=%h/.startup
