@@ -43,7 +43,7 @@ function main_menu() {
 }
 
 function install_arch() {
-    $BASE_DIR/install-arch/install.sh
+    $BASE_DIR/install/install.sh
 }
 
 function fixes_menu() {
