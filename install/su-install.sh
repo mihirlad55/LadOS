@@ -1,10 +1,11 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+CONF_DIR="$BASE_DIR/../conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 EXTRA_FEATURES_DIR="$BASE_DIR/../extra-features"
 
-source "$BASE_DIR/conf/defaults.sh"
+source "$CONF_DIR/defaults.sh"
 
 
 function pause() {

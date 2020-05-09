@@ -1,10 +1,11 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+CONF_DIR="$BASE_DIR/../conf/install"
 
 WIFI_ENABLED=0
 
-source "$BASE_DIR/conf/defaults.sh"
+source "$CONF_DIR/defaults.sh"
 
 function pause() {
     read -p "Press enter to continue..."
@@ -54,7 +55,7 @@ function connect_to_internet() {
 }
 
 function setup_wifi() {
-    local network_conf=$(cat $BASE_DIR/conf/network.conf)
+    local network_conf=$(cat $CONF_DIR/network.conf)
 
     conf_path="/tmp/wpa_supplicant.conf"
 

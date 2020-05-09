@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+echo "Sourcing defaults.sh"
 ### Global ###
 # Set to yes to skip script pauses
 DEFAULTS_NOCONFIRM=no
@@ -32,13 +33,13 @@ DEFAULTS_EDIT_HOSTS=no
 
 ### Root Password ###
 # Set to root password for computer
-DEFAULTS_ROOT_PASSWORD=""
+DEFAULTS_ROOT_PASSWORD=''
 
 ### Default User ###
 # Set to your desired username
 DEFAULTS_USERNAME=""
 # Set to your desired password
-DEFAULTS_PASSWORD=""
+DEFAULTS_PASSWORD=''
 
 ### Packages ###
 # Set to no to not install packages marked as extra

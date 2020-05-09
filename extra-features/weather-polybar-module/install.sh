@@ -1,8 +1,9 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+CONF_DIR="$(readlink -f "$BASE_DIR/../../conf/weather-polybar-module")"
 
-KEY_PATH="$BASE_DIR/openweathermap.key"
+KEY_PATH="$CONF_DIR/openweathermap.key"
 INSTALL_PATH="$HOME/.apikeys/openweathermap.key"
 
 if [[ -e "$KEY_PATH" ]]; then
@@ -16,7 +17,7 @@ if [[ -e "$KEY_PATH" ]]; then
     fi
 fi
 
-echo "No key file found in $BASE_DIR"
+echo "No key file found in $CONF_DIR"
 echo -n "Please enter the openweathermap key: "
 read key
 

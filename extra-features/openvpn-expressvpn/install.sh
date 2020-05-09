@@ -1,22 +1,26 @@
 #!/usr/bin/bash
 
 BASE_DIR="$(readlink -f "$(dirname "$0")" )"
-LOGIN_CONF_PATH="$BASE_DIR/client/login.conf"
+CONF_DIR="$(readlink -f "$BASE_DIR/../../conf/openvpn-expressvpn")"
+LOGIN_CONF_PATH="$CONF_DIR/client/login.conf"
 LOGIN_CONF_INSTALL_PATH="/etc/openvpn/client/login.conf"
 
 function fix_server_files() {
     CUR_DIR="$PWD"
 
-    cd "$BASE_DIR/client"
-    for f in *.ovpn; do
-        new_name=$(echo $f |
-            sed "s/my_expressvpn//" |
-            sed "s/_//g" |
-            sed "s/udp//" |
-            sed "s/ovpn/conf/")
-        sed -i "$f" -e "s/^auth-user-pass/& login.conf/"
-        mv $f $new_name
-    done
+    cd "$CONF_DIR/client"
+    if [[ $(echo *.ovpn) != "*.ovpn" ]]; then
+        echo "Fixing server files"
+        for f in *.ovpn; do
+            new_name=$(echo $f |
+                sed "s/my_expressvpn//" |
+                sed "s/_//g" |
+                sed "s/udp//" |
+                sed "s/ovpn/conf/")
+            sed -i "$f" -e "s/^auth-user-pass/& login.conf/"
+            mv $f $new_name
+        done
+    fi
 
     cd "$CUR_DIR"
 }
@@ -34,8 +38,8 @@ if [[ -f "$LOGIN_CONF_PATH" ]]; then
 
     if [[ "$login" != "" ]]; then
         sudo mkdir -p /etc/openvpn/client
-        echo "Copying files from $BASE_DIR/client/ to /etc/openvpn/client"
-        sudo install -m 600 $BASE_DIR/client/* /etc/openvpn/client/
+        echo "Copying files from $CONF_DIR/client/ to /etc/openvpn/client"
+        sudo install -m 600 $CONF_DIR/client/* /etc/openvpn/client/
 
         exit 0
     fi
@@ -53,7 +57,7 @@ read password
 # Copy config files
 echo "Copying config files..."
 sudo mkdir /etc/openvpn/client
-sudo install -m 600 $BASE_DIR/client/* /etc/openvpn/client/
+sudo install -m 600 $CONF_DIR/client/* /etc/openvpn/client/
 
 sudo touch /etc/openvpn/client/login.conf
 echo $username | sudo tee -a /etc/openvpn/client/login.conf

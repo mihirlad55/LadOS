@@ -1,9 +1,10 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+CONF_DIR="$BASE_DIR/../conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
-source "$BASE_DIR/conf/defaults.sh"
+source "$CONF_DIR/defaults.sh"
 
 
 function pause() {
@@ -124,7 +125,7 @@ function setup_hosts() {
     echo "127.0.0.1  localhost" > /etc/hosts
     echo "::1        localhost" >> /etc/hosts
 
-    hosts="$(cat $BASE_DIR/conf/hosts)"
+    hosts="$(cat $CONF_DIR/hosts)"
 
     if [[ "$hosts" != "" ]]; then
         echo "$hosts" >> /etc/hosts
