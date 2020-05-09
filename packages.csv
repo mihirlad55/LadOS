@@ -60,7 +60,7 @@ papirus-icon-theme,Icon theme for Rofi,system,required
 physlock,Secure lockscreens,system,required
 plymouth,Boot animation,aur,required
 polybar,Status bar,aur, required
-polybar-spotify-module,Polybar spotify module,aur,required
+polybar-spotify-module,Polybar spotify module,aur,extra
 powertop,Optimizing battery life,system,required
 pulseaudio,Audio,system,required
 python,It's python,system,extra
@@ -73,6 +73,7 @@ rofi-calc,Calc modi for rofi,aur,required
 scrot,Screenshotting tool,system,extra
 simple-scan,For scanning documents,system,extra
 slack-desktop,It's slack,aur,extra
+sox,For playing notification ringtone,system,required
 spotify,Music,aur,extra
 sudo,So I don't have to login as root,system,required
 sxiv,Main image viewer,system,extra
