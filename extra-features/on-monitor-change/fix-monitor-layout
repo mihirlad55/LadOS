@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
-sleep 2
-export XAUTHORITY=/home/mihirlad55/.Xauthority
-export DISPLAY=:0
-
 default_mon="eDP1"
 
-monitors=$(xrandr --listmonitors | tail -n -2 |  grep -o '[^ ]\+$')
+monitors=$(xrandr | grep -P -e "\bconnected\b" | cut -d' ' -f1)
 
 IFS=$'\n'
 
@@ -21,10 +17,12 @@ for mon in $monitors; do
 
     if [ $res -eq 0 ]; then
         echo "Succesfully fixed output $mon"
-        echo "Exiting..."
-        exit
+        echo "Restarting polybar.service"
+        systemctl --user restart polybar.service
+        exit 0
     else
         echo "Failed to fix output for $mon"
+        exit 1
     fi
 done
 

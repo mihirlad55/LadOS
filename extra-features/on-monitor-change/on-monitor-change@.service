@@ -3,11 +3,8 @@ Description=Custom Monitor Script %i
 After=graphical.target
 
 [Service]
-ExecStart=/usr/local/bin/restart-polybar
-Type=simple
+ExecStartPre=sleep 2s
+ExecStart=/usr/local/bin/fix-monitor-layout
+Type=oneshot
 
 RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-
