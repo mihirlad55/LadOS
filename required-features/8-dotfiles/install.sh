@@ -60,7 +60,7 @@ echo "Name, email, and editor have been set globally for git."
 sed -i $HOME/.doom.d/config.el -e \
     "s/user-full-name \"\"$/user-full-name \"$name\"/"
 sed -i $HOME/.doom.d/config.el -e \
-    "s/user-mail-address \"\"$/user-mail-address \"$email\"/"
+    "s/user-mail-address \"\"/user-mail-address \"$email\"/"
 
 echo "Name and email have been set for Doom Emacs"
 
