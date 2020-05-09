@@ -1,0 +1,6 @@
+# Ignore everything
+*
+# Except backgrounds/
+!backgrounds/
+# And this file
+!.gitignore
