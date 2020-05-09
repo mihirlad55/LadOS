@@ -48,7 +48,7 @@ if ! sudo test -e "/root/.ssh/id_rsa"; then
 fi
 
 sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
-sudo install -Dm 644 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
+sudo install -Dm 600 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
 
 rm /tmp/gcp-tunnel.env
 
