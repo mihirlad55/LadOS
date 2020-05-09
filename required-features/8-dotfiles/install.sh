@@ -1,6 +1,10 @@
 #!/usr/bin/bash
 
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+CONF_DIR="$( readlink -f "$BASE_DIR/../../conf/dotfiles")"
 CUR_DIR="$PWD"
+
+
 sudo pacman -S git zsh xorg-xrdb --needed --noconfirm
 
 git clone https://github.com/mihirlad55/dotfiles /tmp/dotfiles
@@ -22,16 +26,30 @@ chsh -s /usr/bin/zsh
 # Rebuild .Xresources DB
 xrdb ~/.Xresources
 
+
+source "$CONF_DIR/defaults.sh"
+
 echo "Setting up git and doom emacs..."
+if [[ "$DEFAULTS_FULL_NAME" != "" ]]; then
+    name="$DEFAULTS_FULL_NAME"
+else
+    echo -n "What is your full name: "
+    read name
+fi
 
-echo -n "What is your full name: "
-read name
+if [[ "$DEFAULTS_EMAIL" != "" ]]; then
+    email="$DEFAULTS_EMAIL"
+else
+    echo -n "What is your email: "
+    read email
+fi
 
-echo -n "What is your email: "
-read email
-
-echo -n "What is your main editor: "
-read editor
+if [[ "$DEFAULTS_EDITOR" != "" ]]; then
+    editor="$DEFAULTS_EDITOR"
+else
+    echo -n "What is your main editor: "
+    read editor
+fi
 
 git config --global user.name "$name"
 git config --global user.email "$email"
