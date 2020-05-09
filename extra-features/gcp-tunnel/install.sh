@@ -1,8 +1,9 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+CONF_DIR="$(readlink -f "$BASE_DIR/../../conf/gcp-tunnel")"
 
-source "$BASE_DIR/gcp-tunnel.env"
+source "$CONF_DIR/gcp-tunnel.env"
 
 
 sudo pacman -S openssh --needed --noconfirm
