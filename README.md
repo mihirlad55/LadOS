@@ -47,6 +47,13 @@ created:
 ```
 
 
+## restic-b2
+In the `conf/restic-b2` folder, the `constants.sh` file can be modified to
+include your configuration for restic which will be copied over to
+`$HOME/.scripts/restic/constants.sh` during the `restic-b2` feature
+installation.
+
+
 ## weather-polybar-module Feature
 In the `/conf/weather-polybar-module` folder, a `openweathermap.key` file can
 be created containing an OpenWeatherMap key which can be obtained from
