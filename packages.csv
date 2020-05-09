@@ -27,6 +27,7 @@ gdb,C Debugger,system,extra
 geoclue2,For redshift location,system,required
 gimp,Main image editor,system,extra
 git,Cause git,system,required
+gnome-keyring,For mailspring,system,extra
 gpick,Color picker,system,extra
 gucharmap,Viewing character map,system,extra
 hunspell-en_US,Spell check,system,required
