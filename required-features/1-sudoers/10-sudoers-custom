@@ -5,7 +5,7 @@ Cmnd_Alias PASSWORDLESS = /bin/udevadm
 %wheel ALL=(ALL) ALL
 %wheel ALL=(ALL) NOPASSWD: PASSWORDLESS
 # No password for restarting wifi
-%wheel ALL=NOPASSWD:/usr/bin/systemctl restart wpa_supplicant@wlp2s0.service
+%wheel ALL=NOPASSWD:/usr/bin/systemctl restart wpa_supplicant@*.service
 
 # Set default editor
 Defaults editor=/bin/nvim
