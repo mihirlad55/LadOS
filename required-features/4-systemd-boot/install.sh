@@ -11,10 +11,11 @@ sudo bootctl install
 
 sudo mkdir -p /boot/loader/entries
 
-echo -n "Enter the path to the root partition (i.e. /dev/sda1): "
-read root_path
+swap_path=$(cat /etc/fstab | grep -P -B 1 \
+    -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | head -n1 | sed 's/# *//')
+root_path=$(cat /etc/fstab | grep -P -B 1 \
+    -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | head -n1 | sed 's/# *//')
 
-swap_path=$(blkid | grep "swap" | cut -d':' -f1)
 partuuid=$(blkid -s PARTUUID -o value $root_path)
 
 cp $BASE_DIR/arch.conf /tmp/arch.conf
