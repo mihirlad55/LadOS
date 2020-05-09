@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 
 sudo pacman -S ffmpeg ffmpegthumbnailer vifm python python-pip --needed --noconfirm
 sudo pip3 install poppler epub-thumbnailer

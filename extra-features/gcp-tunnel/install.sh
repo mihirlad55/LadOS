@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 
 source "$BASE_DIR/gcp-tunnel.env"
 

@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 USER_SSH_DIR="$BASE_DIR/user/.ssh"
 ROOT_SSH_DIR="$BASE_DIR/root/.ssh"
 

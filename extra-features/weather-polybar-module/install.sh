@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 
 KEY_PATH="$BASE_DIR/openweathermap.key"
 INSTALL_PATH="$HOME/.apikeys/openweathermap.key"

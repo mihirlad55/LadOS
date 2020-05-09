@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 
 NEW_MODULES=("vfio_pci" "vfio" "vfio_iommu_type1" "vfio_virqfd")
 

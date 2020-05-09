@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 
 INSTALL_PATH="$HOME/.local/share/systemd/user"
 TARGET_PATH="$HOME/.config/systemd/user/default.target.wants"

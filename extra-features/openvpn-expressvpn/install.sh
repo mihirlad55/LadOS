@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$(readlink -f "$(dirname "$0")" )"
 LOGIN_CONF_PATH="$BASE_DIR/client/login.conf"
 LOGIN_CONF_INSTALL_PATH="/etc/openvpn/client/login.conf"
 

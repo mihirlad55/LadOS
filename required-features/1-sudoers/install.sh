@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-BASE_DIR="$(dirname "$0")"
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 
 shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
