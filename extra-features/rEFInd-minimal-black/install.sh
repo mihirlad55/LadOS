@@ -10,8 +10,8 @@ sudo pacman -S refind --needed --noconfirm
 sudo refind-install
 
 sudo mkdir -p /boot/EFI/refind/themes
-sudo rm -rf /boot/EFI/refind/themes/rEFInd-minimal
-sudo git clone https://github.com/andersfischernielsen/rEFInd-minimal-black.git /boot/EFI/refind/themes/rEFInd-minimal
+sudo rm -rf /boot/EFI/refind/themes/rEFInd-minimal-black
+sudo git clone https://github.com/andersfischernielsen/rEFInd-minimal-black.git /boot/EFI/refind/themes/rEFInd-minimal-black
 
 swap_path=$(cat /etc/fstab | grep -P -B 1 \
     -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | head -n1 | sed 's/# *//')
@@ -48,7 +48,7 @@ rm /tmp/refind-manual.conf
 echo "
 include refind-manual.conf
 include refind-options.conf
-include themes/rEFInd-minimal/theme.conf
+include themes/rEFInd-minimal-black/theme.conf
 " | sudo tee -a /boot/EFI/refind/refind.conf
 
 echo "Done"
