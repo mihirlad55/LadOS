@@ -24,6 +24,7 @@ install -Dm 644 $SERVICE_PATH/xbindkeys.service $INSTALL_PATH/xbindkeys.service
 install -Dm 644 $SERVICE_PATH/startup.service $INSTALL_PATH/startup.service
 
 echo "Enabling services..."
+mkdir -p $TARGET_PATH
 ln -sP $INSTALL_PATH/battery-check-notify.service $TARGET_PATH/battery-check-notify.service
 ln -sP $INSTALL_PATH/compton.service $TARGET_PATH/compton.service
 ln -sP $INSTALL_PATH/dunst.service $TARGET_PATH/dunst.service
