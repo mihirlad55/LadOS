@@ -64,7 +64,7 @@ case "$1" in
         if type -p "$1"; then
             echo "Beginning $1..."
             $1
-            echo "Finished $1..."
+            echo "Finished $1"
         else
             echo "$1 is not defined for this feature"
             exit 1
