@@ -1,1 +1,0 @@
-Install wpa_supplicant and dhcpcd
