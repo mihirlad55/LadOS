@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 function print_usage() {
-    echo "usage: feature.sh [ full | name | desc | check_defaults | load_defaults | check_install | prepare | install | post_install | cleanup | install_dependencies ]"
+    echo "usage: feature.sh [ full | name | desc | check_defaults | load_defaults | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
 }
 
 function install_dependencies() {
