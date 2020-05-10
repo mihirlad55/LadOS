@@ -10,9 +10,13 @@ feature_name=
 # Description of feature
 feature_desc=
 
-# Paths to files/folders that are permenantly created by the install
+# New packages (not including depends) that are installed permenantly
+provides=()
+# Paths to files/folders that are permenantly created by the install. This
+# does not have to include files/folders created by a package install.
 new_files=()
-# Paths to files/folders that are permenantly modified by the install
+# Paths to files/folders that are permenantly modified by the install. This
+# does not have to include files/folders created by a package install.
 modified_files=()
 # Paths to files/folders that are temporarily created at any point during the
 # script, but removed during the cleanup function
