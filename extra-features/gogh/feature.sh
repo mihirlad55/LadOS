@@ -21,6 +21,7 @@ depends_pacman=(gnome-terminal)
 function check_install() {
     # TODO: not really using this feature right now. Need to fill this in later
     # and figure it out
+    :;
 }
 
 function install() {
