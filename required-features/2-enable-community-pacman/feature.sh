@@ -16,7 +16,7 @@ depends_pacman=()
 
 
 function check_install() {
-    if awk '/^\[community\]/,/^Include/' /etc/pacman.conf > /dev/null; then
+    if [[ "$(awk '/^\[community\]/,/^Include/' /etc/pacman.conf)" != "" ]]; then
         echo "Community repo enabled!"
         return 0
     fi
