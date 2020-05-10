@@ -21,6 +21,11 @@ function install_dependencies() {
 
 case "$1" in
     full)
+        if type -p check_defaults && type -p load_defaults; then
+            echo "Checking and loading defaults..."
+            check_defaults && load_defaults
+        fi
+
         if type -p install_dependencies; then
             install_dependencies
         fi
@@ -28,11 +33,6 @@ case "$1" in
         if type -p prepare; then
             echo "Beginning prepare..."
             prepare
-        fi
-
-        if type -p check_defaults && type -p load_defaults; then
-            echo "Checking and loading defaults..."
-            check_defaults && load_defaults
         fi
 
         echo "Installing feature..."
