@@ -32,6 +32,7 @@ case "$1" in
 
         if type -p check_defaults && type -p load_defaults; then
             echo "Checking and loading defaults..."
+            check_defaults && load_defaults
         fi
 
         echo "Installing feature..."
