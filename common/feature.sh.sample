@@ -26,6 +26,9 @@ temp_files=()
 depends_aur=()
 # Package names that the feature depends on that can be installed with pacman
 depends_pacman=()
+# Package names that the feature depends on, but must be installed with pip3
+depends_pip3=()
+
 
 
 # Check if defaults/conf is formatted correctly/useable

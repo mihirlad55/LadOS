@@ -16,6 +16,16 @@ function install_dependencies() {
         yay -S ${depends_aur[@]} --noconfirm --needed
         echo "Done installing aur packages for $feature_name"
     fi
+
+    if [[ "${depends_pip3[@]}" != "" ]]; then
+        if ! command -v pip3 > /dev/null; then
+            sudo pacman -S python-pip --noconfirm --needed
+        fi
+
+        echo "Installing ${depends_pip3[@]}..."
+        sudo pip3 install ${depends_pip3[@]}
+        echo "Done installing pip3 packages for $feature_name"
+    fi
 }
 
 
