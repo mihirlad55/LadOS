@@ -1,9 +1,12 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-CONF_DIR="$BASE_DIR/../conf/install"
-REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
-EXTRA_FEATURES_DIR="$BASE_DIR/../extra-features"
+LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+CONF_DIR="$LAD_OS_DIR/conf/install"
+REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
+EXTRA_FEATURES_DIR="$LAD_OS_DIR/extra-features"
+LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
+PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
 source "$CONF_DIR/defaults.sh"
 
@@ -38,6 +41,16 @@ function install_yay() {
     $REQUIRED_FEATURES_DIR/*yay/feature.sh full
 
     echo "Done installing yay"
+}
+
+function enable_local_repo() {
+    echo "Adding local repo to /etc/pacman.conf..."
+
+    echo "[localrepo]"                      | sudo tee -a /etc/pacman.conf
+    echo "SigLevel = Optional TrustAll"     | sudo tee -a /etc/pacman.conf
+    echo "Server = file://$LOCAL_REPO_PATH" | sudo tee -a /etc/pacman.conf
+
+    echo "Local repo enabled"
 }
 
 function install_packages() {
@@ -76,11 +89,17 @@ function install_packages() {
     echo "Syncing pacman"
     sudo pacman -Syu --noconfirm
     
-    echo "Installing pacman packages..."
-    sudo pacman -S ${pacman_packages[@]} --noconfirm --needed
+    if [[ -d "$PKG_CACHE_DIR" ]]; then
+        echo "Attempting to install pacman using cache..."
+        sudo pacman -S ${pacman_packages[@]} ${aur_packages[@]} \
+            --noconfirm --needed --cachedir "$PKG_CACHE_DIR"
+    else
+        echo "Installing pacman packages..."
+        sudo pacman -S ${pacman_packages[@]} --noconfirm --needed
 
-    echo "Installing AUR packages..."
-    yay -S ${aur_packages[@]} --noconfirm --needed
+        echo "Installing AUR packages..."
+        yay -S ${aur_packages[@]} --noconfirm --needed
+    fi
 }
 
 function install_required_features() {
@@ -145,6 +164,11 @@ function install_extra_features() {
     echo "Done installing extra features"
 }
 
+function disable_local_repo() {
+    head -n -3 /etc/pacman.conf > /tmp/pacman.conf
+    sudo mv /tmp/pacman.conf /etc/pacman.conf
+}
+
 function remove_temp_sudoers() {
     sudo rm -f /etc/sudoers.d/20-sudoers-temp
 }
@@ -154,10 +178,14 @@ enable_community_repo
 
 install_yay
 
+enable_local_repo
+
 install_packages
 
 install_required_features
 
 install_extra_features
+
+disable_local_repo
 
 remove_temp_sudoers
