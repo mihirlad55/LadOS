@@ -114,10 +114,8 @@ function install_required_features() {
     echo "Done installing required features"
 }
 
-function install_extra_features() {
+function get_excluded_features() {
     local features=($(ls $EXTRA_FEATURES_DIR))
-
-    echo "Installing extra features..."
 
     if [[ "$DEFAULTS_EXCLUDE_FEATURES" != "" ]]; then
         excluded_features=("${DEFAULTS_EXCLUDE_FEATURES[@]}")
@@ -141,7 +139,15 @@ function install_extra_features() {
         done
     fi
 
+    echo "${excluded_features[@]}"
+}
 
+function install_extra_features() {
+    local features=($(ls $EXTRA_FEATURES_DIR))
+
+    echo "Installing extra features..."
+
+    local excluded_features=($(get_excluded_features))
     echo "Excluding features ${excluded_features[@]}"
 
     for feature in ${features[@]}; do
@@ -156,6 +162,41 @@ function install_extra_features() {
     done
 
     echo "Done installing extra features"
+}
+
+function check_all_features() {
+    local required_features=($(ls $REQUIRED_FEATURES_DIR))
+    local extra_features=($(ls $EXTRA_FEATURES_DIR))
+    local excluded_features=($(get_excluded_features))
+
+    echo "Not checking excluded features ${excluded_features[@]}"
+    echo "Verifying feature installations..."
+
+    echo "Checking required features..."
+    for feature in ${required_features[@]}; do
+        if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
+            echo "Checking $feature..."
+            $REQUIRED_FEATURES_DIR/$feature/feature.sh check_install
+
+            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+                pause
+            fi
+        fi
+    done
+
+    echo "Checking extra features..."
+    for feature in ${extra_features[@]}; do
+        if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
+            echo "Checking $feature..."
+            $EXTRA_FEATURES_DIR/$feature/feature.sh check_install
+
+            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+                pause
+            fi
+        fi
+    done
+
+    echo "Done checking features"
 }
 
 function disable_localrepo() {
@@ -178,6 +219,8 @@ install_packages
 install_required_features
 
 install_extra_features
+
+check_all_features
 
 disable_localrepo
 
