@@ -64,9 +64,6 @@ function prepare() {
 }
 
 function install() {
-    shopt -s expand_aliases
-    ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
-
     echo "Copying /tmp/wpa_supplicant.conf to /etc/wpa_supplciant/wpa_supplicant-${card}.conf..."
     sudo install -Dm 600 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant-${card}.conf
 }

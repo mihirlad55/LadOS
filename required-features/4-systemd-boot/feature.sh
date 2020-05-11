@@ -33,9 +33,6 @@ function get_options_line() {
 }
 
 function check_install() {
-    shopt -s expand_aliases
-    ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
-
     options="$(get_options_line)"
 
     contents="$(cat $BASE_DIR/arch.conf | sed -e "s;^options root=.*$;$options;")"
@@ -48,9 +45,6 @@ function check_install() {
 }
 
 function prepare() {
-    shopt -s expand_aliases
-    ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
-
     cp $BASE_DIR/arch.conf /tmp/arch.conf
 
     options="$(get_options_line)"
@@ -68,9 +62,6 @@ function prepare() {
 }
 
 function install() {
-    shopt -s expand_aliases
-    ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
-
     sudo bootctl install
 
     sudo mkdir -p /boot/loader/entries

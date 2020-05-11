@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+# If user is root or sudo does not exist, don't use sudo
+shopt -s expand_aliases
+( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
+
 function print_usage() {
     echo "usage: feature.sh [ full | name | desc | check_defaults | load_defaults | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
 }

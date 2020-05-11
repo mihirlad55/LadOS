@@ -41,9 +41,6 @@ function prepare() {
 }
 
 function install() {
-    shopt -s expand_aliases
-    ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
-
     sudo refind-install
 
     sudo mkdir -p /boot/EFI/refind/themes

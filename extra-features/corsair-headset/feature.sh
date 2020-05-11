@@ -29,9 +29,6 @@ function check_install() {
 }
 
 function install() {
-    shopt -s expand_aliases
-    ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
-
     echo "Installing custom corsair configuration for X11..."
     sudo install -Dm 644 $BASE_DIR/30-corsair.conf /etc/X11/xorg.conf.d/30-corsair.conf
 }

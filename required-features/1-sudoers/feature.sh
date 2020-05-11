@@ -26,9 +26,6 @@ function check_install() {
 }
 
 function install() {
-    shopt -s expand_aliases
-    ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
-
     sudo install -Dm 644 $BASE_DIR/10-sudoers-custom \
         /etc/sudoers.d/10-sudoers-custom
 }
