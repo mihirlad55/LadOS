@@ -113,9 +113,10 @@ function rank_mirrors() {
 }
 
 function enable_localrepo() {
-    if [[ -f "$BASE_DIR/localrepo/localrepo.db" ]]; then
+    if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
         echo "Enabling localrepo..."
         sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+	pacman -Sy
     fi
 }
 
@@ -140,8 +141,7 @@ function generate_fstab() {
 
 function start_chroot_install() {
     echo "Copying LadOS to new system"
-    mkdir -p /mnt/LadOS
-    cp -r $BASE_DIR/../* /mnt/LadOS
+    cp -rf "$LAD_OS_DIR" "/mnt/LadOS"
     chmod -R go=u /mnt/LadOS
 
     if [[ "$WIFI_ENABLED" -eq 1 ]]; then

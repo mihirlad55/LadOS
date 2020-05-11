@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-CONF_DIR="$BASE_DIR/../conf/install"
+LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+CONF_DIR="$LAD_OS_DIR/conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
 source "$CONF_DIR/defaults.sh"
@@ -10,6 +11,15 @@ source "$CONF_DIR/defaults.sh"
 function pause() {
     read -p "Press enter to continue..."
 }
+
+function enable_localrepo() {
+    if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
+        echo "Enabling localrepo..."
+        sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+	pacman -Sy
+    fi
+}
+
 
 function update_mkinitcpio_modules() {
     NEW_MODULES=("$@")
@@ -207,6 +217,8 @@ function setup_sudo_and_su() {
     echo "Changing user to $username..."
     su -P -c "/LadOS/install/su-install.sh" - $username
 }
+
+enable_localrepo
 
 set_timezone
 

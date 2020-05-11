@@ -200,7 +200,7 @@ function check_all_features() {
 }
 
 function disable_localrepo() {
-    sudo sed -i /etc/pacman.conf -e '\;Include = /LadOS/install/localrepo.conf\;d'
+    sudo sed -i /etc/pacman.conf -e '\;Include = /LadOS/install/localrepo.conf;d'
 }
 
 function remove_temp_sudoers() {
