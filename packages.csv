@@ -118,6 +118,7 @@ xorg-xprop,Interfacing with X11,system,required
 xorg-xrandr,Managing multiple monitors,system,required
 xorg-xrdb,To use Xresources,system,required
 xournalpp,Notetaking,system,extra
+yay,Installing AUR packages,aur,required
 youtube-dl,Downloading youtube videos,system,extra
 zathura-pdf-poppler,Main PDF viewer,system,extra
 zip,Zipping files,system,required

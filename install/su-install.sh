@@ -38,7 +38,11 @@ function enable_community_repo() {
 function install_yay() {
     echo "Installing yay..."
 
-    $REQUIRED_FEATURES_DIR/*yay/feature.sh full
+    echo "Attempting to install yay through cache..."
+    if ! sudo pacman -S yay --needed --noconfirm; then
+        echo "Yay could not be installed through cache"
+        $REQUIRED_FEATURES_DIR/*yay/feature.sh full
+    fi
 
     echo "Done installing yay"
 }
