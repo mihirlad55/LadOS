@@ -44,6 +44,7 @@ libsecret,For mailspring,system,extra
 lightdm,Display manager,system,required
 lightdm-webkit2-greeter,Pretty greeter,system,required
 mailspring,Main email client,aur,extra
+make,For making stuff,system,required
 man-db,Man pages,system,required
 nautilus,File explorer mainly for thumbnails,system,required
 neovim,Main editor,system,required
