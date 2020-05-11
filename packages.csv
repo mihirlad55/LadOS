@@ -52,7 +52,7 @@ nitrogen,For desktop background,system,required
 nmap,Network analysis,system,extra
 ntfs-3g,Accessing ntfs drives,system,required
 ntp,Syncing clock over Internet,system,required
-openconnect,School VPN,aur,extra,
+openconnect,School VPN,system,extra,
 openssh,SSH,system,required
 openvpn,For VPNs,system,required
 pamixer,Volume control,system,required
