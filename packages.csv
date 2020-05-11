@@ -109,7 +109,6 @@ xf86-video-amdgpu,Graphics driver,system,required
 xf86-video-intel,Graphics driver,system,required
 xorg-appres,Troubleshooting Xresources,system,required
 xorg-server-common,X11,system,required
-xorg-xautolock,For autolocking,system,system,required
 xorg-xbacklight,Controlling backlight,system,required
 xorg-xev,Discovering key codes for xbindkeys,system,extra
 xorg-xmodmap,Unbinding escape key,system,required
