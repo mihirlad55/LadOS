@@ -6,7 +6,6 @@ REQUIRED_FEATURES_DIR="$BASE_DIR/required-features"
 EXTRA_FEATURES_DIR="$BASE_DIR/extra-features"
 SCRIPTS_DIR="$BASE_DIR/scripts"
 
-SERVICES_TO_ENABLE=("physlock" "powertop")
 
 function show_menu() {
     local option=0
@@ -28,7 +27,7 @@ function show_menu() {
         read option
 
         func_num=$(($option*2))
-        ${!func_num}
+        eval ${!func_num}
     done
 }
 
@@ -61,7 +60,6 @@ function scripts_menu() {
         "Change Dunst Theme" "sh $SCRIPTS_DIR/dunst_xr_theme_changer.sh" \
         "Colors_esc" "sh $SCRIPTS_DIR/colors_esc.sh" \
         "Go Back" "return"
-
 }
 
 function required_features_menu() {
@@ -72,8 +70,9 @@ function required_features_menu() {
     menu_cmd=""
 
     for feature in $features; do
-        entry=$(cat $REQUIRED_FEATURES_DIR/$feature/menu-entry.txt)
-        menu_option="$entry,$REQUIRED_FEATURES_DIR/$feature/install.sh" 
+        name="$($REQUIRED_FEATURES_DIR/$feature/feature.sh name)"
+        desc="$($REQUIRED_FEATURES_DIR/$feature/feature.sh desc)"
+        menu_option="$name,$REQUIRED_FEATURES_DIR/$feature/feature.sh full" 
         menu_cmd="${menu_cmd}${menu_option},"
     done
 
@@ -92,8 +91,9 @@ function extra_features_menu() {
     menu_cmd=""
 
     for feature in $features; do
-        entry=$(cat $EXTRA_FEATURES_DIR/$feature/menu-entry.txt)
-        menu_option="$entry,$EXTRA_FEATURES_DIR/$feature/install.sh" 
+        name="$($EXTRA_FEATURES_DIR/$feature/feature.sh name)"
+        desc="$($EXTRA_FEATURES_DIR/$feature/feature.sh desc)"
+        menu_option="$name,$EXTRA_FEATURES_DIR/$feature/feature.sh full" 
         menu_cmd="${menu_cmd}${menu_option},"
     done
 
