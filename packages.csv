@@ -55,6 +55,7 @@ ntp,Syncing clock over Internet,system,required
 openconnect,School VPN,system,extra,
 openssh,SSH,system,required
 openvpn,For VPNs,system,required
+pacman-contrib,Pacman scripts,system,required
 pamixer,Volume control,system,required
 papirus-icon-theme,Icon theme for Rofi,system,required
 physlock,Secure lockscreens,system,required
