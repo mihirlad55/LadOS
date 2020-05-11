@@ -7,6 +7,7 @@ LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/win10-fonts"
 
 REPO_PATH="$HOME/.cache/yay"
+TEMP_PATH="/tmp/ttf-ms-win10"
 
 feature_name="win10-fonts"
 feature_desc="Install windows 10 fonts"
@@ -15,7 +16,8 @@ provides=(ttf-ms-win10)
 new_files=()
 modified_files=()
 temp_files=("$REPO_PATH/ttf-ms-win10" \
-    "/tmp/win10-fonts.zip")
+    "/tmp/win10-fonts.zip" \
+    "$TEMP_PATH")
 
 depends_aur=()
 depends_pacman=()
@@ -51,9 +53,14 @@ function load_defaults() {
 }
 
 function prepare() {
-    mkdir -p "$REPO_PATH"
+    # Copy hidden files
+    shopt -s dotglob nullglob
 
-    git clone https://aur.archlinux.org/ttf-ms-win10.git $REPO_PATH/ttf-ms-win10
+    mkdir -p "$REPO_PATH/ttf-ms-win10"
+
+    git clone https://aur.archlinux.org/ttf-ms-win10.git $TEMP_PATH
+
+    mv -f $TEMP_PATH/* $REPO_PATH/ttf-ms-win10/
 }
 
 function install() {
