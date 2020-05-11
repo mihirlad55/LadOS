@@ -43,16 +43,6 @@ function install_yay() {
     echo "Done installing yay"
 }
 
-function enable_local_repo() {
-    echo "Adding local repo to /etc/pacman.conf..."
-
-    echo "[localrepo]"                      | sudo tee -a /etc/pacman.conf
-    echo "SigLevel = Optional TrustAll"     | sudo tee -a /etc/pacman.conf
-    echo "Server = file://$LOCAL_REPO_PATH" | sudo tee -a /etc/pacman.conf
-
-    echo "Local repo enabled"
-}
-
 function install_packages() {
     echo "Beginning to install pacman packages..."
 
@@ -164,9 +154,8 @@ function install_extra_features() {
     echo "Done installing extra features"
 }
 
-function disable_local_repo() {
-    head -n -3 /etc/pacman.conf > /tmp/pacman.conf
-    sudo mv /tmp/pacman.conf /etc/pacman.conf
+function disable_localrepo() {
+    sudo sed -i /etc/pacman.conf -e '\;Include = /LadOS/install/localrepo.conf\;d'
 }
 
 function remove_temp_sudoers() {
@@ -176,9 +165,9 @@ function remove_temp_sudoers() {
 
 enable_community_repo
 
-install_yay
-
 enable_local_repo
+
+install_yay
 
 install_packages
 
@@ -186,6 +175,6 @@ install_required_features
 
 install_extra_features
 
-disable_local_repo
+disable_localrepo
 
 remove_temp_sudoers

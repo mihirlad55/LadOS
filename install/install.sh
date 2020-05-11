@@ -1,7 +1,9 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-CONF_DIR="$BASE_DIR/../conf/install"
+LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+CONF_DIR="$LAD_OS_DIR/conf/install"
+PKG_DIR="$LAD_OS_DIR/localrepo/pkg"
 
 WIFI_ENABLED=0
 
@@ -109,6 +111,11 @@ function rank_mirrors() {
     echo "Top 5 $country mirrors saved in /etc/pacman.d/mirrorlist"
 }
 
+function enable_localrepo() {
+    echo "Enabling localrepo..."
+    sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+}
+
 function pacstrap_install() {
     echo "Now beginning pacstrap install..."
 
@@ -154,6 +161,8 @@ connect_to_internet
 update_system_clock
 
 rank_mirrors
+
+enable_localrepo
 
 pacstrap_install
 
