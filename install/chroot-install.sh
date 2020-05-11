@@ -197,7 +197,7 @@ function setup_sudo_and_su() {
     pacman -Syyu --noconfirm
 
     echo "Installing sudo..."
-    $REQUIRED_FEATURES_DIR/1-sudoers/install.sh
+    $REQUIRED_FEATURES_DIR/1-sudoers/feature.sh full
     # Temporary no password prompt for installation
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
 
