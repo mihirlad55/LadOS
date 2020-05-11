@@ -28,7 +28,7 @@ geoclue2,For redshift location,system,required
 gimp,Main image editor,system,extra
 git,Cause git,system,required
 gnome-keyring,For mailspring,system,extra
-gpick,Color picker,system,extra
+colorpicker,Color picker,aur,extra
 gucharmap,Viewing character map,system,extra
 hunspell-en_US,Spell check,system,required
 i3-gaps,Backup window manager,system,extra
