@@ -95,6 +95,7 @@ function copy_pacman_packages() {
     local TEMP_DB_PATH="/tmp"
 
     sudo pacman -Syu --noconfirm
+    sudo pacman -S pacman-contrib --needed --noconfirm
 
     pacman_packages=($(cat "$LAD_OS_DIR/packages.csv" | \
         grep "^.*,.*,system," | \
@@ -112,6 +113,9 @@ function copy_pacman_packages() {
             sudo cp -f "$target" "$PKG_PATH"
         fi
     done
+
+    echo "Removing older packages..."
+    paccache -rk1 -c "$PKG_PATH"
 
     sudo pacman -Sy --noconfirm --dbpath "$TEMP_DB_PATH"
 
