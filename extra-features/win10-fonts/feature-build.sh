@@ -35,19 +35,19 @@ function check_install() {
 
 }
 
-function check_defaults() {
+function check_conf() {
     if [[ -d "$CONF_DIR" ]] && [[ "$(ls $CONF_DIR)" != "" ]]; then
         echo "Found win10-fonts"
-        echo "Defaults are set"
+        echo "Configuration is set"
         return 0
     else
         echo "win10-fonts not found"
-        echo "Defaults are not set"
+        echo "Configuration is not set"
         return 1
     fi
 }
 
-function load_defaults() {
+function load_conf() {
     mkdir -p "$REPO_PATH/ttf-ms-win10"
     cp -rf $CONF_DIR/* $REPO_PATH/ttf-ms-win10/
 }
@@ -62,7 +62,7 @@ function prepare() {
 
     mv -f $TEMP_PATH/* $REPO_PATH/ttf-ms-win10/
 
-    if ! check_defaults; then
+    if ! check_conf; then
         echo "Enter url to windows 10 fonts zip file if available, otherwise leave blank"
         read url
 

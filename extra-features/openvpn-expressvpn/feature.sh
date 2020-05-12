@@ -39,12 +39,12 @@ function fix_server_files() (
 )
 
 
-function check_defaults() (
+function check_conf() (
     if [[ -f "$LOGIN_CONF_PATH" ]] && [[ "$(cat $LOGIN_CONF_PATH | wc -l)" -eq 2 ]]; then
-        echo "Defaults found at $LOGIN_CONF_PATH and are set correctly"
+        echo "Configuration found at $LOGIN_CONF_PATH and are set correctly"
         return 0
     else
-        echo "Defaults are not set or are not set correctly"
+        echo "Configuration is not set or is not set correctly"
         return 1
     fi
 )
@@ -67,7 +67,7 @@ function prepare() {
 function install() {
     sudo mkdir -p /etc/openvpn/client
 
-    if ! check_defaults; then
+    if ! check_conf; then
         echo "Get the username and password from https://www.expressvpn.com/sign-in"
         echo "Get the server configs from https://www.expressvpn.com/sign-in and copy them into client/"
 

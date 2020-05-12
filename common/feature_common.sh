@@ -5,7 +5,7 @@ shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
 function print_usage() {
-    echo "usage: feature.sh [ full | name | desc | check_defaults | load_defaults | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
+    echo "usage: feature.sh [ full | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
 }
 
 function install_dependencies() {
@@ -35,9 +35,9 @@ function install_dependencies() {
 
 case "$1" in
     full)
-        if type -p check_defaults && type -p load_defaults; then
-            echo "Checking and loading defaults..."
-            check_defaults && load_defaults
+        if type -p check_conf && type -p load_conf; then
+            echo "Checking and loading configuration..."
+            check_conf && load_conf
         fi
 
         if type -p install_dependencies; then
@@ -74,8 +74,8 @@ case "$1" in
     desc)
         echo "$feature_desc"
         ;;
-    check_defaults | load_defaults | check_install | prepare | install | \
-        post_install | cleanup)
+    check_conf | load_conf | check_install | prepare | install |  post_install \
+        | cleanup)
         if type -p "$1"; then
             echo "Beginning $1..."
             $1

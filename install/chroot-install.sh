@@ -5,7 +5,7 @@ LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
-source "$CONF_DIR/defaults.sh"
+source "$CONF_DIR/conf.sh"
 
 
 function pause() {
@@ -47,8 +47,8 @@ function set_timezone() {
     local zone=
     local num=
 
-    if [[ "$DEFAULTS_TIMEZONE_PATH" != "" ]]; then
-        zone="$DEFAULTS_TIMEZONE_PATH"
+    if [[ "$CONF_TIMEZONE_PATH" != "" ]]; then
+        zone="$CONF_TIMEZONE_PATH"
     else
         IFS=$'\n'
         cd /usr/share/zoneinfo
@@ -97,8 +97,8 @@ function set_adjtime() {
 
 function set_locale() {
 
-    if [[ "$DEFAULTS_LOCALE" != "" ]]; then
-        sed -i /etc/locale.gen -e "/#$DEFAULTS_LOCALE/s/^# *//"
+    if [[ "$CONF_LOCALE" != "" ]]; then
+        sed -i /etc/locale.gen -e "/#$CONF_LOCALE/s/^# *//"
     else
         echo "Opening /etc/locale.gen... Uncomment the correct locale..."
         pause
@@ -117,8 +117,8 @@ function set_locale() {
 function set_hostname() {
     local hostname
 
-    if [[ "$DEFAULTS_HOSTNAME" != "" ]]; then
-        hostname="$DEFAULTS_HOSTNAME"
+    if [[ "$CONF_HOSTNAME" != "" ]]; then
+        hostname="$CONF_HOSTNAME"
     else
         echo -n "Enter a hostname for this computer: "
         read hostname
@@ -139,7 +139,7 @@ function setup_hosts() {
 
     if [[ "$hosts" != "" ]]; then
         echo "$hosts" >> /etc/hosts
-    elif [[ "$DEFAULTS_EDIT_HOSTS" = "yes" ]]; then
+    elif [[ "$CONF_EDIT_HOSTS" = "yes" ]]; then
         echo "Opening hosts file for additional configuration..."
         pause
         vim /etc/hosts
@@ -170,8 +170,8 @@ function create_initramfs() {
 function set_root_passwd() {
     echo "Set root password"
 
-    if [[ "$DEFAULTS_ROOT_PASSWORD" != "" ]]; then
-        echo "root:$DEFAULTS_ROOT_PASSWORD" | chpasswd
+    if [[ "$CONF_ROOT_PASSWORD" != "" ]]; then
+        echo "root:$CONF_ROOT_PASSWORD" | chpasswd
     else
         until passwd; do sleep 1s; done
     fi
@@ -182,8 +182,8 @@ function set_root_passwd() {
 function create_user_account() {
     echo "Creating new default user account..."
 
-    if [[ "$DEFAULTS_USERNAME" != "" ]]; then
-        username="$DEFAULTS_USERNAME"
+    if [[ "$CONF_USERNAME" != "" ]]; then
+        username="$CONF_USERNAME"
     else
         echo -n "Enter username: "
         read username
@@ -192,8 +192,8 @@ function create_user_account() {
     echo "Creating user $username"
     useradd -m $username
 
-    if [[ "$DEFAULTS_PASSWORD" != "" ]]; then
-        echo "$username:$DEFAULTS_PASSWORD" | chpasswd
+    if [[ "$CONF_PASSWORD" != "" ]]; then
+        echo "$username:$CONF_PASSWORD" | chpasswd
     else
         echo "Set password for $username"
 

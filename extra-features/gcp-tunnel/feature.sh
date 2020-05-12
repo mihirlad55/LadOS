@@ -19,22 +19,22 @@ depends_aur=()
 depends_pacman=(openssh)
 
 
-function check_defaults() (
+function check_conf() (
     source "$CONF_DIR/gcp-tunnel.env"
     if [[ "$HOSTNAME" =  "" ]] ||
         [[ "$REMOTE_USERNAME" = "" ]] ||
         [[ "$LOCAL_PORT" = "" ]] ||
         [[ "$REMOTE_PORT" = "" ]] ||
         [[ "$PRIVATE_KEY_PATH" = "" ]]; then
-        echo "Defaults not fully set"
+        echo "Configuration not fully set"
         return 1
     else
-        echo "Defaults are correctly set"
+        echo "Configuration is correctly set"
         return 0
     fi
 )
 
-function load_defaults() {
+function load_conf() {
     source "$CONF_DIR/gcp-tunnel.env"
 }
 
@@ -56,7 +56,7 @@ function prepare() {
 
     port=$(egrep /etc/ssh/sshd_config -e "^Port [0-9]*$")
 
-    if ! check_defaults; then
+    if ! check_conf; then
         echo -n "Enter a port to run sshd on (blank to leave default: $port): "
         read new_port
 

@@ -32,18 +32,18 @@ function check_install() {
     fi
 }
 
-function check_defaults() {
+function check_conf() {
     if [[ -e "$KEY_PATH" ]] && [[ "$(cat "$KEY_PATH")" != "" ]]; then
-        echo "Default key found at $KEY_PATH"
+        echo "Configuration key found at $KEY_PATH"
         return 0
     else
-        echo "No default found or not in correct format at $KEY_PATH"
+        echo "No configuration found or not in correct format at $KEY_PATH"
         return 1
     fi
 }
 
 function install() {
-    if ! check_defaults; then
+    if ! check_conf; then
         echo "No key file found in $CONF_DIR"
         echo -n "Please enter the openweathermap key: "
         read key

@@ -31,13 +31,13 @@ depends_pip3=()
 
 
 
-# Check if defaults/conf is formatted correctly/useable
-function check_defaults() {
+# Check if conf is formatted correctly/useable
+function check_conf() {
 
 }
 
-# Load default settings from /conf
-function load_defaults() {
+# Load configuration settings from /conf
+function load_conf() {
 
 }
 

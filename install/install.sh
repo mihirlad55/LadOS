@@ -8,7 +8,7 @@ PKG_DIR="$LOCAL_REPO_DIR/pkg"
 
 WIFI_ENABLED=0
 
-source "$CONF_DIR/defaults.sh"
+source "$CONF_DIR/conf.sh"
 
 function pause() {
     read -p "Press enter to continue..."
@@ -39,7 +39,7 @@ function check_efi_mode() {
 function setup_partitions() {
     echo -ne "Make sure you create the system partitions, format them, and \
         mount root on /mnt with all the filesystems mounted on root\n"
-    if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+    if [[ "$CONF_NOCONFIRM" = "no" ]]; then
         if ! prompt "Are the filesystems mounted?"; then
             echo "Please partition the drive and exit the shell once finished..."
             bash
@@ -49,7 +49,7 @@ function setup_partitions() {
 
 function connect_to_internet() {
     if ! ping -c 1 www.google.com &> /dev/null; then
-        if [[ "$DEFAULTS_USE_WIFI" = "yes" ]] || prompt "Setup WiFi for setup?"; then
+        if [[ "$CONF_USE_WIFI" = "yes" ]] || prompt "Setup WiFi for setup?"; then
             setup_wifi
         fi
     fi
@@ -74,8 +74,8 @@ function setup_wifi() {
     fi
 
     local adapter
-    if [[ "$DEFAULTS_WIFI_ADAPTER" != "" ]]; then
-        local adapter="$DEFAULTS_WIFI_ADAPTER"
+    if [[ "$CONF_WIFI_ADAPTER" != "" ]]; then
+        local adapter="$CONF_WIFI_ADAPTER"
     else
         ip link
         echo -n "Enter name of WiFI adapter: "
@@ -96,8 +96,8 @@ function update_system_clock() {
 function rank_mirrors() {
     local country
 
-    if [[ "$DEFAULTS_COUNTRY_CODE" != "" ]]; then
-        country="$DEFAULTS_COUNTRY_CODE"        
+    if [[ "$CONF_COUNTRY_CODE" != "" ]]; then
+        country="$CONF_COUNTRY_CODE"        
     else
         echo -n "Enter your country code (i.e. US): "
         read country

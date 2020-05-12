@@ -31,13 +31,13 @@ function check_install() {
     fi
 }
 
-function check_defaults() {
+function check_conf() {
     if [[ -f "$INSTALL_CONF_DIR/network.conf" ]] &&
         [[ "$(cat "$INSTALL_CONF_DIR/network.conf")" != "" ]]; then
-        echo "Defaults found at $INSTALL_CONF_DIR/network.conf"
+        echo "Configuration found at $INSTALL_CONF_DIR/network.conf"
         return 0
     else
-        echo "No defaults found at $INSTALL_CONF_DIR/network.conf"
+        echo "No configuration found at $INSTALL_CONF_DIR/network.conf"
         return 1
     fi
 }
@@ -51,7 +51,7 @@ function prepare() {
     echo "ctrl_interface=/run/wpa_supplicant" > /tmp/wpa_supplicant.conf
     echo "update_config=1" >> /tmp/wpa_supplicant.conf
 
-    if check_defaults; then
+    if check_conf; then
         cat "$INSTALL_CONF_DIR/network.conf" >> /tmp/wpa_supplicant.conf
     fi
 

@@ -17,7 +17,7 @@ temp_files=()
 depends_aur=()
 depends_pacman=(cups hplip)
 
-# TODO: Add defaults
+# TODO: Add configuration
 
 function check_install() {
     sudo lpoptions

@@ -8,7 +8,7 @@ EXTRA_FEATURES_DIR="$LAD_OS_DIR/extra-features"
 LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
-source "$CONF_DIR/defaults.sh"
+source "$CONF_DIR/conf.sh"
 
 
 function pause() {
@@ -51,7 +51,7 @@ function install_packages() {
     echo "Beginning to install pacman packages..."
 
     local install_extra=0
-    if [[ "$DEFAULTS_INSTALL_EXTRA" = "yes" ]]; then
+    if [[ "$CONF_INSTALL_EXTRA" = "yes" ]]; then
         install_extra=1
     elif prompt "Install extra packages as well?"; then
         install_extra=1
@@ -105,7 +105,7 @@ function install_required_features() {
             echo "Installing $feature..."
             $REQUIRED_FEATURES_DIR/$feature/feature.sh full
 
-            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+            if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
             fi
         fi
@@ -117,8 +117,8 @@ function install_required_features() {
 function get_excluded_features() {
     local features=($(ls $EXTRA_FEATURES_DIR))
 
-    if [[ "$DEFAULTS_EXCLUDE_FEATURES" != "" ]]; then
-        excluded_features=("${DEFAULTS_EXCLUDE_FEATURES[@]}")
+    if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
+        excluded_features=("${CONF_EXCLUDE_FEATURES[@]}")
     else
         local i=1
         for feature in ${features[@]}; do
@@ -155,7 +155,7 @@ function install_extra_features() {
             echo "Installing $feature..."
             $EXTRA_FEATURES_DIR/$feature/feature.sh full
 
-            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+            if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
             fi
         fi
@@ -178,7 +178,7 @@ function check_all_features() {
             echo "Checking $feature..."
             $REQUIRED_FEATURES_DIR/$feature/feature.sh check_install
 
-            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+            if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
             fi
         fi
@@ -190,7 +190,7 @@ function check_all_features() {
             echo "Checking $feature..."
             $EXTRA_FEATURES_DIR/$feature/feature.sh check_install
 
-            if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+            if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
             fi
         fi

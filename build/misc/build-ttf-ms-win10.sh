@@ -10,8 +10,8 @@ PKG_BUILD_DIR="$HOME/.cache/yay/ttf-ms-win10"
 
 PKG_DIR="$1"
 
-$FEATURE_DIR/feature-build.sh check_defaults &&
-    $FEATURE_DIR/feature-build.sh load_defaults
+$FEATURE_DIR/feature-build.sh check_conf &&
+    $FEATURE_DIR/feature-build.sh load_conf
 
 $FEATURE_DIR/feature-build.sh prepare
 

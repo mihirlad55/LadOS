@@ -19,21 +19,21 @@ depends_aur=()
 depends_pacman=(restic)
 
 
-function check_defaults() (
+function check_conf() (
     source "$CONF_DIR/constants.sh"
     res="$?"
 
     if [[ "$?" -eq 0 ]]; then
-        echo "Defaults are formatted correctly"
+        echo "Configuration is formatted correctly"
         return 0
     else
-        echo "Defaults are not set properly"
+        echo "Configuration is not set properly"
         return 1
     fi
 )
 
-function load_defaults() {
-    echo "Reading defaults from $CONF_DIR/constants.sh"
+function load_conf() {
+    echo "Reading configuration from $CONF_DIR/constants.sh"
     source "$CONF_DIR/constants.sh"
 }
 

@@ -32,27 +32,27 @@ function update_git_doom_config() {
         "s/user-mail-address \"\"/user-mail-address \"$email\"/"
 }
 
-function check_defaults() {
-    source "$CONF_DIR/defaults.sh"
+function check_conf() {
+    source "$CONF_DIR/conf.sh"
     res="$?"
 
     if [[ "$res" -eq 0 ]] && 
-        [[ "$DEFAULTS_FULL_NAME" != "" ]] &&
-        [[ "$DEFAULTS_EMAIL" != "" ]] &&
-        [[ "$DEFAULTS_EDITOR" != "" ]]; then
-        echo "Defaults have been set correctly"
+        [[ "$CONF_FULL_NAME" != "" ]] &&
+        [[ "$CONF_EMAIL" != "" ]] &&
+        [[ "$CONF_EDITOR" != "" ]]; then
+        echo "Configuration has been set correctly"
     else
-        echo "Defaults have not been set correctly"
+        echo "Configuration has not been set correctly"
     fi
 
-    unset DEFAULTS_FULL_NAME
-    unset DEFAULTS_EMAIL
-    unset DEFAULTS_EDITOR
+    unset CONF_FULL_NAME
+    unset CONF_EMAIL
+    unset CONF_EDITOR
 }
 
-# Load default settings from /conf
-function load_defaults() {
-    source "$CONF_DIR/defaults.sh"
+# Load configuration settings from /conf
+function load_conf() {
+    source "$CONF_DIR/conf.sh"
 }
 
 # Check if the installation was successful
@@ -108,22 +108,22 @@ function post_install() {
     xrdb ~/.Xresources
 
     echo "Setting up git and doom emacs..."
-    if [[ "$DEFAULTS_FULL_NAME" != "" ]]; then
-        name="$DEFAULTS_FULL_NAME"
+    if [[ "$CONF_FULL_NAME" != "" ]]; then
+        name="$CONF_FULL_NAME"
     else
         echo -n "What is your full name: "
         read name
     fi
 
-    if [[ "$DEFAULTS_EMAIL" != "" ]]; then
-        email="$DEFAULTS_EMAIL"
+    if [[ "$CONF_EMAIL" != "" ]]; then
+        email="$CONF_EMAIL"
     else
         echo -n "What is your email: "
         read email
     fi
 
-    if [[ "$DEFAULTS_EDITOR" != "" ]]; then
-        editor="$DEFAULTS_EDITOR"
+    if [[ "$CONF_EDITOR" != "" ]]; then
+        editor="$CONF_EDITOR"
     else
         echo -n "What is your main editor: "
         read editor
