@@ -1,1 +1,0 @@
-Install lightdm-webkit2-greeter

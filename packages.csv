@@ -28,7 +28,7 @@ geoclue2,For redshift location,system,required
 gimp,Main image editor,system,extra
 git,Cause git,system,required
 gnome-keyring,For mailspring,system,extra
-gpick,Color picker,system,extra
+colorpicker,Color picker,aur,extra
 gucharmap,Viewing character map,system,extra
 hunspell-en_US,Spell check,system,required
 i3-gaps,Backup window manager,system,extra
@@ -44,6 +44,7 @@ libsecret,For mailspring,system,extra
 lightdm,Display manager,system,required
 lightdm-webkit2-greeter,Pretty greeter,system,required
 mailspring,Main email client,aur,extra
+make,For making stuff,system,required
 man-db,Man pages,system,required
 nautilus,File explorer mainly for thumbnails,system,required
 neovim,Main editor,system,required
@@ -52,9 +53,10 @@ nitrogen,For desktop background,system,required
 nmap,Network analysis,system,extra
 ntfs-3g,Accessing ntfs drives,system,required
 ntp,Syncing clock over Internet,system,required
-openconnect,School VPN,aur,extra,
+openconnect,School VPN,system,extra,
 openssh,SSH,system,required
 openvpn,For VPNs,system,required
+pacman-contrib,Pacman scripts,system,required
 pamixer,Volume control,system,required
 papirus-icon-theme,Icon theme for Rofi,system,required
 physlock,Secure lockscreens,system,required
@@ -109,7 +111,6 @@ xf86-video-amdgpu,Graphics driver,system,required
 xf86-video-intel,Graphics driver,system,required
 xorg-appres,Troubleshooting Xresources,system,required
 xorg-server-common,X11,system,required
-xorg-xautolock,For autolocking,system,system,required
 xorg-xbacklight,Controlling backlight,system,required
 xorg-xev,Discovering key codes for xbindkeys,system,extra
 xorg-xmodmap,Unbinding escape key,system,required

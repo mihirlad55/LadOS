@@ -51,5 +51,5 @@ DEFAULTS_INSTALL_EXTRA=yes
 DEFAULTS_EXCLUDE_FEATURES=( "corsair-headset" \
                             "gogh" \
                             "huion" \
-                            "printer" \
+                            "hp-printer" \
                             "setup-gpu-passthrough")

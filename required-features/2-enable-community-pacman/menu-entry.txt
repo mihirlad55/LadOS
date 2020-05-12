@@ -1,1 +1,0 @@
-Enable Pacman Community Repo

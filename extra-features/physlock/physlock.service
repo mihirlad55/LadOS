@@ -2,8 +2,9 @@
 Description=Lock session using physlock
 
 [Service]
-User=mihirlad55
 ExecStart=/usr/bin/physlock -l
+Type=simple
+RestartSec=5
 
 [Install]
 WantedBy=sleep.target 

@@ -14,8 +14,7 @@ function pause() {
 
 function prompt() {
     while true; do
-        echo -n "$1 [Y/n] "
-        read resp
+        read -p "$1 [Y/n] " resp
 
         if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
             return 0
@@ -28,7 +27,7 @@ function prompt() {
 function enable_community_repo() {
     echo "Enabling community repo..."
     
-    $REQUIRED_FEATURES_DIR/*enable-community-pacman/install.sh
+    $REQUIRED_FEATURES_DIR/*enable-community-pacman/feature.sh full
 
     echo "Enabled community repo"
 }
@@ -36,7 +35,7 @@ function enable_community_repo() {
 function install_yay() {
     echo "Installing yay..."
 
-    $REQUIRED_FEATURES_DIR/*yay/install.sh
+    $REQUIRED_FEATURES_DIR/*yay/feature.sh full
 
     echo "Done installing yay"
 }
@@ -91,7 +90,7 @@ function install_required_features() {
     for feature in ${features[@]}; do
         if ! (echo $feature | grep "yay" || echo $feature | grep "sudoers"); then
             echo "Installing $feature..."
-            $REQUIRED_FEATURES_DIR/$feature/install.sh
+            $REQUIRED_FEATURES_DIR/$feature/feature.sh full
 
             if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
                 pause
@@ -135,7 +134,7 @@ function install_extra_features() {
     for feature in ${features[@]}; do
         if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
             echo "Installing $feature..."
-            $EXTRA_FEATURES_DIR/$feature/install.sh
+            $EXTRA_FEATURES_DIR/$feature/feature.sh full
 
             if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
                 pause

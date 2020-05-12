@@ -1,0 +1,71 @@
+#!/usr/bin/bash
+
+# Get absolute path to directory of script
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+# Get absolute path to root of repo
+LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+
+# Name of feature
+feature_name=
+# Description of feature
+feature_desc=
+
+# New packages (not including depends) that are installed permenantly
+provides=()
+# Paths to files/folders that are permenantly created by the install. This
+# does not have to include files/folders created by a package install.
+new_files=()
+# Paths to files/folders that are permenantly modified by the install. This
+# does not have to include files/folders created by a package install.
+modified_files=()
+# Paths to files/folders that are temporarily created at any point during the
+# script, but removed during the cleanup function
+temp_files=()
+
+# Package names that the feature depends on, but must be installed from the AUR
+depends_aur=()
+# Package names that the feature depends on that can be installed with pacman
+depends_pacman=()
+# Package names that the feature depends on, but must be installed with pip3
+depends_pip3=()
+
+
+
+# Check if defaults/conf is formatted correctly/useable
+function check_defaults() {
+
+}
+
+# Load default settings from /conf
+function load_defaults() {
+
+}
+
+# Check if the installation was successful
+function check_install() {
+
+}
+
+# Pre-install commands to execute 
+function prepare() {
+
+}
+
+# Commands to install the feature
+function install() {
+
+}
+
+# Commands to run after install
+function post_install() {
+
+}
+
+# Commands to clean up and remove temporary files
+function cleanup() {
+
+}
+
+source "$LAD_OS_DIR/common/feature_common.sh"
+
+# vim:ft=sh
