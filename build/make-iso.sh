@@ -92,6 +92,7 @@ function build_aur_packages() {
 
 function copy_pacman_packages() {
     local PKG_PATH="$1"
+    local ARCH_ISO_PATH="$2"
     local TEMP_DB_PATH="/tmp"
 
     sudo pacman -Syu --noconfirm
@@ -100,9 +101,13 @@ function copy_pacman_packages() {
     pacman_packages=($(cat "$LAD_OS_DIR/packages.csv" | \
         grep "^.*,.*,system," | \
         cut -d ',' -f1))
+    arch_iso_packages=("$(cat "$ARCH_ISO_PATH/packages.x86_64")")
+
+    # Add packages from archiso
+    pacman_packages=($pacman_packages $arch_iso_packages)
 
     for pkg in ${pacman_packages[@]}; do
-        target="$(pacman -Spd $pkg | \
+        target="$(pacman -Spdd $pkg | \
             grep -v -e "^https" | \
             sed -e "s;file://;;" | \
             sed -e 's;^.*/;;')"
@@ -123,6 +128,8 @@ function copy_pacman_packages() {
         -w --cachedir "$PKG_PATH" \
         --dbpath "$TEMP_DB_PATH" \
         --noconfirm --needed
+
+    sudo sed -i $ARCH_ISO_PATH/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
 }
 
 
@@ -149,7 +156,7 @@ function build_from_scratch() {
 
         build_aur_packages "$PKG_PATH"
 
-        copy_pacman_packages "$PKG_PATH"
+        copy_pacman_packages "$PKG_PATH" "$ARCH_ISO_DIR/packages.x86_64"
 
         (cd "$LOCAL_REPO_PATH" && sudo repo-add localrepo.db.tar.gz pkg/*)
     fi
