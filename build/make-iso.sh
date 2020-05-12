@@ -147,6 +147,16 @@ function copy_pacman_packages() {
     sudo sed -i $ARCH_ISO_PATH/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
 }
 
+function increase_tty_scrollback() {
+    local ARCH_ISO_DIR="$1"
+    local CD_ENTRY_PATH="$ARCH_ISO_DIR/efiboot/entries/archiso-x86_64-cd.conf"
+    local USB_ENTRY_PATH="$ARCH_ISO_DIR/efiboot/entries/archiso-x86_64-usb.conf"
+    local OPTION="fbcon=scrollback:8192k"
+
+    sudo sed -i "$CD_ENTRY_PATH" -e "s/^options.*$/& $OPTION/"
+    sudo sed -i "$USB_ENTRY_PATH" -e "s/^options.*$/& $OPTION/"
+}
+
 
 function build_from_scratch() {
     ARCH_ISO_DIR="/var/tmp/archiso"
@@ -183,6 +193,7 @@ function build_from_scratch() {
     # Avoid permission errors
     sudo chown -R root:root "$ARCH_ISO_DIR"
 
+    increase_tty_scrollback "$ARCH_ISO_DIR"
 
     (
         cd $ARCH_ISO_DIR
