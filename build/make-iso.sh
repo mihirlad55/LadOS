@@ -46,6 +46,10 @@ function prompt() {
     done
 }
 
+function is_arch_user() {
+    pacman -V > /dev/null
+}
+
 function image_usb() {
     local ISO_PATH="$1"
 
@@ -217,7 +221,9 @@ function remaster() {
     SHA512_AIROOTFS_PATH="$CUSTOMISO_PATH/arch/x86_64/airootfs.sha512"
     SQUASHFS_ROOT_PATH="$CUSTOMISO_PATH/arch/x86_64/squashfs-root"
 
-    sudo pacman -S archiso cdrtools --needed --noconfirm
+    if is_arch_user; then
+        sudo pacman -S archiso cdrtools --needed --noconfirm
+    fi
     
     sudo mkdir -p "$MOUNT_PATH"
 
@@ -275,11 +281,28 @@ function remaster() {
 function remaster_iso() {
     show_menu "Build from scratch" \
         "Download ISO"      "download_iso" \
-        "Use existing ISO"  "use_existing_iso"
+        "Use existing ISO"  "use_existing_iso" \
+        "Go Back"           "return 0"
+}
+
+function existing_image_to_usb() {
+    read -p "Please enter the path to the iso: " iso_path
+
+    image_usb "$iso_path"
 }
 
 
-show_menu "Make ISO" \
-    "Build from scratch"    "build_from_scratch" \
-    "Remaster ISO"          "remaster_iso" \
-    "Exit"                  "exit 0"
+if is_arch_user; then
+    show_menu "Make ISO" \
+        "Build from scratch"    "build_from_scratch" \
+        "Remaster ISO"          "remaster_iso" \
+        "Image USB"             "existing_image_to_usb" \
+        "Exit"                  "exit 0"
+else
+    echo "Since you are not using Arch Linux, the only way to create an ISO is to remaster an existing archiso. Please download an Arch Linux ISO from https://www.archlinux.org/download/"
+    echo "Please also install squashfs-tools libisoburn dosfstools lynx"
+
+    if prompt "Would you like to continue to remaster the ISO?"; then
+        use_existing_iso
+    fi
+fi
