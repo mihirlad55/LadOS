@@ -3,57 +3,57 @@ alsa-utils,Audio utilities,system,required
 amd-ucode,CPU microcode,system,required
 arc-gtk-theme,GTK theme,system,required
 aspell,Spell check,system,required
-audacity,Audio editing,system,extra
+audacity,Audio editing,system,optional
 bluez-utils,Bluetooth,system,required
 chromium,main browser,system,required
 chromium-widevine,widevine patch for Netflix,aur,required
-clang,For C-code formatting,system,extra
+clang,For C-code formatting,system,optional
 cmatrix,To be a hacker,system,required
 compton-tryone-git,Compton with blur,aur,required
 cpulimit,To limit CPU usage on processes,system,required
 cronie,For scheduling tasks,system,required
-cups,Printing,system,extra
+cups,Printing,system,optional
 dhcpcd,DHCP,system,required
-discord,It's discord,system,extra
+discord,It's discord,system,optional
 dunst,Main notification agent,system,required
-elinks,If stuck in TTY,system,extra
-emacs,Experimenting with new editor,system,extra
-ffmpeg,Video encoding and screen capture,system,extra
+elinks,If stuck in TTY,system,optional
+emacs,Experimenting with new editor,system,optional
+ffmpeg,Video encoding and screen capture,system,optional
 ffmpegthumbnailer,Thumbnails,system,required
-firefox,Backup browser,system,extra
-fontpreview-git,Font previews in vifm,aur,extra
-franz-bin,For web apps,aur,extra
-gdb,C Debugger,system,extra
+firefox,Backup browser,system,optional
+fontpreview-git,Font previews in vifm,aur,optional
+franz-bin,For web apps,aur,optional
+gdb,C Debugger,system,optional
 geoclue2,For redshift location,system,required
-gimp,Main image editor,system,extra
+gimp,Main image editor,system,optional
 git,Cause git,system,required
-gnome-keyring,For mailspring,system,extra
-colorpicker,Color picker,aur,extra
-gucharmap,Viewing character map,system,extra
+gnome-keyring,For mailspring,system,optional
+colorpicker,Color picker,aur,optional
+gucharmap,Viewing character map,system,optional
 hunspell-en_US,Spell check,system,required
-i3-gaps,Backup window manager,system,extra
+i3-gaps,Backup window manager,system,optional
 i3lock-color,Lockscreen,system,required
-inkscape,Main SVG editor,system,extra
-insync,Google Drive sync,aur,extra
+inkscape,Main SVG editor,system,optional
+insync,Google Drive sync,aur,optional
 intel-media-driver,Hardware acceleration,system,required
 intel-ucode,CPU microcode,system,required
-kdenlive,Main video editor,system,extra
-lastpass-cli,Password manager,system,extra
-libreoffice-fresh,Word processing,system,extra
-libsecret,For mailspring,system,extra
+kdenlive,Main video editor,system,optional
+lastpass-cli,Password manager,system,optional
+libreoffice-fresh,Word processing,system,optional
+libsecret,For mailspring,system,optional
 lightdm,Display manager,system,required
 lightdm-webkit2-greeter,Pretty greeter,system,required
-mailspring,Main email client,aur,extra
+mailspring,Main email client,aur,optional
 make,For making stuff,system,required
 man-db,Man pages,system,required
 nautilus,File explorer mainly for thumbnails,system,required
 neovim,Main editor,system,required
 nerd-fonts-complete,Icon fonts,aur,required
 nitrogen,For desktop background,system,required
-nmap,Network analysis,system,extra
+nmap,Network analysis,system,optional
 ntfs-3g,Accessing ntfs drives,system,required
 ntp,Syncing clock over Internet,system,required
-openconnect,School VPN,system,extra,
+openconnect,School VPN,system,optional,
 openssh,SSH,system,required
 openvpn,For VPNs,system,required
 pacman-contrib,Pacman scripts,system,required
@@ -62,64 +62,64 @@ papirus-icon-theme,Icon theme for Rofi,system,required
 physlock,Secure lockscreens,system,required
 plymouth,Boot animation,aur,required
 polybar,Status bar,aur, required
-polybar-spotify-module,Polybar spotify module,aur,extra
+polybar-spotify-module,Polybar spotify module,aur,optional
 powertop,Optimizing battery life,system,required
 pulseaudio,Audio,system,required
-python,It's python,system,extra
-python-pip,Python package manager,system,extra
+python,It's python,system,optional
+python-pip,Python package manager,system,optional
 python-ueberzug,Image previews for vifm,aur,required
 redshift,For screen temperature control,system,required
 restic,Backup,system,required
 rofi,Main applet launcher,system,required
 rofi-calc,Calc modi for rofi,aur,required
-scrot,Screenshotting tool,system,extra
-simple-scan,For scanning documents,system,extra
-slack-desktop,It's slack,aur,extra
+scrot,Screenshotting tool,system,optional
+simple-scan,For scanning documents,system,optional
+slack-desktop,It's slack,aur,optional
 sox,For playing notification ringtone,system,required
-spotify,Music,aur,extra
+spotify,Music,aur,optional
 sudo,So I don't have to login as root,system,required
-sxiv,Main image viewer,system,extra
-synergy,For mouse/keyboard sharing,system,extra
-teamviewer,Remote control,aur,extra
-termdown,Countdown/timer,system,extra
-texlive-bibtexextra,LaTeX,system,extra
-texlive-latexextra,LaTeX,system,extra
-thefuck,When I fuck up,system,extra
-tigervnc,VNC viewer,system,extra
-tmux,Terminal multiplexer,system,extra
-transmission-cli,Torrenting,system,extra
-ttf-comfortaa,Cool font,aur,extra
-ttf-fantasque-sans-mono,Cool font,system,extra
+sxiv,Main image viewer,system,optional
+synergy,For mouse/keyboard sharing,system,optional
+teamviewer,Remote control,aur,optional
+termdown,Countdown/timer,system,optional
+texlive-bibtexextra,LaTeX,system,optional
+texlive-latexextra,LaTeX,system,optional
+thefuck,When I fuck up,system,optional
+tigervnc,VNC viewer,system,optional
+tmux,Terminal multiplexer,system,optional
+transmission-cli,Torrenting,system,optional
+ttf-comfortaa,Cool font,aur,optional
+ttf-fantasque-sans-mono,Cool font,system,optional
 ttf-font-awesome,Icon font for polybar,system,required
-ttf-iosevka,Cool font,aur,extra
+ttf-iosevka,Cool font,aur,optional
 ttf-opensans,Good font,system,required
 ttf-roboto,Good font,system,required
 ttf-weather-icons,Weather icons for polybar,aur,required
 ttf-yosemite-san-francisco-font-git,Cool font,aur,required
 unzip,Unzipping files,system,required
-valgrind,C debugging tool,system,extra
+valgrind,C debugging tool,system,optional
 vifm,Main file explorer,system,required
-vlc,Main video viewer,system,extra
-watchman,Watching commands,system,extra
+vlc,Main video viewer,system,optional
+watchman,Watching commands,system,optional
 wpa_supplicant,WiFi,system,required
-x11vnc,For VNC control,system,extra
+x11vnc,For VNC control,system,optional
 xautolock,Auto screenlock,system,required
 xbindkeys,Main custom keybinds,aur,required
 xclip,Interfacing with X11 clipboard,system,required
-xdotool,Interfacing with window manager,system,extra
+xdotool,Interfacing with window manager,system,optional
 xf86-video-amdgpu,Graphics driver,system,required
 xf86-video-intel,Graphics driver,system,required
 xorg-appres,Troubleshooting Xresources,system,required
 xorg-server-common,X11,system,required
 xorg-xbacklight,Controlling backlight,system,required
-xorg-xev,Discovering key codes for xbindkeys,system,extra
+xorg-xev,Discovering key codes for xbindkeys,system,optional
 xorg-xmodmap,Unbinding escape key,system,required
 xorg-xprop,Interfacing with X11,system,required
 xorg-xrandr,Managing multiple monitors,system,required
 xorg-xrdb,To use Xresources,system,required
-xournalpp,Notetaking,system,extra
+xournalpp,Notetaking,system,optional
 yay,Installing AUR packages,aur,required
-youtube-dl,Downloading youtube videos,system,extra
-zathura-pdf-poppler,Main PDF viewer,system,extra
+youtube-dl,Downloading youtube videos,system,optional
+zathura-pdf-poppler,Main PDF viewer,system,optional
 zip,Zipping files,system,required
 zsh,Main shell,system,required

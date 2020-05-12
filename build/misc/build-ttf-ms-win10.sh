@@ -4,8 +4,8 @@
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-EXTRA_FEATURES_DIR="$LAD_OS_DIR/extra-features"
-FEATURE_DIR="$EXTRA_FEATURES_DIR/win10-fonts"
+OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
+FEATURE_DIR="$OPTIONAL_FEATURES_DIR/win10-fonts"
 PKG_BUILD_DIR="$HOME/.cache/yay/ttf-ms-win10"
 
 PKG_DIR="$1"

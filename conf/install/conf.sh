@@ -42,12 +42,12 @@ CONF_USERNAME=""
 CONF_PASSWORD=''
 
 ### Packages ###
-# Set to no to not install packages marked as extra
-CONF_INSTALL_EXTRA=yes
+# Set to no to not install packages marked as optional
+CONF_INSTALL_OPTIONAL=yes
 
-### Extra Features ###
-# Set to array of names of extra features to not install. Use exact folder
-# names from the extra-features directory.
+### Optional Features ###
+# Set to array of names of optional features to not install. Use exact folder
+# names from the optional-features directory.
 CONF_EXCLUDE_FEATURES=( "corsair-headset" \
                             "gogh" \
                             "huion" \

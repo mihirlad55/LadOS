@@ -4,7 +4,7 @@ BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/install"
 REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
-EXTRA_FEATURES_DIR="$LAD_OS_DIR/extra-features"
+OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
@@ -50,11 +50,11 @@ function install_yay() {
 function install_packages() {
     echo "Beginning to install pacman packages..."
 
-    local install_extra=0
-    if [[ "$CONF_INSTALL_EXTRA" = "yes" ]]; then
-        install_extra=1
-    elif prompt "Install extra packages as well?"; then
-        install_extra=1
+    local install_optional=0
+    if [[ "$CONF_INSTALL_OPTIONAL" = "yes" ]]; then
+        install_optional=1
+    elif prompt "Install optional packages as well?"; then
+        install_optional=1
     fi
 
     IFS=$'\n'
@@ -71,7 +71,7 @@ function install_packages() {
 
         echo "$name ($desc)"
 
-        if [[ $install_extra -eq 1 ]] && [[ "$req" = "extra" ]] || [[ "$req" = "required" ]]; then
+        if [[ $install_optional -eq 1 ]] && [[ "$req" = "optional" ]] || [[ "$req" = "required" ]]; then
             if [[ "$typ" = "system" ]]; then
                 pacman_packages=("${pacman_packages[@]}" "$name")
             elif [[ "$typ" = "aur" ]]; then
@@ -115,7 +115,7 @@ function install_required_features() {
 }
 
 function get_excluded_features() {
-    local features=($(ls $EXTRA_FEATURES_DIR))
+    local features=($(ls $OPTIONAL_FEATURES_DIR))
 
     if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
         excluded_features=("${CONF_EXCLUDE_FEATURES[@]}")
@@ -142,10 +142,10 @@ function get_excluded_features() {
     echo "${excluded_features[@]}"
 }
 
-function install_extra_features() {
-    local features=($(ls $EXTRA_FEATURES_DIR))
+function install_optional_features() {
+    local features=($(ls $OPTIONAL_FEATURES_DIR))
 
-    echo "Installing extra features..."
+    echo "Installing optional features..."
 
     local excluded_features=($(get_excluded_features))
     echo "Excluding features ${excluded_features[@]}"
@@ -153,7 +153,7 @@ function install_extra_features() {
     for feature in ${features[@]}; do
         if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
             echo "Installing $feature..."
-            $EXTRA_FEATURES_DIR/$feature/feature.sh full
+            $OPTIONAL_FEATURES_DIR/$feature/feature.sh full
 
             if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
@@ -161,12 +161,12 @@ function install_extra_features() {
         fi
     done
 
-    echo "Done installing extra features"
+    echo "Done installing optional features"
 }
 
 function check_all_features() {
     local required_features=($(ls $REQUIRED_FEATURES_DIR))
-    local extra_features=($(ls $EXTRA_FEATURES_DIR))
+    local optional_features=($(ls $OPTIONAL_FEATURES_DIR))
     local excluded_features=($(get_excluded_features))
 
     echo "Not checking excluded features ${excluded_features[@]}"
@@ -184,11 +184,11 @@ function check_all_features() {
         fi
     done
 
-    echo "Checking extra features..."
-    for feature in ${extra_features[@]}; do
+    echo "Checking optional features..."
+    for feature in ${optional_features[@]}; do
         if ! echo ${excluded_features[@]} | grep $feature &> /dev/null; then
             echo "Checking $feature..."
-            $EXTRA_FEATURES_DIR/$feature/feature.sh check_install
+            $OPTIONAL_FEATURES_DIR/$feature/feature.sh check_install
 
             if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
@@ -218,7 +218,7 @@ install_packages
 
 install_required_features
 
-install_extra_features
+install_optional_features
 
 check_all_features
 
