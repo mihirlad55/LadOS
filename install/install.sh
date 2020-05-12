@@ -116,7 +116,7 @@ function enable_localrepo() {
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
         echo "Enabling localrepo..."
         sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
-	pacman -Sy
+        pacman -Sy
     fi
 }
 
