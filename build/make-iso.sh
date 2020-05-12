@@ -63,6 +63,17 @@ function image_usb() {
     fi
 }
 
+function build_win10_fonts() {
+    local PKG_PATH="$1"
+
+    mkdir -p /var/tmp/win10-fonts
+    $BASE_DIR/misc/build-ttf-ms-win10.sh "/var/tmp/win10-fonts"
+
+    sudo mv /var/tmp/win10-fonts/* "$PKG_PATH"
+
+    rm -r /var/tmp/win10-fonts
+}
+
 function build_aur_packages() {
     local AUR_URL="https://aur.archlinux.org"
     local PKG_PATH="$1"
@@ -160,7 +171,11 @@ function build_from_scratch() {
 
         build_aur_packages "$PKG_PATH"
 
-        copy_pacman_packages "$PKG_PATH" "$ARCH_ISO_DIR/packages.x86_64"
+        if prompt "Build ttf-ms-win10?"; then
+            build_win10_fonts "$PKG_PATH"
+        fi
+
+        copy_pacman_packages "$PKG_PATH" "$ARCH_ISO_DIR"
 
         (cd "$LOCAL_REPO_PATH" && sudo repo-add localrepo.db.tar.gz pkg/*)
     fi
