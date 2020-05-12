@@ -94,6 +94,9 @@ function install() {
     echo "Installing neovim plugins..."
     nvim -c "PlugInstall | qa"
 
+    echo "Installing zsh plguins..."
+    zsh -c "source $HOME/.zshrc; exit"
+
     echo "Done installing dotfiles"
 }
 
