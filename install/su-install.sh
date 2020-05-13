@@ -93,7 +93,7 @@ function install_required_features() {
     msg "Installing required features..."
 
     local features
-    mapfile -t features <(ls "$REQUIRED_FEATURES_DIR")
+    mapfile -t features < <(ls "$REQUIRED_FEATURES_DIR")
 
     for feature in "${features[@]}"; do
         if ! (echo "$feature" | grep "yay" || echo "$feature" | grep "sudoers"); then
@@ -110,7 +110,7 @@ function install_required_features() {
 
 function get_excluded_features() {
     local features
-    mapfile -t features <(ls "$OPTIONAL_FEATURES_DIR")
+    mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
         excluded_features=("${CONF_EXCLUDE_FEATURES[@]}")
@@ -137,7 +137,7 @@ function install_optional_features() {
     msg "Installing optional features..."
 
     local features excluded_features
-    mapfile -t features <(ls "$OPTIONAL_FEATURES_DIR")
+    mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     excluded_features=("$(get_excluded_features)")
 
@@ -160,7 +160,7 @@ function check_required_features() {
     msg "Checking required features..."
 
     local required
-    mapfile -t required <(ls "$REQUIRED_FEATURES_DIR")
+    mapfile -t required < <(ls "$REQUIRED_FEATURES_DIR")
 
     for i in "${!required[@]}"; do
         feature="${required[i]}"
@@ -186,7 +186,7 @@ function check_optional_features() {
     msg "Checking optional features..."
 
     local optional excluded
-    mapfile -t optional <(ls "$OPTIONAL_FEATURES_DIR")
+    mapfile -t optional < <(ls "$OPTIONAL_FEATURES_DIR")
 
     excluded=("$(get_excluded_features)")
 
