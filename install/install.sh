@@ -6,7 +6,8 @@ CONF_DIR="$LAD_OS_DIR/conf/install"
 LOCAL_REPO_DIR="$LAD_OS_DIR/localrepo"
 
 WIFI_ENABLED=0
-VERBOSITY_FLAG=""
+VERBOSE=
+VERBOSITY_FLAG="-q"
 
 source "$CONF_DIR/conf.sh"
 source "$LAD_OS_DIR/common/message.sh"
@@ -142,7 +143,10 @@ function start_chroot_install() {
 }
 
 
-[[ "$1" = "-v" ]] && VERBOSITY_FLAG="-v"
+if [[ "$1" = "-v" ]]; then
+    VERBOSITY_FLAG="-v"
+    VERBOSE=1
+fi
 
 check_efi_mode
 

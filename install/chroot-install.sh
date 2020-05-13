@@ -5,7 +5,8 @@ LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
-VERBOSITY_FLAG=""
+VERBOSITY_FLAG="-q"
+VERBOSE=
 
 source "$CONF_DIR/conf.sh"
 source "$LAD_OS_DIR/common/message.sh"
@@ -21,26 +22,26 @@ function enable_localrepo() {
 }
 
 function update_mkinitcpio_modules() {
-    [[ -n "$VERBOSITY_FLAG" ]] && echo "Updating mkinitcpio..."
+    [[ -n "$VERBOSE" ]] && echo "Updating mkinitcpio..."
 
     NEW_MODULES=("$@")
 
-    [[ -n "$VERBOSITY_FLAG" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
+    [[ -n "$VERBOSE" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
 
     source /etc/mkinitcpio.conf
 
     for module in "${NEW_MODULES[@]}"; do
         if ! echo "${MODULES[@]}" | grep -q "$module"; then
-            [[ -n "$VERBOSITY_FLAG" ]] && echo "$module not found in mkinitcpio.conf"
+            [[ -n "$VERBOSE" ]] && echo "$module not found in mkinitcpio.conf"
 
-            [[ -n "$VERBOSITY_FLAG" ]] && echo "Staging $module for addition"
+            [[ -n "$VERBOSE" ]] && echo "Staging $module for addition"
             MODULES=( "${MODULES[@]}" "$module" )
         else
-            [[ -n "$VERBOSITY_FLAG" ]] && echo "$module already found"
+            [[ -n "$VERBOSE" ]] && echo "$module already found"
         fi
     done
 
-    [[ -n "$VERBOSITY_FLAG" ]] && echo "Updating /etc/mkinitcpio.conf..."
+    [[ -n "$VERBOSE" ]] && echo "Updating /etc/mkinitcpio.conf..."
     MODULES_LINE="MODULES=(${MODULES[*]})"
     sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 }
@@ -206,11 +207,7 @@ function setup_sudo_and_su() {
     pacman -Syyu --noconfirm
 
     msg2 "Installing sudo..."
-    if [[ -n "$VERBOSITY_FLAG" ]] then
-        "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" full
-    else
-        "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh full > /dev/null
-    fi
+    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" full
 
     # Temporary no password prompt for installation
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
@@ -223,7 +220,10 @@ function setup_sudo_and_su() {
 }
 
 
-[[ "$1" = "-v" ]] && VERBOSITY_FLAG="-v"
+if [[ "$1" = "-v" ]]; then
+    VERBOSITY_FLAG="-v"
+    VERBOSE=1
+fi
 
 enable_localrepo
 

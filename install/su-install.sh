@@ -8,7 +8,8 @@ OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
-VERBOSITY_FLAG=""
+VERBOSE=
+VERBOSITY_FLAG="-q"
 
 source "$CONF_DIR/conf.sh"
 source "$LAD_OS_DIR/common/message.sh"
@@ -20,11 +21,7 @@ function enable_community_repo() {
     local path_to_feature
     path_to_feature=("$REQUIRED_FEATURES_DIR"/*enable-community-pacman/feature.sh)
 
-    if [[ -n "$VERBOSITY_FLAG" ]]; then
-        ./"${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
-    else
-        ./"${path_to_feature[0]}" full > /dev/null
-    fi
+    ./"${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
 }
 
 function install_yay() {
@@ -38,11 +35,7 @@ function install_yay() {
         local path_to_feature
         path_to_feature=("$REQUIRED_FEATURES_DIR"/*yay/feature.sh)
 
-        if [[ -n "$VERBOSITY_FLAG" ]]; then
-            ./"${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
-        else
-            ./"${path_to_feature[0]}" full > /dev/null
-        fi
+        ./"${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
     fi
 }
 
@@ -106,11 +99,7 @@ function install_required_features() {
         if ! (echo "$feature" | grep "yay" || echo "$feature" | grep "sudoers"); then
             msg2 "Installing $feature..."
             
-            if [[ -n "$VERBOSITY_FLAG" ]]; then
-                "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" full_no_check
-            else
-                "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh full_no_check > /dev/null
-            fi
+            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" full_no_check
 
             if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
@@ -152,17 +141,13 @@ function install_optional_features() {
 
     excluded_features=("$(get_excluded_features)")
 
-    [[ -n "$VERBOSITY_FLAG" ]] && echo "Excluding features ${excluded_features[*]}"
+    [[ -n "$VERBOSE" ]] && echo "Excluding features ${excluded_features[*]}"
 
     for feature in "${features[@]}"; do
         if ! echo "${excluded_features[@]}" | grep -q "$feature"; then
             msg2 "Installing $feature..."
 
-            if [[ -n "$VERBOSITY_FLAG" ]]; then
-                "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" full_no_check
-            else
-                "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh full_no_check > /dev/null
-            fi
+            "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" full_no_check
 
             if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
@@ -183,11 +168,7 @@ function check_required_features() {
 
         msg2 "Checking $feature..." "$progress"
 
-        if [[ -n "$VERBOSITY_FLAG" ]]; then
-            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
-        else
-            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh check_install > /dev/null
-        fi
+        "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
 
         if [[ "$CONF_NOCONFIRM" = "no" ]]; then
             pause
@@ -206,7 +187,7 @@ function check_optional_features() {
     local total=$(( ${#optional[@]} - ${#excluded[@]} ))
     local i=1
 
-    [[ -n "$VERBOSITY_FLAG" ]] && echo "Not checking excluded features ${excluded[*]}"
+    [[ -n "$VERBOSE" ]] && echo "Not checking excluded features ${excluded[*]}"
 
     for feature in "${optional[@]}"; do
         if ! echo "${excluded[@]}" | grep -q "$feature"; then
@@ -236,7 +217,10 @@ function remove_temp_sudoers() {
 }
 
 
-[[ "$1" = "-v" ]] && VERBOSITY_FLAG="-v"
+if [[ "$1" = "-v" ]]; then
+    VERBOSITY_FLAG="-v"
+    VERBOSE=1
+fi
 
 enable_community_repo
 
