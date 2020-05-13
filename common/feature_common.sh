@@ -3,6 +3,7 @@
 VERBOSE=
 QUIET=
 
+DEFAULT_OUT="/dev/fd/1"
 
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
@@ -24,21 +25,21 @@ function print_usage() {
 function install_dependencies() {
     if [[ "${depends_pacman[@]}" != "" ]]; then
         qecho "Installing ${depends_pacman[@]}..."
-        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed
+        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed > "$DEFAULT_OUT"
     fi
 
     if [[ "${depends_aur[@]}" != "" ]]; then
         qecho "Installing ${depends_aur[@]}..."
-        yay -S ${depends_aur[@]} --noconfirm --needed
+        yay -S ${depends_aur[@]} --noconfirm --needed > "$DEFAULT_OUT"
     fi
 
     if [[ "${depends_pip3[@]}" != "" ]]; then
         if ! command -v pip3 > /dev/null; then
-            sudo pacman -S python-pip --noconfirm --needed
+            sudo pacman -S python-pip --noconfirm --needed > "$DEFAULT_OUT"
         fi
 
         qecho "Installing ${depends_pip3[@]}..."
-        sudo pip3 install ${depends_pip3[@]}
+        sudo pip3 install ${depends_pip3[@]} > "$DEFAULT_OUT"
     fi
 }
 
@@ -48,6 +49,7 @@ if [[ "$1" = "-v" ]]; then
     shift
 elif [[ "$1" = "-q" ]]; then
     QUIET=1
+    DEFAULT_OUT="/dev/null"
     shift
 fi
 
