@@ -1,24 +1,26 @@
 #!/usr/bin/bash
 
+VERBOSE=
+QUIET=
+
+
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
 function print_usage() {
-    echo "usage: feature.sh [ full | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
+    echo "usage: feature.sh [-q | -v ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
 }
 
 function install_dependencies() {
     if [[ "${depends_pacman[@]}" != "" ]]; then
-        echo "Installing ${depends_pacman[@]}..."
+        [[ ! -n "$QUIET" ]] && echo "Installing ${depends_pacman[@]}..."
         sudo pacman -S ${depends_pacman[@]} --noconfirm --needed
-        echo "Done installing pacman packages for $feature_name"
     fi
 
     if [[ "${depends_aur[@]}" != "" ]]; then
-        echo "Installing ${depends_aur[@]}..."
+        [[ ! -n "$QUIET" ]] && echo "Installing ${depends_aur[@]}..."
         yay -S ${depends_aur[@]} --noconfirm --needed
-        echo "Done installing aur packages for $feature_name"
     fi
 
     if [[ "${depends_pip3[@]}" != "" ]]; then
@@ -26,17 +28,26 @@ function install_dependencies() {
             sudo pacman -S python-pip --noconfirm --needed
         fi
 
-        echo "Installing ${depends_pip3[@]}..."
+        [[ ! -n "$QUIET" ]] && echo "Installing ${depends_pip3[@]}..."
         sudo pip3 install ${depends_pip3[@]}
-        echo "Done installing pip3 packages for $feature_name"
     fi
 }
 
 
+if echo "$@" | grep -q "-v"; then
+    $@="$(echo "$@" | sed 's/-v//')"
+    VERBOSE=1
+fi
+
+if echo "$@" | grep -q "-q"; then
+    $@="$(echo "$@" | sed 's/-q//')"
+    QUIET=1
+fi
+
 case "$1" in
-    full)
+    full | full_no_check)
         if type -p check_conf && type -p load_conf; then
-            echo "Checking and loading configuration..."
+            [[ ! -n "$QUIET" ]] && echo "Checking and loading configuration..."
             check_conf && load_conf
         fi
 
@@ -45,25 +56,25 @@ case "$1" in
         fi
 
         if type -p prepare; then
-            echo "Beginning prepare..."
+            [[ ! -n "$QUIET" ]] && echo "Beginning prepare..."
             prepare
         fi
 
-        echo "Installing feature..."
+        [[ ! -n "$QUIET" ]] && echo "Installing feature..."
         install
 
         if type -p post_install; then
-            echo "Executing post_install..."
+            [[ ! -n "$QUIET" ]] && echo "Starting post_install..."
             post_install
         fi
 
         if type -p cleanup; then
-            echo "Starting cleanup..."
+            [[ ! -n "$QUIET" ]] && echo "Starting cleanup..."
             cleanup
         fi
 
-        if type -p check_install; then
-            echo "Checking if feature was installed correctly..."
+        if [[ "$1" = "full_no_check" ]] && type -p check_install; then
+            [[ ! -n "$QUIET" ]] && echo "Checking if feature was installed correctly..."
             check_install
         fi
 
@@ -77,11 +88,11 @@ case "$1" in
     check_conf | load_conf | check_install | prepare | install |  post_install \
         | cleanup)
         if type -p "$1"; then
-            echo "Beginning $1..."
+            [[ ! -n "$QUIET" ]] && echo "Starting $1..."
             $1
-            echo "Finished $1"
+            [[ ! -n "$QUIET" ]] && echo "Done $1"
         else
-            echo "$1 is not defined for this feature"
+            [[ ! -n "$QUIET" ]] && echo "$1 is not defined for this feature"
             exit 1
         fi
         ;;
@@ -90,7 +101,7 @@ case "$1" in
         if [[ "${depends_pacman[@]}" != "" ]] || [[ "${depends_aur[@]}" != "" ]]; then
             install_dependencies
         else
-            echo "No dependencies to install"
+            [[ ! -n "$QUIET" ]] && echo "No dependencies to install"
             exit 1
         fi
         ;;
