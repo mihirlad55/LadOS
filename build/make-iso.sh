@@ -90,10 +90,18 @@ function build_aur_packages() {
         git clone --depth 1 "$AUR_URL/$pkg_name.git" "/var/tmp/$pkg_name"
         (
             source /var/tmp/$pkg_name/PKGBUILD
-            if [[ "$epoch" = "" ]]; then
-                pkg_path=$PKG_PATH/${pkgname}-${pkgver}*.pkg.tar.xz
+            if type pkgver &> /dev/null; then
+                # pkgver is function
+                ver=$(pkgver)
             else
-                pkg_path=$PKG_PATH/${pkgname}-${epoch}:${pkgver}*.pkg.tar.xz
+                # pkgver is variable
+                ver=$pkgver
+            fi
+
+            if [[ "$epoch" = "" ]]; then
+                pkg_path=$PKG_PATH/${pkgname}-${ver}*.pkg.tar.xz
+            else
+                pkg_path=$PKG_PATH/${pkgname}-${epoch}:${ver}*.pkg.tar.xz
             fi
 
             echo $pkg_path
@@ -195,6 +203,7 @@ function build_from_scratch() {
     echo "Cleaning up work directory..."
     sudo rm -rf "$ARCH_ISO_DIR/work"
 
+    sudo pacman -R archiso --noconfirm
     yay -S archiso-git --needed --noconfirm
 
     sudo cp -af /usr/share/archiso/configs/releng "$ARCH_ISO_DIR"
@@ -262,7 +271,7 @@ function remaster() {
     BOOT_ENTRIES_DIR="$CUSTOM_ISO_PATH/loader/entries"
 
     if is_arch_user; then
-        sudo pacman -Rs archiso-git --noconfirm
+        sudo pacman -R archiso-git --noconfirm
         sudo pacman -S archiso cdrtools --needed --noconfirm
     fi
     
