@@ -169,6 +169,12 @@ function check_required_features() {
         msg2 "Checking $feature..." "$progress"
 
         "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
+        res="$?"
+
+        if [[ "$?" -gt 0 ]]; then
+            error "$feature is not installed."
+            exit 1
+        fi
 
         if [[ "$CONF_NOCONFIRM" = "no" ]]; then
             pause
@@ -196,6 +202,12 @@ function check_optional_features() {
             msg2 "Checking $feature..." "$progress"
 
             "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
+            res="$?"
+
+            if [[ "$?" -gt 0 ]]; then
+                error "$feature is not installed."
+                exit 1
+            fi
 
             if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
