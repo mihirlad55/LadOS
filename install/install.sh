@@ -25,7 +25,7 @@ function check_efi_mode() {
 
 function setup_partitions() {
     msg "Partition setup..."
-    echo -ne "Make sure you create the system partitions, format them, and mount root on /mnt with all the filesystems mounted on root\n"
+    plain "Make sure you create the system partitions, format them, and mount root on /mnt with all the filesystems mounted on root"
     if [[ "$CONF_NOCONFIRM" = "no" ]]; then
         if ! prompt "Are the filesystems mounted?"; then
             msg2 "Please partition the drive and exit the shell once finished..."
