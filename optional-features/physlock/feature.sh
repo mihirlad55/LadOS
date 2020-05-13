@@ -20,23 +20,22 @@ depends_pacman=(physlock)
 
 function check_install() {
     if diff $BASE_DIR/physlock.service /etc/systemd/system/physlock.service; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    echo "Copying physlock.service..."
+    qecho "Copying physlock.service..."
     sudo install -Dm 644 $BASE_DIR/physlock.service /etc/systemd/system/physlock.service
 }
 
 function post_install() {
-    echo "Enabling physlock.service..."
+    qecho "Enabling physlock.service..."
     sudo systemctl enable --now physlock.service
-    echo "Enabled physlock.service"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

@@ -26,10 +26,10 @@ function check_conf() (
         [[ "$LOCAL_PORT" = "" ]] ||
         [[ "$REMOTE_PORT" = "" ]] ||
         [[ "$PRIVATE_KEY_PATH" = "" ]]; then
-        echo "Configuration not fully set"
+        echo "Configuration not fully set" >&2
         return 1
     else
-        echo "Configuration is correctly set"
+        qecho "Configuration is correctly set"
         return 0
     fi
 )
@@ -41,13 +41,13 @@ function load_conf() {
 function check_install() {
     for f in ${new_files[@]}; do
         if [[ ! -e "$f" ]]; then
-            echo "$f is missing"
-            echo "$feature_name is not installed"
+            echo "$f is missing" >&2
+            echo "$feature_name is not installed" >&2
             return 1
         fi
     done
 
-    echo "$feature_name is installed"
+    qecho "$feature_name is installed"
     return 0
 }
 
@@ -84,7 +84,7 @@ function install() {
     sudo sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
 
     if ! sudo test -e "/root/.ssh/id_rsa"; then
-        echo "Warning: Root's SSH keys are not setup"
+        echo "Warning: Root's SSH keys are not setup" >&2
     fi
 
     sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
@@ -92,16 +92,17 @@ function install() {
 }
 
 function post_install() {
-    echo "Enabling gcp-tunnel.service..."
+    qecho "Enabling gcp-tunnel.service..."
     sudo systemctl enable --now gcp-tunnel
 
-    echo "Enabling sshd.service"
+    qecho "Enabling sshd.service"
     sudo systemctl enable --now sshd
 
-    echo "Done enabling services"
+    qecho "Done enabling services"
 }
 
 function cleanup() {
+    qecho "Removing /tmp/gcp-tunnel.env"
     rm /tmp/gcp-tunnel.env
 }
 

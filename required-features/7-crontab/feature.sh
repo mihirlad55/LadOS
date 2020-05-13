@@ -20,20 +20,20 @@ depends_pacman=("cronie")
 function check_install() {
     echo "Checking if root crontab matches $(cat $BASE_DIR/root-cron)"
     if sudo diff /var/spool/cron/root $BASE_DIR/root-cron; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
     fi
 }
 
 function install() {
-    echo "Installing root crontab..."
+    qecho "Installing root crontab..."
     cat $BASE_DIR/root-cron
     sudo crontab $BASE_DIR/root-cron
 }
 
 function post_install() {
-    echo "Enabling cronie..."
+    qecho "Enabling cronie..."
     sudo systemctl enable --now cronie
 }
 

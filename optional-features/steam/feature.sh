@@ -20,31 +20,31 @@ depends_pacman=()
 function check_install() {
     if [[ "$(awk '/^\[multilib\]/,/^Include/' /etc/pacman.conf)" != "" ]] &&
         diff $BASE_DIR/steam.conf /etc/ld.so.conf.d/steam.conf; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    echo "Enabling multilib repo..."
+    qecho "Enabling multilib repo..."
     sudo sed -i 's/#*\[multilib\]/\[multilib\]/' /etc/pacman.conf
     sudo sed -i '/\[multilib\]/!b;n;cInclude = \/etc\/pacman.d\/mirrorlist' /etc/pacman.conf
 
-    echo "Updating database..."
+    qecho "Updating database..."
     sudo pacman -Sy
 
-    echo "Installing Steam..."
+    qecho "Installing Steam..."
 
     sudo pacman -S steam --needed --noconfirm
 
-    echo "Configuring library paths for steam..."
+    qecho "Configuring library paths for steam..."
     sudo install -Dm 644 $BASE_DIR/steam.conf /etc/ld.so.conf.d/steam.conf
     sudo ldconfig
 
-    echo "DONE!"
+    qecho "DONE!"
 }
 
 

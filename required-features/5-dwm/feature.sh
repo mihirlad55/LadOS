@@ -23,31 +23,35 @@ depends_pacman=(lightdm lightdm-gtk-greeter xorg-server xorg-server-common)
 function check_install() {
     for f in ${new_files[@]}; do
         if [[ ! -f "$f" ]]; then
-            echo "$f is missing"
-            echo "$feature_name is not installed"
+            echo "$f is missing" >&2
+            echo "$feature_name is not installed" >&2
             return 1
         fi
     done
 
-    echo "$feature_name is installed"
+    qecho "$feature_name is installed"
     return 0
 }
 
 function prepare() {
+    qecho "Cloning dwm..."
     git clone https://github.com/mihirlad55/dwm /tmp/dwm
 }
 
 function install() {
+    qecho "Making dwm..."
     (cd /tmp/dwm && sudo make clean install)
 }
 
 function post_install() {
+    qecho "Enabling lightdm..."
     sudo systemctl enable lightdm
 
     sudo systemctl set-default graphical.target
 }
 
 function cleanup() {
+    qecho "Removing /tmp/dwm..."
     rm -rf /tmp/dwm
 }
 

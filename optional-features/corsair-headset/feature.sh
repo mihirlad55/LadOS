@@ -20,16 +20,16 @@ depends_pacman=(xorg-server)
 function check_install() {
     if diff $BASE_DIR/30-corsair.conf \
         /etc/X11/xorg.conf.d/30-corsair.conf > /dev/null; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    echo "Installing custom corsair configuration for X11..."
+    qecho "Installing custom corsair configuration for X11..."
     sudo install -Dm 644 $BASE_DIR/30-corsair.conf /etc/X11/xorg.conf.d/30-corsair.conf
 }
 

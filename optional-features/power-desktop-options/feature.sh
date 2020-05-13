@@ -30,16 +30,16 @@ function check_install() {
         diff "$DESKTOP_FILES_DIR/logout.desktop" "$INSTALL_DIR/logout.desktop" &&
         diff "$DESKTOP_FILES_DIR/reboot.desktop" "$INSTALL_DIR/reboot.desktop" &&
         diff "$DESKTOP_FILES_DIR/poweroff.desktop" "$INSTALL_DIR/poweroff.desktop"; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    echo "Copying files..."
+    qecho "Copying files..."
     sudo install -Dm 644 $DESKTOP_FILES_DIR/hibernate.desktop \
         $INSTALL_DIR/hibernate.desktop
     sudo install -Dm 644 $DESKTOP_FILES_DIR/lock.desktop \

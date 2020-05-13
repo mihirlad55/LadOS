@@ -25,13 +25,13 @@ depends_pacman=(linux-headers at xf86-input-wacom)
 function check_install() {
     for f in ${new_files[@]}; do
         if [[ ! -e "$f" ]]; then
-            echo "$f is missing"
-            echo "$feature_name is not installed"
+            echo "$f is missing" >&2
+            echo "$feature_name is not installed" >&2
             return 1
         fi
     done
 
-    echo "$feature_name is installed"
+    qecho "$feature_name is installed"
     return 0
 }
 
@@ -47,9 +47,8 @@ function install() {
 }
 
 function post_install() {
-    echo "Enabling std..."
+    qecho "Enabling std..."
     sudo systemctl enable --now atd
-    echo "Enabled atd"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

@@ -23,17 +23,17 @@ depends_pip3=()
 function check_install() {
     if grep /etc/lightdm/lightdm.conf -e "^greeter-session=lightdm-webkit2-greeter$" > /dev/null &&
         pacman -Q lightdm-webkit2-greeter > /dev/null; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 
 }
 
 function install() {
-    echo "Changing greeter session in /etc/lightdm/lightdm.conf"
+    qecho "Changing greeter session in /etc/lightdm/lightdm.conf"
     sudo sed -i 's/#*greeter-session=.*$/greeter-session=lightdm-webkit2-greeter/' /etc/lightdm/lightdm.conf
 
     if [[ -f "$CONF_DIR/user.png" ]]; then
@@ -42,21 +42,21 @@ function install() {
         echo "To change greeter avatar, copy png to /var/lib/AccountsService/icons/$USER.png"
     fi
 
-    echo "Creating /var/lib/AccountsService/user/$USER ini"
+    qecho "Creating /var/lib/AccountsService/user/$USER ini"
     echo "[User]" | sudo tee /var/lib/AccountsService/users/$USER > /dev/null
     echo "Icon=/var/lib/AccountsService/icons/$USER.png" | 
         sudo tee -a /var/lib/AccountsService/users/$USER > /dev/null
 
     if [[ "$(ls "$CONF_DIR/backgrounds")" != "" ]]; then
-        echo "Copying backgrounds from $CONF_DIR/backgrounds to /usr/share/backgrounds/"
+        qecho "Copying backgrounds from $CONF_DIR/backgrounds to /usr/share/backgrounds/"
         sudo install -m 644 $CONF_DIR/backgrounds/* /usr/share/backgrounds/
-        echo "You will have to set the background from the login screen"
+        qecho "You will have to set the background from the login screen"
     else
         echo "To add backgrounds, copy backgrounds to /usr/share/backgrounds"
         echo "Make sure the avatar and background are readable by everyone"
     fi
 
-    echo "Done installing lightdm-webkit2-greeter"
+    qecho "Done installing lightdm-webkit2-greeter"
 }
 
 

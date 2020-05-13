@@ -36,26 +36,26 @@ depends_pacman=()
 function check_install() {
     for f in ${new_files[@]}; do
         if [[ ! -f "$f" ]]; then
-            echo "$f is missing"
-            echo "$feature_name is not installed"
+            echo "$f is missing" >&2
+            echo "$feature_name is not installed" >&2
             return 1
         fi
     done
 
-    if ! grep /etc/systemd/logind.conf -e "^KillUserProcesses=yes$" > /dev/null; then
-        echo "KillUserProcesses=yes not in /etc/systemd/logind.conf"
-        echo "$feature_name is not installed"
+    if ! grep -q /etc/systemd/logind.conf -e "^KillUserProcesses=yes$"; then
+        echo "KillUserProcesses=yes not in /etc/systemd/logind.conf" >&2
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 
-    echo "$feature_name is installed"
+    qecho "$feature_name is installed"
     return 0
 }
 
 function install() {
     mkdir -p $INSTALL_PATH
 
-    echo "Copying service files..."
+    qecho "Copying service files..."
     command install -Dm 644 $SERVICE_PATH/battery-check-notify.service $INSTALL_PATH/battery-check-notify.service
     command install -Dm 644 $SERVICE_PATH/compton.service $INSTALL_PATH/compton.service
     command install -Dm 644 $SERVICE_PATH/dunst.service $INSTALL_PATH/dunst.service
@@ -70,12 +70,12 @@ function install() {
     command install -Dm 644 $SERVICE_PATH/xbindkeys.service $INSTALL_PATH/xbindkeys.service
     command install -Dm 644 $SERVICE_PATH/startup.service $INSTALL_PATH/startup.service
 
-    echo "Editing logind.conf to kill user processes on logout..."
+    qecho "Editing logind.conf to kill user processes on logout..."
     sudo sed -i /etc/systemd/logind.conf -e "s/[# ]*KillUserProcesses=.*$/KillUserProcesses=yes/"
 }
 
 function post_install() {
-    echo "Enabling services..."
+    qecho "Enabling services..."
     mkdir -p $TARGET_PATH
     ln -sP $INSTALL_PATH/battery-check-notify.service $TARGET_PATH/battery-check-notify.service
     ln -sP $INSTALL_PATH/compton.service $TARGET_PATH/compton.service
@@ -95,7 +95,7 @@ function post_install() {
     ln -sP /usr/lib/systemd/user/insync.service $TARGET_PATH/insync.service
     ln -sP /usr/lib/systemd/user/spotify-listener.service $TARGET_PATH/spotify-listener.service
 
-    echo "Done"
+    qecho "Done"
 }
 
 

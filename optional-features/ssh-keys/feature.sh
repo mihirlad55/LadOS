@@ -33,10 +33,10 @@ depends_pacman=(openssh)
 function check_install() {
     if diff "$HOME/.ssh" "$USER_SSH_DIR" &&
         sudo diff "/root/.ssh" "$ROOT_SSH_DIR"; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
@@ -45,7 +45,7 @@ function install() {
     if [[ -d "$CONF_DIR/user/.ssh" ]] &&
         [[ -d "$CONF_DIR/root/.ssh" ]]; then
         
-        echo "Copying user ssh files to $HOME/.ssh..."
+        qecho "Copying user ssh files to $HOME/.ssh..."
         mkdir -p "$HOME/.ssh"
         chmod 700 "$HOME/.ssh"
         command install -Dm 600 "$USER_SSH_DIR/id_rsa" "$HOME/.ssh/id_rsa"
@@ -55,7 +55,7 @@ function install() {
         command install -Dm 644 "$USER_SSH_DIR/known_hosts" "$HOME/.ssh/known_hosts"
         chown -R $USER "$HOME/.ssh"
 
-        echo "Copying root ssh files to /root/.ssh"
+        qecho "Copying root ssh files to /root/.ssh"
         sudo mkdir -p "/root/.ssh"
         sudo chmod 700 "/root/.ssh"
         sudo install -Dm 600 "$ROOT_SSH_DIR/id_rsa" "/root/.ssh/id_rsa"
@@ -65,9 +65,10 @@ function install() {
         sudo install -Dm 644 "$ROOT_SSH_DIR/known_hosts" "/root/.ssh/known_hosts"
         sudo chown -R root "/root/.ssh"
 
-        echo "Done copying ssh files"
+        qecho "Done copying ssh files"
     else
-        echo "Root or user .ssh folder missing"
+        echo "Root or user .ssh folder missing" >&2
+        return 1
     fi
 }
 

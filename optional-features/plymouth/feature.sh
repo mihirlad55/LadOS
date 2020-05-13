@@ -24,10 +24,10 @@ function check_install() {
     if egrep /etc/mkinitcpio.conf -e "plymouth" > /dev/null &&
         diff $BASE_DIR/deus_ex /usr/share/plymouth/themes/deus_ex &&
         diff $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
@@ -36,33 +36,38 @@ function add_mkinitcpio_hook() {
     module="$1"
 
     if ! egrep /etc/mkinitcpio.conf -e "$module" > /dev/null; then
-        echo "No $module hook found in mkinitcpio.conf"
+        vecho "No $module hook found in mkinitcpio.conf"
         source /etc/mkinitcpio.conf
         HOOKS=( "${HOOKS[@]:0:2}" "$module" "${HOOKS[@]:2}" )
 
         IFS=$' '
         HOOKS_LINE="HOOKS=(${HOOKS[*]})"
 
-        echo "Adding $module to HOOKS array..."
+        vecho "Adding $module to HOOKS array..."
         sudo sed -i '/etc/mkinitcpio.conf' -e "s/^HOOKS=([a-z ]*)$/$HOOKS_LINE/"
     else
-        echo "$module hook already added to mkinitcpio.conf"
+        vecho "$module hook already added to mkinitcpio.conf"
     fi
 }
 
 function install() {
+    qecho "Copying theme..."
     sudo cp -r $BASE_DIR/deus_ex /usr/share/plymouth/themes/
+
+    qecho "Copying plymouth.d..."
     sudo install -Dm 644 $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf
 
+    qecho "Adding plymouth hook to mkinitcpio..."
     add_mkinitcpio_hook "plymouth"
 
+    qecho "Updating mkinitcpio..."
     sudo mkinitcpio -P linux
 }
 
 function post_install() {
-    echo "Disabling lightdm.service..."
+    qecho "Disabling lightdm.service..."
     sudo systemctl disable lightdm
-    echo "Enabling lightdm-plymouth.service"
+    qecho "Enabling lightdm-plymouth.service"
     sudo systemctl enable lightdm-plymouth
 }
 

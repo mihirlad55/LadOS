@@ -27,22 +27,25 @@ function check_install() {
         [[ -e "/boot/EFI/refind/refind-options.conf" ]] &&
         [[ -e "/boot/EFI/refind/refind-manual.conf" ]] &&
         [[ -d "/boot/EFI/refind/themes/rEFInd-minimal-black" ]]; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function prepare() {
+    qecho "Copying configuration files to /tmp..."
     cp $BASE_DIR/refind-options.conf /tmp/refind-options.conf
     cp $BASE_DIR/refind-manual.conf /tmp/refind-manual.conf
 }
 
 function install() {
+    qecho "Running refind-install..."
     sudo refind-install
 
+    qecho "Copying theme to /boot/EFI/refind/themes..."
     sudo mkdir -p /boot/EFI/refind/themes
     sudo rm -rf /boot/EFI/refind/themes/rEFInd-minimal-black
     sudo git clone https://github.com/andersfischernielsen/rEFInd-minimal-black.git /boot/EFI/refind/themes/rEFInd-minimal-black
@@ -68,7 +71,7 @@ function install() {
         vim /tmp/refind-manual.conf
     fi
 
-    echo "Copying configuration files to /boot/EFI/refind/..."
+    qecho "Copying configuration files to /boot/EFI/refind/..."
     sudo install -Dm 755 /tmp/refind-options.conf /boot/EFI/refind/refind-options.conf
     sudo install -Dm 755 /tmp/refind-manual.conf /boot/EFI/refind/refind-manual.conf
     sudo install -Dm 755 /usr/share/refind/refind.conf-sample /boot/EFI/refind/refind.conf
@@ -77,13 +80,13 @@ function install() {
     include refind-manual.conf
     include refind-options.conf
     include themes/rEFInd-minimal-black/theme.conf
-    " | sudo tee -a /boot/EFI/refind/refind.conf
+    " | sudo tee -a /boot/EFI/refind/refind.conf > /dev/null
 
-    echo "Done"
+    qecho "Done"
 }
 
 function cleanup() {
-    echo "Removing ${temp_files[@]}..."
+    qecho "Removing ${temp_files[@]}..."
     rm -f /tmp/refind-options.conf
     rm -f /tmp/refind-manual.conf
 }

@@ -17,17 +17,17 @@ depends_pacman=()
 
 function check_install() {
     if [[ "$(awk '/^\[community\]/,/^Include/' /etc/pacman.conf)" != "" ]]; then
-        echo "Community repo enabled!"
+        qecho "Community repo enabled!"
         return 0
     fi
 
-    echo "Community repo not enabled"
+    echo "Community repo not enabled" >&2
     return 1
 }
 
 
 function install() {
-    echo "Editing /etc/pacman.conf"
+    qecho "Editing /etc/pacman.conf"
     sudo sed -i /etc/pacman.conf \
         -e "s/^#\[community\]$/\[community\]/"
     sudo sed -i /etc/pacman.conf \

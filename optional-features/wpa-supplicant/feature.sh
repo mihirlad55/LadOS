@@ -23,10 +23,10 @@ function check_install() {
     if pacman -Q wpa_supplicant > /dev/null &&
         pacman -Q dhcpcd > /dev/null &&
         test -f /etc/wpa_supplicant/wpa_supplicant-*.conf; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
@@ -34,10 +34,10 @@ function check_install() {
 function check_conf() {
     if [[ -f "$INSTALL_CONF_DIR/network.conf" ]] &&
         [[ "$(cat "$INSTALL_CONF_DIR/network.conf")" != "" ]]; then
-        echo "Configuration found at $INSTALL_CONF_DIR/network.conf"
+        qecho "Configuration found at $INSTALL_CONF_DIR/network.conf"
         return 0
     else
-        echo "No configuration found at $INSTALL_CONF_DIR/network.conf"
+        echo "No configuration found at $INSTALL_CONF_DIR/network.conf" >&2
         return 1
     fi
 }
@@ -56,6 +56,7 @@ function prepare() {
     fi
 
     echo "Opening wpa_supplicant file..."
+    read -p "Press enter to continue..."
     if [[ "$EDITOR" != "" ]]; then
         $EDITOR /tmp/wpa_supplicant.conf
     else
@@ -64,21 +65,20 @@ function prepare() {
 }
 
 function install() {
-    echo "Copying /tmp/wpa_supplicant.conf to /etc/wpa_supplciant/wpa_supplicant-${card}.conf..."
+    qecho "Copying /tmp/wpa_supplicant.conf to /etc/wpa_supplciant/wpa_supplicant-${card}.conf..."
     sudo install -Dm 600 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant-${card}.conf
 }
 
 function post_install() {
-    echo "Enabling wpa_supplicant@${card}.service and dhcpcd.service..."
+    qecho "Enabling wpa_supplicant@${card}.service and dhcpcd.service..."
     sudo systemctl enable --now wpa_supplicant@${card}.service
     sudo systemctl enable --now dhcpcd.service
-    echo "Enabled wpa_supplicant@${card}.service and dhcpcd.service"
+    qecho "Enabled wpa_supplicant@${card}.service and dhcpcd.service"
 }
 
 function cleanup() {
-    echo "Removing ${temp_files[@]}..."
+    qecho "Removing ${temp_files[@]}..."
     rm -rf ${temp_files[@]}
-    echo "Removed ${temp_files[@]}"
 }
 
 

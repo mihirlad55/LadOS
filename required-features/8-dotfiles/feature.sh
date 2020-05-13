@@ -24,7 +24,7 @@ function update_git_doom_config() {
     git config --global user.email "$email"
     git config --global core.editor "$editor"
 
-    echo "Name, email, and editor have been set globally for git."
+    qecho "Name, email, and editor have been set globally for git."
 
     sed -i $HOME/.doom.d/config.el -e \
         "s/user-full-name \"\"$/user-full-name \"$name\"/"
@@ -40,9 +40,9 @@ function check_conf() {
         [[ "$CONF_FULL_NAME" != "" ]] &&
         [[ "$CONF_EMAIL" != "" ]] &&
         [[ "$CONF_EDITOR" != "" ]]; then
-        echo "Configuration has been set correctly"
+        qecho "Configuration has been set correctly"
     else
-        echo "Configuration has not been set correctly"
+        echo "Configuration has not been set correctly" >&2
     fi
 
     unset CONF_FULL_NAME
@@ -74,68 +74,64 @@ function check_install() {
         [[ "$GIT_CONFIG_EDITOR" != "" ]] &&
         [[ "$DOOM_CONFIG_NAME" != "" ]] &&
         [[ "$DOOM_CONFIG_EMAIL" != "" ]]; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     fi
 
-    echo "$feature_name is not installed"
+    echo "$feature_name is not installed" >&2
     return 1
 }
 
 function prepare() {
+    qecho "Cloning dotfiles..."
     git clone https://github.com/mihirlad55/dotfiles /tmp/dotfiles
+    qecho "Updating submodules..."
     (cd /tmp/dotfiles && git submodule init && git submodule update --init)
 }
 
 function install() {
-    echo "Copying /tmp/dotfiles to $HOME/"
+    qecho "Copying /tmp/dotfiles to $HOME/"
     cp -rf /tmp/dotfiles/. $HOME/
 
-    echo "Installing neovim plugins..."
+    qecho "Installing neovim plugins..."
     nvim -c "PlugInstall | qa"
 
-    echo "Installing zsh plguins..."
+    qecho "Installing zsh plguins..."
     zsh -c "source $HOME/.zshrc; exit"
 
-    echo "Done installing dotfiles"
+    vecho "Done installing dotfiles"
 }
 
 function post_install() {
-    # Change shell to zsh
-    chsh -s /usr/bin/zsh
+    qecho "Changing shell to zsh..."
+    sudo chsh -s /usr/bin/zsh "$USER"
 
-    # Rebuild .Xresources DB
-    xrdb ~/.Xresources
-
-    echo "Setting up git and doom emacs..."
+    qecho "Setting up git and doom emacs..."
     if [[ "$CONF_FULL_NAME" != "" ]]; then
         name="$CONF_FULL_NAME"
     else
-        echo -n "What is your full name: "
-        read name
+        read -p "What is your full name: " name
     fi
 
     if [[ "$CONF_EMAIL" != "" ]]; then
         email="$CONF_EMAIL"
     else
-        echo -n "What is your email: "
-        read email
+        read -p "What is your email: " email
     fi
 
     if [[ "$CONF_EDITOR" != "" ]]; then
         editor="$CONF_EDITOR"
     else
-        echo -n "What is your main editor: "
-        read editor
+        read -p "What is your main editor: " editor
     fi
 
     update_git_doom_config
 
-    echo "Name and email have been set for Doom Emacs"
+    vecho "Name and email have been set for Doom Emacs"
 }
 
 function cleanup() {
-    echo "Removing /tmp/dotfiles"
+    qecho "Removing /tmp/dotfiles"
     rm -rf /tmp/dotfiles
 }
 

@@ -21,25 +21,25 @@ depends_pacman=(emacs)
 
 function check_install() {
     if $HOME/.emacs.d/bin/doom sync; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function install() {
+    qecho "Cloning doom emacs..."
     git clone --depth 1 https://github.com/hlissner/doom-emacs $HOME/.emacs.d
 
-    echo "Installing doom emacs"
-
+    qecho "Installing doom emacs"
     $HOME/.emacs.d/bin/doom install
 
-    echo "Syncing doom emacs"
+    qecho "Syncing doom emacs"
     $HOME/.emacs.d/bin/doom sync
 
-    echo "Done installing doom emacs"
+    qecho "Done installing doom emacs"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

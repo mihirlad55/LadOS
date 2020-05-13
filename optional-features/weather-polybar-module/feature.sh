@@ -24,20 +24,20 @@ depends_pip3=()
 
 function check_install() {
     if [[ "$(cat "$HOME/.apikeys/openweathermap.key")" != "" ]]; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function check_conf() {
     if [[ -e "$KEY_PATH" ]] && [[ "$(cat "$KEY_PATH")" != "" ]]; then
-        echo "Configuration key found at $KEY_PATH"
+        qecho "Configuration key found at $KEY_PATH"
         return 0
     else
-        echo "No configuration found or not in correct format at $KEY_PATH"
+        echo "No configuration found or not in correct format at $KEY_PATH" >&2
         return 1
     fi
 }
@@ -45,25 +45,23 @@ function check_conf() {
 function install() {
     if ! check_conf; then
         echo "No key file found in $CONF_DIR"
-        echo -n "Please enter the openweathermap key: "
-        read key
+        read -p "Please enter the openweathermap key: " key
 
         KEY_PATH="/tmp/openweathermap.key"
 
-        echo "Copying key to $INSTALL_PATH"
+        qecho "Copying key to $INSTALL_PATH"
         echo "$key" > "$KEY_PATH"
     fi
 
-    echo "Copying key to $INSTALL_PATH"
+    qecho "Copying key to $INSTALL_PATH"
     command install -Dm 600 "$KEY_PATH" "$INSTALL_PATH"
 
-    echo "Done copying key"
+    qecho "Done copying key"
 }
 
 function cleanup() {
-    echo "Removing ${temp_files[@]}..."
+    qecho "Removing ${temp_files[@]}..."
     rm -f ${temp_files[@]}
-    echo "Removed ${temp_files[@]}"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

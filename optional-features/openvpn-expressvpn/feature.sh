@@ -25,7 +25,7 @@ function fix_server_files() (
     cd "$CONF_DIR/client"
 
     if [[ $(echo *.ovpn) != "*.ovpn" ]]; then
-        echo "Fixing server files"
+        qecho "Fixing server files"
         for f in *.ovpn; do
             new_name=$(echo $f |
                 sed "s/my_expressvpn//" |
@@ -41,10 +41,10 @@ function fix_server_files() (
 
 function check_conf() (
     if [[ -f "$LOGIN_CONF_PATH" ]] && [[ "$(cat $LOGIN_CONF_PATH | wc -l)" -eq 2 ]]; then
-        echo "Configuration found at $LOGIN_CONF_PATH and are set correctly"
+        qecho "Configuration found at $LOGIN_CONF_PATH and are set correctly"
         return 0
     else
-        echo "Configuration is not set or is not set correctly"
+        echo "Configuration is not set or is not set correctly" >&2
         return 1
     fi
 )
@@ -52,10 +52,10 @@ function check_conf() (
 function check_install() {
     if sudo test -e "/etc/openvpn/client/login.conf" && 
         sudo diff --exclude=".gitignore" $CONF_DIR/client /etc/openvpn/client; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
@@ -71,21 +71,19 @@ function install() {
         echo "Get the username and password from https://www.expressvpn.com/sign-in"
         echo "Get the server configs from https://www.expressvpn.com/sign-in and copy them into client/"
 
-        echo -n "Username: "
-        read username
+        read -p "Username: " username
 
-        echo -n "Password: "
-        read password
+        read -p "Password: " password
 
         sudo touch /etc/openvpn/client/login.conf
-        echo $username | sudo tee -a /etc/openvpn/client/login.conf
-        echo $password | sudo tee -a /etc/openvpn/client/login.conf
+        echo $username | sudo tee -a /etc/openvpn/client/login.conf >/dev/null
+        echo $password | sudo tee -a /etc/openvpn/client/login.conf >/dev/null
     fi
 
-    echo "Copying files from $CONF_DIR/client/ to /etc/openvpn/client"
+    qecho "Copying files from $CONF_DIR/client/ to /etc/openvpn/client"
     sudo install -m 600 $CONF_DIR/client/* /etc/openvpn/client/
 
-    echo "To start the vpn, run systemctl start openvpn-client@<server>"
+    qecho "To start the vpn, run systemctl start openvpn-client@<server>"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

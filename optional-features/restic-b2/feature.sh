@@ -24,16 +24,16 @@ function check_conf() (
     res="$?"
 
     if [[ "$?" -eq 0 ]]; then
-        echo "Configuration is formatted correctly"
+        qecho "Configuration is formatted correctly"
         return 0
     else
-        echo "Configuration is not set properly"
+        echo "Configuration is not set properly" >&2
         return 1
     fi
 )
 
 function load_conf() {
-    echo "Reading configuration from $CONF_DIR/constants.sh"
+    qecho "Reading configuration from $CONF_DIR/constants.sh"
     source "$CONF_DIR/constants.sh"
 }
 
@@ -45,10 +45,10 @@ function check_install() {
         [[ "$B2_ACCOUNT_ID" != "" ]] &&
         [[ "$B2_ACCOUNT_KEY" != "" ]] &&
         [[ "$RESTIC_PASSWORD" != "" ]]; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
@@ -86,7 +86,7 @@ function prepare() {
 }
 
 function install() {
-    echo "Copying configuration to $TARGET_CONSTANTS_PATH"
+    qecho "Copying configuration to $TARGET_CONSTANTS_PATH"
 
     sed -i "$TARGET_CONSTANTS_PATH" \
         -e "s/B2_KEY_NAME=.*$/B2_KEY_NAME='$B2_KEY_NAME'/" \
@@ -95,7 +95,7 @@ function install() {
         -e "s/B2_ACCOUNT_KEY=.*$/B2_ACCOUNT_KEY='$B2_ACCOUNT_KEY'/" \
         -e "s/RESTIC_PASSWORD=.*$/RESTIC_PASSWORD='$RESTIC_PASSWORD'/"
 
-    echo "Done copying configuration for restic"
+    qecho "Done copying configuration for restic"
 }
 
 

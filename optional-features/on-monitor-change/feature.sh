@@ -23,23 +23,25 @@ depends_pacman=(xorg-xrandr)
 function check_install() {
     for f in ${new_files[@]}; do
         if [[ ! -e "$f" ]]; then
-            echo "$f is missing"
-            echo "$feature_name is not installed"
+            echo "$f is missing" >&2
+            echo "$feature_name is not installed" >&2
             return 1
         fi
     done
 
-    echo "$feature_name is installed"
+    qecho "$feature_name is installed"
     return 0
 }
 
 function install() {
+    qecho "Installing configuration files..."
     sudo install -Dm 755 $BASE_DIR/50-monitor.rules /etc/udev/rules.d/50-monitor.rules
     sudo install -Dm 755 $BASE_DIR/fix-monitor-layout /usr/local/bin/fix-monitor-layout
     sudo install -Dm 644 $BASE_DIR/on-monitor-change@.service /etc/systemd/user/on-monitor-change@.service
 }
 
 function post_install() {
+    qecho "Reloading udev rules..."
     sudo udevadm control --reload
 }
 

@@ -20,23 +20,22 @@ depends_pacman=(powertop)
 
 function check_install() {
     if diff $BASE_DIR/powertop.service /etc/systemd/system/powertop.service; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    echo "Copying powertop.service to /etc/systemd/system..."
+    qecho "Copying powertop.service to /etc/systemd/system..."
     sudo install -Dm 644 $BASE_DIR/powertop.service /etc/systemd/system/powertop.service
 }
 
 function post_install() {
-    echo "Enabling powertop.service..."
+    qecho "Enabling powertop.service..."
     sudo systemctl enable --now powertop.service
-    echo "Enabled powertop.service"
 }
 
 

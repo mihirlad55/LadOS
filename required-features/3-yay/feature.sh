@@ -20,35 +20,37 @@ depends_pacman=(base-devel git wget yajl)
 
 function check_install() {
     if command -v yay > /dev/null; then
-        echo "Yay installed."
-        exit 0
+        qecho "Yay installed"
+        return 0
+    else
+        echo "Yay not installed" >&2
+        return 1
     fi
 }
 
 function prepare() {
     # Clone package-query
-    echo "Cloning package-query..."
+    qecho "Cloning package-query..."
     git clone https://aur.archlinux.org/package-query.git /tmp/package-query
 
     # Make package
-    echo "Making package package-query..."
+    qecho "Making package package-query..."
     (cd /tmp/package-query && makepkg -si --noconfirm)
 
     # Clone yay
-    echo "Cloning yay..."
+    qecho "Cloning yay..."
     git clone https://aur.archlinux.org/yay.git /tmp/yay
 }
 
 function install() {
     # Make package
-    echo "Making yay..."
+    qecho "Making yay..."
     (cd /tmp/yay && makepkg -si --noconfirm)
 }
 
 function cleanup() {
-    echo "Removing /tmp/yay and /tmp/package-query..."
+    qecho "Removing /tmp/yay and /tmp/package-query..."
     rm -dRf ${temp_files[@]}
-    echo "Done removing /tmp/yay and /tmp/package-query"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

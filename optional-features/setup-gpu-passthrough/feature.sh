@@ -22,48 +22,48 @@ depends_pacman=()
 function check_install() {
     for mod in ${NEW_MODULES[@]}; do
         if ! grep /etc/mkinitcpio.conf -e "$mod" > /dev/null; then
-            echo "$mod is missing from mkinitcpio.conf"
-            echo "$feature_name is not installed"
+            echo "$mod is missing from mkinitcpio.conf" >&2
+            echo "$feature_name is not installed" >&2
             return 1
         fi
     done
 
     if [[ ! -f "/etc/modprobe.d/nothunderbolt.conf" ]]; then
-        echo "/etc/modprobe.d/nothunderbolt.conf is missing"
-        echo "$feature_name is not installed"
+        echo "/etc/modprobe.d/nothunderbolt.conf is missing" >&2
+        echo "$feature_name is not installed" >&2
         return 1
     fi
 
-    echo "$feature_name is installed"
+    qecho "$feature_name is installed"
     return 0
 }
 
 function install() {
-    echo "Adding ${NEW_MODULES[@]} to /etc/mkinitcpio.conf, if not present"
+    qecho "Adding ${NEW_MODULES[@]} to /etc/mkinitcpio.conf, if not present"
     source /etc/mkinitcpio.conf
     for module in ${NEW_MODULES[@]}; do
         if ! echo ${MODULES[@]} | grep "$module" > /dev/null; then
-            echo $MODULES
-            echo "$module not found in mkinitcpio.conf"
+            vecho $MODULES
+            vecho "$module not found in mkinitcpio.conf"
 
-            echo "Adding $module to mkinitcpio.conf"
+            vecho "Adding $module to mkinitcpio.conf"
             MODULES=( "${MODULES[@]}" "$module" )
         else
-            echo "$module found in mkinitcpio.conf."
+            vecho "$module found in mkinitcpio.conf."
         fi
     done
 
-    echo "Updating /etc/mkinitcpio.conf..."
+    qecho "Updating /etc/mkinitcpio.conf..."
     MODULES_LINE="MODULES=(${MODULES[@]})"
     sudo sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 
-    echo "Rebuilding initframfs..."
-
+    qecho "Rebuilding initframfs..."
     sudo mkinitcpio -P linux
 
+    qecho "Copying nothunderbolt.conf to /etc/modprobe.d..."
     sudo install -Dm 644 $BASE_DIR/nothunderbolt.conf /etc/modprobe.d/nothunderbolt.conf
 
-    echo "Done"
+    qecho "Done"
     echo "Make sure you have virtualization enabled in your BIOS"
 }
 
