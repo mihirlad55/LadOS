@@ -1,49 +1,53 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
+VERBOSITY_FLAG=""
+
 source "$CONF_DIR/conf.sh"
+source "$LAD_OS_DIR/common/message.sh"
 
-
-function pause() {
-    read -p "Press enter to continue..."
-}
 
 function enable_localrepo() {
+    msg "Checking localrepo..."
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
-        echo "Enabling localrepo..."
+        msg2 "Found localrepo. Enabling..."
         sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
-	pacman -Sy
+        pacman -Sy
     fi
 }
 
-
 function update_mkinitcpio_modules() {
-    NEW_MODULES=("$@")
-    echo "Adding ${NEW_MODULES[@]} to /etc/mkinitcpio.conf, if not present"
-    source /etc/mkinitcpio.conf
-    for module in ${NEW_MODULES[@]}; do
-        if ! echo ${MODULES[@]} | grep "$module" > /dev/null; then
-            echo $MODULES
-            echo "$module not found in mkinitcpio.conf"
+    [[ -n "$VERBOSITY_FLAG" ]] && echo "Updating mkinitcpio..."
 
-            echo "Adding $module to mkinitcpio.conf"
+    NEW_MODULES=("$@")
+
+    [[ -n "$VERBOSITY_FLAG" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
+
+    source /etc/mkinitcpio.conf
+
+    for module in "${NEW_MODULES[@]}"; do
+        if ! echo "${MODULES[@]}" | grep -q "$module"; then
+            [[ -n "$VERBOSITY_FLAG" ]] && echo "$module not found in mkinitcpio.conf"
+
+            [[ -n "$VERBOSITY_FLAG" ]] && echo "Staging $module for addition"
             MODULES=( "${MODULES[@]}" "$module" )
         else
-            echo "$module found in mkinitcpio.conf."
+            [[ -n "$VERBOSITY_FLAG" ]] && echo "$module already found"
         fi
     done
 
-    echo "Updating /etc/mkinitcpio.conf..."
-    MODULES_LINE="MODULES=(${MODULES[@]})"
+    [[ -n "$VERBOSITY_FLAG" ]] && echo "Updating /etc/mkinitcpio.conf..."
+    MODULES_LINE="MODULES=(${MODULES[*]})"
     sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 }
 
-function set_timezone() {
-    local CURR_DIR="$PWD"
+function set_timezone() (
+    msg "Setting timezone..."
+
     local zone=
     local num=
 
@@ -51,29 +55,27 @@ function set_timezone() {
         zone="$CONF_TIMEZONE_PATH"
     else
         IFS=$'\n'
-        cd /usr/share/zoneinfo
+        cd /usr/share/zoneinfo || exit 1
         while true; do
-            local options=($(ls))
+            local options
+            mapfile -t options < <(ls)
+
             local i=1
-            for option in ${options[@]}; do
+            for option in "${options[@]}"; do
                 echo "$i. $option"
-                i=$(($i+1))
+                i=$((i+1))
             done
-            echo -n "Select closest match: "
-            read num
+            num="$(ask "Select closest match")"
 
-        re='^[0-9]+$'
-        if ! [[ $num =~ $re ]]; then
-                continue
-        fi
-            num=$(($num-1))
+            re='^[0-9]+$'
+            ! [[ $num =~ $re ]] && continue
 
-        echo $num
+            num=$((num-1))
+
             selection="${options[$num]}"
-        echo "Selected $selection"
+
             if [[ -d "$selection" ]]; then
-                echo "Navigating to $selection..."
-                cd $selection
+                cd "$selection" || exit 1
             elif [[ -e "$selection" ]]; then
                 zone="${PWD}/${selection}"
                 break
@@ -82,141 +84,146 @@ function set_timezone() {
     fi
 
 
-    echo "You selected $zone. Now symlinking $zone to /etc/localtime..."
+    msg2 "$zone selected"
     
     ln -sf "$zone" /etc/localtime
-
-    cd "$CURR_DIR"
-}
+)
 
 function set_adjtime() {
-    echo "Setting adjtime"
+    msg "Setting adjtime..."
     hwclock --systohc
-    echo "Set adjtime"
+}
+
+function install_vim() {
+    msg "Installing vim to edit config files..."
+
+    pacman -S vim --noconfirm --needed
 }
 
 function set_locale() {
+    msg "Setting locale..."
 
     if [[ "$CONF_LOCALE" != "" ]]; then
         sed -i /etc/locale.gen -e "/#$CONF_LOCALE/s/^# *//"
     else
-        echo "Opening /etc/locale.gen... Uncomment the correct locale..."
+        msg2 "Opening /etc/locale.gen. Uncomment the correct locale..."
         pause
         vim /etc/locale.gen
     fi
 
     locale-gen
 
-    local lang=$(cat /etc/locale.gen | egrep '^[^#].*$' -m 1 | cut -d' ' -f1)
+    local lang
+    lang=$(grep -E /etc/locale.gen -e '^[^#].*$' -m 1 | cut -d' ' -f1)
 
     echo "LANG=$lang" > /etc/locale.conf
-
-    echo "Locale is set"
 }
 
 function set_hostname() {
+    msg "Setting hostname..."
     local hostname
 
     if [[ "$CONF_HOSTNAME" != "" ]]; then
         hostname="$CONF_HOSTNAME"
     else
-        echo -n "Enter a hostname for this computer: "
-        read hostname
+        hostname="$(ask "Enter a hostname for this computer")"
     fi
 
-    echo $hostname > /etc/hostname
-
-    echo "$hostname has been set in /etc/hostname"
+    echo "$hostname" > /etc/hostname
 }
 
 function setup_hosts() {
-    echo "Setting up default hosts file..."
+    msg "Setting up hosts file..."
 
     echo "127.0.0.1  localhost" > /etc/hosts
     echo "::1        localhost" >> /etc/hosts
 
-    hosts="$(cat $CONF_DIR/hosts)"
+    hosts="$(cat "$CONF_DIR"/hosts)"
 
     if [[ "$hosts" != "" ]]; then
         echo "$hosts" >> /etc/hosts
     elif [[ "$CONF_EDIT_HOSTS" = "yes" ]]; then
-        echo "Opening hosts file for additional configuration..."
+        msg2 "Opening hosts file for additional configuration..."
         pause
         vim /etc/hosts
     fi
 }
 
 function update_mkinitcpio() {
+    msg "Updating mkinitcpio..."
     pci_info=$(lspci | cut -d' ' -f2- | grep -e '^VGA' -e '3D' -e 'Display')
     NEW_MODULES=()
 
-    if echo $pci_info | grep -i 'amd'; then
+    if echo "$pci_info" | grep -q -i 'amd'; then
         NEW_MODULES=("${NEW_MODULES[@]}" "amdgpu")
     fi
 
-    if echo $pci_info | grep -i 'intel'; then
+    if echo "$pci_info" | grep -q -i 'intel'; then
         NEW_MODULES=("${NEW_MODULES[@]}" "i915")
     fi
 
-    update_mkinitcpio_modules ${NEW_MODULES[@]}
+    msg2 "Ensuring ${NEW_MODULES[*]} are present in mkinitcpio.conf"
+    update_mkinitcpio_modules "${NEW_MODULES[@]}"
 }
 
 function create_initramfs() {
-    echo "Making initframfs..."
+    msg "Creating initramfs..."
     mkinitcpio -P linux
-    echo "Done making initramfs"
 }
 
 function set_root_passwd() {
-    echo "Set root password"
+    msg "Setting root password..."
 
     if [[ "$CONF_ROOT_PASSWORD" != "" ]]; then
         echo "root:$CONF_ROOT_PASSWORD" | chpasswd
     else
         until passwd; do sleep 1s; done
     fi
-
-    echo "Root password set"
 }
 
 function create_user_account() {
-    echo "Creating new default user account..."
+    msg "Creating new default user account..."
 
     if [[ "$CONF_USERNAME" != "" ]]; then
         username="$CONF_USERNAME"
     else
-        echo -n "Enter username: "
-        read username
+        username="$(ask "Enter username")"
     fi
 
-    echo "Creating user $username"
-    useradd -m $username
+    msg2 "Creating user $username..."
+    useradd -m "$username"
 
+    msg2 "Setting password for $username..."
     if [[ "$CONF_PASSWORD" != "" ]]; then
         echo "$username:$CONF_PASSWORD" | chpasswd
     else
-        echo "Set password for $username"
-
-        until passwd $username; do sleep 1s; done
+        until passwd "$username"; do sleep 1s; done
     fi
-
-    echo "Password set for $username"
 }
 
 function setup_sudo_and_su() {
+    msg "Preparing to switch user to $username..."
     pacman -Syyu --noconfirm
 
-    echo "Installing sudo..."
-    $REQUIRED_FEATURES_DIR/1-sudoers/feature.sh full
+    msg2 "Installing sudo..."
+    if [[ -n "$VERBOSITY_FLAG" ]] then
+        "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" full
+    else
+        "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh full > /dev/null
+    fi
+
     # Temporary no password prompt for installation
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
 
+    msg2 "Adding $username to group wheel..."
     usermod -a -G wheel "$username"
-    echo "Added $username to group wheel"
 
-    echo "Changing user to $username..."
-    su -P -c "/LadOS/install/su-install.sh" - $username
+    msg "Changing user to $username..."
+    su -P -c "/LadOS/install/su-install.sh" - "$username"
 }
+
+
+[[ "$1" = "-v" ]] && VERBOSITY_FLAG="-v"
 
 enable_localrepo
 
@@ -224,8 +231,7 @@ set_timezone
 
 set_adjtime
 
-# To edit config files
-pacman -S vim --noconfirm --needed
+install_vim
 
 set_locale
 
