@@ -98,7 +98,9 @@ case "$1" in
         if type -p "$1"; then
             [[ ! -n "$QUIET" ]] && echo "Starting $1..."
             $1
+            res="$?"
             [[ ! -n "$QUIET" ]] && echo "Done $1"
+            exit "$res"
         else
             [[ ! -n "$QUIET" ]] && echo "$1 is not defined for this feature"
             exit 1
