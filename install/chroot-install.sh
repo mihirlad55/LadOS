@@ -220,7 +220,7 @@ function setup_sudo_and_su() {
     usermod -a -G wheel "$username"
 
     msg "Changing user to $username..."
-    su -P -c "/LadOS/install/su-install.sh" - "$username"
+    su -P -c "/LadOS/install/su-install.sh ${VERBOSITY_FLAG}" - "$username"
 }
 
 
