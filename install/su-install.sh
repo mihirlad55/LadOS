@@ -27,7 +27,7 @@ function enable_community_repo() {
 function install_yay() {
     msg "Installing yay..."
 
-    if pacman -Si yay; then
+    if pacman -Si yay &> /dev/null; then
         msg2 "Installing yay through cache..."
         sudo pacman -S yay --needed --noconfirm
     else
