@@ -42,14 +42,12 @@ function vecho() {
 }
 
 
-if echo "$@" | grep -q "-v"; then
-    $@="$(echo "$@" | sed 's/-v//')"
+if [[ "$1" = "-v" ]]; then
     VERBOSE=1
-fi
-
-if echo "$@" | grep -q "-q"; then
-    $@="$(echo "$@" | sed 's/-q//')"
+    shift
+elif [[ "$1" = "-q" ]]; then
     QUIET=1
+    shift
 fi
 
 case "$1" in
@@ -85,8 +83,8 @@ case "$1" in
             [[ ! -n "$QUIET" ]] && echo "Checking if feature was installed correctly..."
             check_install
         fi
-
         ;;
+
     name)
         echo "$feature_name"
         ;;
