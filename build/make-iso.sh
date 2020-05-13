@@ -30,7 +30,7 @@ function show_menu() {
         read option
 
         func_num=$(($option*2))
-        ${!func_num}
+        eval ${!func_num}
     done
 }
 
@@ -113,6 +113,7 @@ function build_aur_packages() {
 function copy_pacman_packages() {
     local PKG_PATH="$1"
     local ARCH_ISO_PATH="$2"
+    local PACMAN_CONF_PATH="$3"
     local TEMP_DB_PATH="/tmp"
 
     sudo pacman -Syu --noconfirm
@@ -121,10 +122,13 @@ function copy_pacman_packages() {
     pacman_packages=($(cat "$LAD_OS_DIR/packages.csv" | \
         grep "^.*,.*,system," | \
         cut -d ',' -f1))
-    arch_iso_packages=("$(cat "$ARCH_ISO_PATH/packages.x86_64")")
 
-    # Add packages from archiso
-    pacman_packages=($pacman_packages $arch_iso_packages)
+    if [[ -f "$ARCH_ISO_PATH/packages.x86_64" ]]; then
+        arch_iso_packages=("$(cat "$ARCH_ISO_PATH/packages.x86_64")")
+
+        # Add packages from archiso
+        pacman_packages=($pacman_packages $arch_iso_packages)
+    fi
 
     for pkg in ${pacman_packages[@]}; do
         target="$(pacman -Spdd $pkg | \
@@ -149,25 +153,41 @@ function copy_pacman_packages() {
         --dbpath "$TEMP_DB_PATH" \
         --noconfirm --needed
 
-    sudo sed -i $ARCH_ISO_PATH/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+    sudo sed -i "$PACMAN_CONF_PATH" -e '1 i\Include = /LadOS/install/localrepo.conf'
 }
 
 function increase_tty_scrollback() {
-    local ARCH_ISO_DIR="$1"
-    local CD_ENTRY_PATH="$ARCH_ISO_DIR/efiboot/entries/archiso-x86_64-cd.conf"
-    local USB_ENTRY_PATH="$ARCH_ISO_DIR/efiboot/entries/archiso-x86_64-usb.conf"
+    local ENTRIES_DIR="$1"
     local OPTION="fbcon=scrollback:8192k"
 
-    sudo sed -i "$CD_ENTRY_PATH" -e "s/^options.*$/& $OPTION/"
-    sudo sed -i "$USB_ENTRY_PATH" -e "s/^options.*$/& $OPTION/"
+    sudo sed -i $ENTRIES_DIR/* -e "s/^options.*$/& $OPTION/"
+    sudo sed -i $ENTRIES_DIR/* -e "s/^options.*$/& $OPTION/"
+}
+
+function create_localrepo() {
+    AIROOTFS_DIR="$1"
+    PACMAN_CONF_PATH="$2"
+    LOCAL_REPO_PATH="$AIROOTFS_DIR/LadOS/localrepo"
+    PKG_PATH="$LOCAL_REPO_PATH/pkg"
+
+    sudo mkdir -p "$PKG_PATH"
+
+    build_aur_packages "$PKG_PATH"
+
+    if prompt "Build ttf-ms-win10?"; then
+        build_win10_fonts "$PKG_PATH"
+    fi
+
+    copy_pacman_packages "$PKG_PATH" "$ARCH_ISO_DIR" "$PACMAN_CONF_PATH"
+
+    (cd "$LOCAL_REPO_PATH" && sudo repo-add localrepo.db.tar.gz pkg/*)
 }
 
 
 function build_from_scratch() {
-    ARCH_ISO_DIR="/var/tmp/archiso"
-    AIRROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
-    LOCAL_REPO_PATH="$AIRROOTFS_DIR/LadOS/localrepo"
-    PKG_PATH="$LOCAL_REPO_PATH/pkg"
+    local ARCH_ISO_DIR="/var/tmp/archiso"
+    local AIRROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
+    local BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/entries/"
 
     echo "Removing old ISOs..."
     rm -f $BASE_DIR/*.iso
@@ -182,23 +202,13 @@ function build_from_scratch() {
     sudo cp -rf -t "$AIRROOTFS_DIR" "$LAD_OS_DIR"
 
     if prompt "Pre-compile and download packages?"; then
-        sudo mkdir -p "$PKG_PATH"
-
-        build_aur_packages "$PKG_PATH"
-
-        if prompt "Build ttf-ms-win10?"; then
-            build_win10_fonts "$PKG_PATH"
-        fi
-
-        copy_pacman_packages "$PKG_PATH" "$ARCH_ISO_DIR"
-
-        (cd "$LOCAL_REPO_PATH" && sudo repo-add localrepo.db.tar.gz pkg/*)
+        create_localrepo "$AIRROOTFS_DIR" "$ARCH_ISO_DIR/pacman.conf"
     fi
 
     # Avoid permission errors
     sudo chown -R root:root "$ARCH_ISO_DIR"
 
-    increase_tty_scrollback "$ARCH_ISO_DIR"
+    increase_tty_scrollback "$BOOT_ENTRIES_DIR"
 
     (
         cd $ARCH_ISO_DIR
@@ -227,9 +237,9 @@ function download_iso() {
         awk '{$1=$1; print}')"
 
     local url_root="$(echo "$top_mirror" | \
-        sed -e "s;\$repo/os/\$arch;iso/$arch_date;")"
+        sed -e "s;\$repo/os/\$arch;iso/latest;")"
 
-    local iso_name="$(curl -Ls $url_root/iso/latest | \
+    local iso_name="$(curl -Ls $url_root | \
         grep -o -P -e "archlinux-[0-9]{4}\.[0-9]{2}\.[0-9]{2}-x86_64\.iso" | \
         head -n1)"
 
@@ -241,18 +251,18 @@ function download_iso() {
 
 function use_existing_iso() {
     read -p "Enter path to iso: " archiso_path
-
-    remaster
 }
 
 function remaster() {
     MOUNT_PATH="/mnt/archiso"
-    CUSTOM_ISO_PATH="/tmp/customiso"
-    AIROOTFS_PATH="$CUSTOMISO_PATH/arch/x86_64/airootfs.sfs"
-    SHA512_AIROOTFS_PATH="$CUSTOMISO_PATH/arch/x86_64/airootfs.sha512"
-    SQUASHFS_ROOT_PATH="$CUSTOMISO_PATH/arch/x86_64/squashfs-root"
+    CUSTOM_ISO_PATH="/var/tmp/customiso"
+    AIROOTFS_PATH="$CUSTOM_ISO_PATH/arch/x86_64/airootfs.sfs"
+    SHA512_AIROOTFS_PATH="$CUSTOM_ISO_PATH/arch/x86_64/airootfs.sha512"
+    SQUASHFS_ROOT_PATH="$CUSTOM_ISO_PATH/arch/x86_64/squashfs-root"
+    BOOT_ENTRIES_DIR="$CUSTOM_ISO_PATH/loader/entries"
 
     if is_arch_user; then
+        sudo pacman -Rs archiso-git --noconfirm
         sudo pacman -S archiso cdrtools --needed --noconfirm
     fi
     
@@ -266,10 +276,18 @@ function remaster() {
     sudo cp -a $MOUNT_PATH/* "$CUSTOM_ISO_PATH"
 
     echo "Unsquashing airootfs.sfs..."
-    sudo unsquashfs "$AIROOTFS_PATH" -d "$SQUASHFS_ROOT_PATH"
-
+    sudo unsquashfs -f -d "$SQUASHFS_ROOT_PATH" "$AIROOTFS_PATH" 
     echo "Copying over LadOS to the squashfs-root..."
-    sudo cp -rf "$BASE_DIR" "$SQUASHFS_ROOT_PATH"
+    sudo cp -rf "$LAD_OS_DIR" "$SQUASHFS_ROOT_PATH"
+
+    if prompt "Pre-compile and download packages?"; then
+        create_localrepo "$SQUASHFS_ROOT_PATH" "$SQUASHFS_ROOT_PATH/etc/pacman.conf"
+    fi
+
+    # Avoid permission errors
+    sudo chown -R root:root "$CUSTOM_ISO_PATH"
+
+    increase_tty_scrollback "$BOOT_ENTRIES_DIR"
 
     echo "Removing the old airootfs.sfs..."
     sudo rm "$AIROOTFS_PATH"
@@ -311,8 +329,8 @@ function remaster() {
 
 function remaster_iso() {
     show_menu "Build from scratch" \
-        "Download ISO"      "download_iso" \
-        "Use existing ISO"  "use_existing_iso" \
+        "Download ISO"      "download_iso; remaster" \
+        "Use existing ISO"  "use_existing_iso; remaster" \
         "Go Back"           "return 0"
 }
 
