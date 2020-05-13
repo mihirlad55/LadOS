@@ -21,7 +21,7 @@ function enable_community_repo() {
     local path_to_feature
     path_to_feature=("$REQUIRED_FEATURES_DIR"/*enable-community-pacman/feature.sh)
 
-    ./"${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
+    "${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
 }
 
 function install_yay() {
@@ -35,7 +35,7 @@ function install_yay() {
         local path_to_feature
         path_to_feature=("$REQUIRED_FEATURES_DIR"/*yay/feature.sh)
 
-        ./"${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
+        "${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
     fi
 }
 
@@ -62,7 +62,7 @@ function install_packages() {
         typ=$(echo "$package" | cut -d',' -f3)
         req=$(echo "$package" | cut -d',' -f4)
 
-        [[ -n "$VERBOSITY_FLAG" ]] && echo "$name ($desc)"
+        [[ -n "$VERBOSE" ]] && echo "$name ($desc)"
 
         if [[ $install_optional -eq 1 ]] && [[ "$req" = "optional" ]] || [[ "$req" = "required" ]]; then
             if [[ "$typ" = "system" ]]; then
@@ -236,8 +236,6 @@ fi
 
 enable_community_repo
 
-enable_local_repo
-
 install_yay
 
 install_packages
@@ -246,7 +244,9 @@ install_required_features
 
 install_optional_features
 
-check_all_features
+check_required_features
+
+check_optional_features
 
 disable_localrepo
 
