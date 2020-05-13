@@ -33,6 +33,14 @@ function install_dependencies() {
     fi
 }
 
+function qecho() {
+    [[ ! -n "$QUIET" ]] && echo "$@"
+}
+
+function vecho() {
+    [[ -n "$VERBOSE" ]] && echo "$@"
+}
+
 
 if echo "$@" | grep -q "-v"; then
     $@="$(echo "$@" | sed 's/-v//')"
