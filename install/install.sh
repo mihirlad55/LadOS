@@ -134,7 +134,7 @@ function generate_fstab() {
 function start_chroot_install() {
     msg "Preparing to chroot..."
     msg2 "Copying LadOS to new system"
-    cp -rf "$LAD_OS_DIR" "/mnt/LadOS"
+    cp -rft "/mnt" "$LAD_OS_DIR"
     chmod -R go=u /mnt/LadOS
 
     if [[ "$WIFI_ENABLED" -eq 1 ]]; then
