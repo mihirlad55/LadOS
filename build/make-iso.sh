@@ -319,15 +319,18 @@ function remaster() {
     local out="$ISO_OUT_DIR/$ISO_NAME.iso"
     sudo rm -f "$out"
 
-    sudo genisoimage -l -r -J \
-        -V "$LABEL" \
-        -b isolinux/isolinux.bin \
-        -no-emul-boot \
-        -boot-load-size 4 \
-        -boot-info-table \
-        -c isolinux/boot.cat \
-        -o "$out" \
-        $CUSTOM_ISO_PATH
+    sudo xorriso -as mkisofs \
+        -full-iso9660-filenames \
+        -volid "$LABEL" \
+        -eltorito-boot isolinux/isolinux.bin \
+        -eltorito-catalog isolinux/boot.cat \
+        -no-emul-boot -boot-load-size 4 -boot-info-table \
+        -isohybrid-mbr "$CUSTOM_ISO_PATH"/isolinux/isohdpfx.bin \
+        -eltorito-alt-boot \
+        -e EFI/archiso/efiboot.img \
+        -no-emul-boot -isohybrid-gpt-basdat \
+        -output "$out" \
+        "$CUSTOM_ISO_PATH"
 
     image_usb "$out"
 
@@ -358,7 +361,7 @@ if is_arch_user; then
         "Exit"                  "exit 0"
 else
     echo "Since you are not using Arch Linux, the only way to create an ISO is to remaster an existing archiso. Please download an Arch Linux ISO from https://www.archlinux.org/download/"
-    echo "Please also install squashfs-tools libisoburn dosfstools lynx"
+    echo "Please also install squashfs-tools libisoburn dosfstools lynx syslinux"
 
     if prompt "Would you like to continue to remaster the ISO?"; then
         use_existing_iso
