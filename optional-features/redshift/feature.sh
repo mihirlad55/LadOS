@@ -40,7 +40,7 @@ function install() {
     echo "url=https://location.services.mozilla.com/v1/geolocate?key=geoclue" \
         >> $TEMP_GEOCLUE_CONF_PATH
     
-    sudo tee -a $GEOCLUE_CONF_PATH <("$TEMP_GEOCLUE_CONF_PATH") > /dev/null
+    sudo tee -a $GEOCLUE_CONF_PATH < "$TEMP_GEOCLUE_CONF_PATH" > /dev/null
 
     qecho "Done installing redshift"
 }
