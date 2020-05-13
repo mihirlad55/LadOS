@@ -9,7 +9,7 @@ shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
 function print_usage() {
-    echo "usage: feature.sh [-q | -v ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
+    echo "usage: feature.sh [ -q | -v ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
 }
 
 function install_dependencies() {
