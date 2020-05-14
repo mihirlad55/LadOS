@@ -195,7 +195,7 @@ function create_localrepo() {
 function build_from_scratch() {
     local ARCH_ISO_DIR="/var/tmp/archiso"
     local AIRROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
-    local BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/entries/"
+    local BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/loader/entries/"
 
     echo "Removing old ISOs..."
     rm -f $BASE_DIR/*.iso
