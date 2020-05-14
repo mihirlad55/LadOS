@@ -8,6 +8,8 @@ OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
+OPTIONAL_FEATURES_SELECTED=()
+
 VERBOSITY=
 VERBOSITY_FLAG="-q"
 
@@ -145,6 +147,7 @@ function install_optional_features() {
 
     for feature in "${features[@]}"; do
         if ! echo "${excluded_features[@]}" | grep -q "$feature"; then
+            OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
             msg2 "Installing $feature..."
 
             "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" full_no_check
@@ -185,35 +188,25 @@ function check_required_features() {
 function check_optional_features() {
     msg "Checking optional features..."
 
-    local optional excluded
-    mapfile -t optional < <(ls "$OPTIONAL_FEATURES_DIR")
+    local optional
+    optional=("${OPTIONAL_FEATURES_SELECTED[@]}")
 
-    excluded=("$(get_excluded_features)")
+    for i in "${!optional[@]}"; do
+        feature="${optional[i]}"
+        progress="($((i+1))/${#optional[@]})"
 
-    local total=$(( ${#optional[@]} - ${#excluded[@]} ))
-    local i=1
+        msg2 "Checking $feature..." "$progress"
 
-    [[ -n "$VERBOSITY" ]] && echo "Not checking excluded features ${excluded[*]}"
+        "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
+        res="$?"
 
-    for feature in "${optional[@]}"; do
-        if ! echo "${excluded[@]}" | grep -q "$feature"; then
-            progress="($i/$total)"
+        if [[ "$?" -gt 0 ]]; then
+            error "$feature is not installed."
+            exit 1
+        fi
 
-            msg2 "Checking $feature..." "$progress"
-
-            "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
-            res="$?"
-
-            if [[ "$?" -gt 0 ]]; then
-                error "$feature is not installed."
-                exit 1
-            fi
-
-            if [[ "$CONF_NOCONFIRM" = "no" ]]; then
-                pause
-            fi
-            
-            i=$(( i + 1 ))
+        if [[ "$CONF_NOCONFIRM" = "no" ]]; then
+            pause
         fi
     done
 }
