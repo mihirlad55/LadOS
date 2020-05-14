@@ -173,7 +173,7 @@ function update_mkinitcpio() {
 
 function create_initramfs() {
     msg "Creating initramfs..."
-    mkinitcpio -P linux
+    mkinitcpio --nocolor -P linux
 }
 
 function set_root_passwd() {
