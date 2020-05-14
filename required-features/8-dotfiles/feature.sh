@@ -97,7 +97,7 @@ function install() {
     nvim -c "PlugInstall | qa"
 
     qecho "Installing zsh plguins..."
-    zsh -c "source $HOME/.zshrc; exit"
+    zsh -c "source $HOME/.zshrc; exit" &> "$DEFAULT_OUT"
 
     vecho "Done installing dotfiles"
 }
