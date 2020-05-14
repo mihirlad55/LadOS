@@ -4,6 +4,7 @@ VERBOSE=
 QUIET=
 DEFAULT_OUT="/dev/fd/1"
 VERBOSITY_FLAG=
+SILENT_FLAG=
 
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
@@ -51,6 +52,7 @@ elif [[ "$1" = "-q" ]]; then
     QUIET=1
     DEFAULT_OUT="/dev/null"
     VERBOSITY_FLAG="-q"
+    SILENT_FLAG="-s"
     shift
 fi
 
