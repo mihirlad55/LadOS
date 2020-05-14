@@ -22,25 +22,28 @@ depends_pacman=()
 function check_install() {
     for f in ${new_files[@]}; do
         if [[ ! -f "$f" ]]; then
-            echo "$f is missing"
-            echo "$feature_name is not installed"
+            echo "$f is missing" &>2
+            echo "$feature_name is not installed" >&2
             return 1
         fi
     done
 
-    echo "$feature_name is installed"
+    qecho "$feature_name is installed"
     return 0
 }
 
 function prepare() {
+    qecho "Cloning st..."
     git clone https://github.com/mihirlad55/st /tmp/st
 }
 
 function install() {
+    qecho "Making st..."
     (cd /tmp/st && sudo make clean install)
 }
 
 function cleanup() {
+    qecho "Removing /tmp/st..."
     rm -rf /tmp/st
 }
 

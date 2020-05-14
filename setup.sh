@@ -3,7 +3,7 @@
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 FIXES_DIR="$BASE_DIR/fixes"
 REQUIRED_FEATURES_DIR="$BASE_DIR/required-features"
-EXTRA_FEATURES_DIR="$BASE_DIR/extra-features"
+OPTIONAL_FEATURES_DIR="$BASE_DIR/optional-features"
 SCRIPTS_DIR="$BASE_DIR/scripts"
 
 
@@ -35,7 +35,7 @@ function main_menu() {
     show_menu "Main Menu" \
         "Install Arch Linux" "install_arch" \
         "Install Required Features" "required_features_menu" \
-        "Install Extra Features" "extra_features_menu" \
+        "Install Optional Features" "optional_features_menu" \
         "Fixes" "fixes_menu" \
         "Scripts" "scripts_menu" \
         "Exit" "exit 0"
@@ -83,23 +83,23 @@ function required_features_menu() {
         "Go Back" "return"
 }
 
-function extra_features_menu() {
-    features=$(ls $EXTRA_FEATURES_DIR)
+function optional_features_menu() {
+    features=$(ls $OPTIONAL_FEATURES_DIR)
     
     IFS=$'\n'
 
     menu_cmd=""
 
     for feature in $features; do
-        name="$($EXTRA_FEATURES_DIR/$feature/feature.sh name)"
-        desc="$($EXTRA_FEATURES_DIR/$feature/feature.sh desc)"
-        menu_option="$name,$EXTRA_FEATURES_DIR/$feature/feature.sh full" 
+        name="$($OPTIONAL_FEATURES_DIR/$feature/feature.sh name)"
+        desc="$($OPTIONAL_FEATURES_DIR/$feature/feature.sh desc)"
+        menu_option="$name,$OPTIONAL_FEATURES_DIR/$feature/feature.sh full" 
         menu_cmd="${menu_cmd}${menu_option},"
     done
 
     IFS=$','
 
-    show_menu "Install Extra Features" \
+    show_menu "Install Optional Features" \
         $menu_cmd \
         "Go Back" "return"
 }

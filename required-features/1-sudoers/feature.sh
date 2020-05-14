@@ -15,13 +15,13 @@ depends_pacman=("sudo")
 
 
 function check_install() {
-    echo "Checking 10-sudoers-custom..."
+    qecho "Checking 10-sudoers-custom..."
     if sudo diff "$BASE_DIR/10-sudoers-custom" "/etc/sudoers.d/10-sudoers-custom"; then
-        echo "$feature_name installed successfully"
+        qecho "$feature_name installed successfully"
         return 0
     fi
 
-    echo "$feature_name is not installed"
+    echo "$feature_name is not installed" >&2
     return 1
 }
 

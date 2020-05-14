@@ -1,61 +1,55 @@
 #!/usr/bin/bash
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-CONF_DIR="$BASE_DIR/../conf/install"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+CONF_DIR="$LAD_OS_DIR/conf/install"
+LOCAL_REPO_DIR="$LAD_OS_DIR/localrepo"
 
 WIFI_ENABLED=0
+VERBOSE=
+VERBOSITY_FLAG="-q"
 
-source "$CONF_DIR/defaults.sh"
+source "$CONF_DIR/conf.sh"
+source "$LAD_OS_DIR/common/message.sh"
 
-function pause() {
-    read -p "Press enter to continue..."
-}
-
-function prompt() {
-    while true; do
-        echo -n "$1 [Y/n] "
-        read resp
-
-        if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
-            return 0
-        elif [[ "$resp" = "n" ]] || [[ "$resp" = "N" ]]; then
-            return 1
-        fi
-    done
-}
 
 function check_efi_mode() {
-    if ls /sys/firmware/efi/efivars > /dev/null; then
-        echo "Verified EFI boot"
+    msg "Checking if system booted in EFI mode..."
+    if ls /sys/firmware/efi/efivars &> /dev/null; then
+        msg2 "Verified EFI boot"
     else
-        echo "System not booted in EFI mode"
+        msg2 "System not booted in EFI mode"
         exit 1
     fi
 }
 
 function setup_partitions() {
-    echo -ne "Make sure you create the system partitions, format them, and \
-        mount root on /mnt with all the filesystems mounted on root\n"
-    if [[ "$DEFAULTS_NOCONFIRM" = "no" ]]; then
+    msg "Partition setup..."
+    echo -ne "Make sure you create the system partitions, format them, and mount root on /mnt with all the filesystems mounted on root\n"
+    if [[ "$CONF_NOCONFIRM" = "no" ]]; then
         if ! prompt "Are the filesystems mounted?"; then
-            echo "Please partition the drive and exit the shell once finished..."
+            msg2 "Please partition the drive and exit the shell once finished..."
             bash
         fi
     fi
 }
 
 function connect_to_internet() {
+    msg "Checking internet connection..."
     if ! ping -c 1 www.google.com &> /dev/null; then
-        if [[ "$DEFAULTS_USE_WIFI" = "yes" ]] || prompt "Setup WiFi for setup?"; then
+        if [[ "$CONF_USE_WIFI" = "yes" ]] || prompt "Setup WiFi for setup?"; then
             setup_wifi
         fi
     fi
-    echo "Waiting for connection to Internet..."
+    msg2 "Waiting for connection to Internet..."
     until ping -c 1 www.google.com &> /dev/null; do sleep 1; done
 }
 
 function setup_wifi() {
-    local network_conf=$(cat $CONF_DIR/network.conf)
+    msg "Setting up WiFI..."
+
+    local network_conf
+    network_conf="$(cat "$CONF_DIR/network.conf")"
 
     conf_path="/tmp/wpa_supplicant.conf"
 
@@ -65,85 +59,94 @@ function setup_wifi() {
     if [[ "$network_conf" != "" ]]; then
         echo "$network_conf" >> $conf_path        
     else
-        echo "Opening wpa_supplicant.conf to add network info..."
+        msg2 "Opening wpa_supplicant.conf to add network info..."
         pause
         vi $conf_path
     fi
 
     local adapter
-    if [[ "$DEFAULTS_WIFI_ADAPTER" != "" ]]; then
-        local adapter="$DEFAULTS_WIFI_ADAPTER"
+    if [[ "$CONF_WIFI_ADAPTER" != "" ]]; then
+        local adapter="$CONF_WIFI_ADAPTER"
     else
         ip link
-        echo -n "Enter name of WiFI adapter: "
-        read adapter
+        adapter="$(ask "Enter name of WiFI adapter")"
     fi
 
-    wpa_supplicant -B -i${adapter} -c $conf_path
+    wpa_supplicant -B -i"${adapter}" -c "$conf_path"
     dhcpcd
 
     WIFI_ENABLED=1
 }
 
 function update_system_clock() {
-    echo "Updating system clock..."
+    msg "Updating system clock..."
     timedatectl set-ntp true
 }
 
 function rank_mirrors() {
+    msg "Ranking pacman mirrors..."
     local country
 
-    if [[ "$DEFAULTS_COUNTRY_CODE" != "" ]]; then
-        country="$DEFAULTS_COUNTRY_CODE"        
+    if [[ "$CONF_COUNTRY_CODE" != "" ]]; then
+        country="$CONF_COUNTRY_CODE"        
     else
-        echo -n "Enter your country code (i.e. US): "
-        read country
+        country="$(ask "Enter your country code (i.e. US)")"
     fi
 
-    echo "Ranking pacman mirrors..."
+    msg2 "Beginning mirror ranking..." "(This may take a minute)"
     curl -s "https://www.archlinux.org/mirrorlist/?country=${country}&protocol=https&use_mirror_status=on" | \
         sed -e 's/^#Server/Server/' -e '/^#/d' | \
-        $BASE_DIR/rankmirrors -n 5 -m 1 - \
+        "$BASE_DIR"/rankmirrors -n 5 -m 1 - \
         > /etc/pacman.d/mirrorlist
 
-    echo "Top 5 $country mirrors saved in /etc/pacman.d/mirrorlist"
+    msg2 "Top 5 $country mirrors saved in /etc/pacman.d/mirrorlist"
+}
+
+function enable_localrepo() {
+    msg "Checking for localrepo..."
+    if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
+        msg2 "Found localrepo. Enabling..."
+        sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+        pacman -Sy
+    fi
 }
 
 function pacstrap_install() {
-    echo "Now beginning pacstrap install..."
+    msg "Starting pacstrap install..."
 
     if mount | grep /mnt; then
         pacstrap /mnt base linux linux-firmware
     else
-        echo "Parititions not mounted on /mnt. Please mount the filesystems."
+        error "Parititions not mounted on /mnt. Please mount the filesystems."
         exit 1
     fi
-
-    echo "Finished pacstrap install"
 }
 
 function generate_fstab() {
-    echo "Generating fstab..."
+    msg "Generating fstab..."
     genfstab -U /mnt > /mnt/etc/fstab
-    echo "Fstab generated"
 }
 
 function start_chroot_install() {
-    echo "Copying LadOS to new system"
-    mkdir -p /mnt/LadOS
-    cp -r $BASE_DIR/../* /mnt/LadOS
+    msg "Preparing to chroot..."
+    msg2 "Copying LadOS to new system"
+    cp -rf "$LAD_OS_DIR" "/mnt/LadOS"
     chmod -R go=u /mnt/LadOS
 
     if [[ "$WIFI_ENABLED" -eq 1 ]]; then
-	echo "Copying wpa_supplicant to new system..."
+	msg2 "Copying wpa_supplicant to new system..."
         mkdir -p /mnt/etc/wpa_supplicant
         install -Dm 644 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
-    echo "Arch-chrooting to system"
-    arch-chroot /mnt "/LadOS/install/chroot-install.sh"
+    msg2 "Arch-chrooting to system"
+    arch-chroot /mnt /LadOS/install/chroot-install.sh "$VERBOSITY_FLAG"
 }
 
 
+if [[ "$1" = "-v" ]]; then
+    VERBOSITY_FLAG="-v"
+    VERBOSE=1
+fi
 
 check_efi_mode
 
@@ -154,6 +157,8 @@ connect_to_internet
 update_system_clock
 
 rank_mirrors
+
+enable_localrepo
 
 pacstrap_install
 

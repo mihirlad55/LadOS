@@ -38,9 +38,11 @@ function check_install() {
     contents="$(cat $BASE_DIR/arch.conf | sed -e "s;^options root=.*$;$options;")"
 
     if diff /boot/loader/entries/arch.conf <(echo "$contents") > /dev/null; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
+        return 0
     else
-        echo "$feature_name is not installed"
+        echo "$feature_name is not installed" >&2
+        return 1
     fi
 }
 
@@ -64,16 +66,15 @@ function prepare() {
 function install() {
     sudo bootctl install
 
+    qecho "Installing boot entry>.."
     sudo mkdir -p /boot/loader/entries
-
     sudo install -Dm 755 /tmp/arch.conf /boot/loader/entries/arch.conf
 }
 
 
 function cleanup() {
-    echo "Removing /tmp/arch.conf..."
+    qecho "Removing /tmp/arch.conf..."
     rm -f /tmp/arch.conf
-    echo "Removed /tmp/arch.conf"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

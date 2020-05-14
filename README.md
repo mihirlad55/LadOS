@@ -103,7 +103,7 @@ downloading them.
 -----Main Menu-----
 1. Install Arch Linux
 2. Install Required Features
-3. Install Extra Features
+3. Install Optional Features
 4. Fixes
 5. Scripts
 6. Exit
