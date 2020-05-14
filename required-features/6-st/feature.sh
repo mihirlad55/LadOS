@@ -34,12 +34,12 @@ function check_install() {
 
 function prepare() {
     qecho "Cloning st..."
-    git clone https://github.com/mihirlad55/st /tmp/st
+    git clone $VERBOSITY_FLAG https://github.com/mihirlad55/st /tmp/st
 }
 
 function install() {
     qecho "Making st..."
-    (cd /tmp/st && sudo make clean install)
+    (cd /tmp/st && sudo make clean install &> "$DEFAULT_OUT")
 }
 
 function cleanup() {

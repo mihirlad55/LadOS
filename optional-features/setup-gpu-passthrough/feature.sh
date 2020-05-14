@@ -58,7 +58,7 @@ function install() {
     sudo sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 
     qecho "Rebuilding initframfs..."
-    sudo mkinitcpio -P linux
+    sudo mkinitcpio --nocolor -P linux > "$DEFAULT_OUT"
 
     qecho "Copying nothunderbolt.conf to /etc/modprobe.d..."
     sudo install -Dm 644 $BASE_DIR/nothunderbolt.conf /etc/modprobe.d/nothunderbolt.conf

@@ -48,7 +48,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling std..."
-    sudo systemctl enable --now atd
+    sudo systemctl enable $VERBOSITY_FLAG atd
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

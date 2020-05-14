@@ -21,9 +21,9 @@ depends_pacman=()
 
 
 function check_install() {
-    if egrep /etc/mkinitcpio.conf -e "plymouth" > /dev/null &&
-        diff $BASE_DIR/deus_ex /usr/share/plymouth/themes/deus_ex &&
-        diff $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf; then
+    if egrep -q /etc/mkinitcpio.conf -e "plymouth" &&
+        diff $BASE_DIR/deus_ex /usr/share/plymouth/themes/deus_ex > "$DEFAULT_OUT" &&
+        diff $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf > "$DEFAULT_OUT"; then
         qecho "$feature_name is installed"
         return 0
     else
@@ -35,7 +35,7 @@ function check_install() {
 function add_mkinitcpio_hook() {
     module="$1"
 
-    if ! egrep /etc/mkinitcpio.conf -e "$module" > /dev/null; then
+    if ! egrep -q /etc/mkinitcpio.conf -e "$module"; then
         vecho "No $module hook found in mkinitcpio.conf"
         source /etc/mkinitcpio.conf
         HOOKS=( "${HOOKS[@]:0:2}" "$module" "${HOOKS[@]:2}" )
@@ -61,14 +61,14 @@ function install() {
     add_mkinitcpio_hook "plymouth"
 
     qecho "Updating mkinitcpio..."
-    sudo mkinitcpio -P linux
+    sudo mkinitcpio --nocolor -P linux > "$DEFAULT_OUT"
 }
 
 function post_install() {
     qecho "Disabling lightdm.service..."
-    sudo systemctl disable lightdm
+    sudo systemctl disable $VERBOSITY_FLAG lightdm
     qecho "Enabling lightdm-plymouth.service"
-    sudo systemctl enable lightdm-plymouth
+    sudo systemctl enable $VERBOSITY_FLAG lightdm-plymouth
 }
 
 

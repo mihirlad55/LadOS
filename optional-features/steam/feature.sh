@@ -34,11 +34,11 @@ function install() {
     sudo sed -i '/\[multilib\]/!b;n;cInclude = \/etc\/pacman.d\/mirrorlist' /etc/pacman.conf
 
     qecho "Updating database..."
-    sudo pacman -Sy
+    sudo pacman -Sy &> "$DEFAULT_OUT"
 
     qecho "Installing Steam..."
 
-    sudo pacman -S steam --needed --noconfirm
+    sudo pacman -S steam --needed --noconfirm &> "$DEFAULT_OUT"
 
     qecho "Configuring library paths for steam..."
     sudo install -Dm 644 $BASE_DIR/steam.conf /etc/ld.so.conf.d/steam.conf

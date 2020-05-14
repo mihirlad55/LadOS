@@ -8,6 +8,7 @@ CONF_DIR="$LAD_OS_DIR/conf/win10-fonts"
 
 REPO_PATH="$HOME/.cache/yay"
 TEMP_PATH="/tmp/ttf-ms-win10"
+TTF_MS_WIN10_URL="https://aur.archlinux.org/ttf-ms-win10.git"
 
 feature_name="win10-fonts"
 feature_desc="Install windows 10 fonts (by making)"
@@ -60,7 +61,7 @@ function prepare() {
     mkdir -p "$REPO_PATH/ttf-ms-win10"
 
     qecho "Cloning ttf-ms-win10 package..."
-    git clone https://aur.archlinux.org/ttf-ms-win10.git $TEMP_PATH
+    git clone $VERBOSITY_FLAG "$TTF_MS_WIN10_URL" "$TEMP_PATH"
 
     mv -f $TEMP_PATH/* $REPO_PATH/ttf-ms-win10/
 
@@ -69,7 +70,7 @@ function prepare() {
         read url
 
         if [[ "$url" != "" ]]; then
-            curl $url --output /tmp/win10-fonts.zip
+            curl $SILENT_FLAG $url --output /tmp/win10-fonts.zip
             unzip -o /tmp/win10-fonts.zip -d $REPO_PATH/ttf-ms-win10
         else
             echo "No url provided" >&2
@@ -78,12 +79,12 @@ function prepare() {
     fi
 
     qecho "Making package..."
-    (cd $REPO_PATH/ttf-ms-win10 && makepkg --skipinteg)
+    (cd $REPO_PATH/ttf-ms-win10 && makepkg --skipinteg &> "$DEFAULT_OUT")
 }
 
 function install() {
     qecho "Installing package..."
-    (cd $REPO_PATH/ttf-ms-win10 && makepkg -si)
+    (cd $REPO_PATH/ttf-ms-win10 && makepkg -si &> "$DEFAULT_OUT")
 }
 
 function cleanup() {

@@ -31,21 +31,23 @@ function check_install() {
 function prepare() {
     # Clone package-query
     qecho "Cloning package-query..."
-    git clone https://aur.archlinux.org/package-query.git /tmp/package-query
+    git clone $VERBOSITY_FLAG https://aur.archlinux.org/package-query.git /tmp/package-query
 
     # Make package
     qecho "Making package package-query..."
-    (cd /tmp/package-query && makepkg -si --noconfirm)
+    # Some non-error output goes to stderr
+    (cd /tmp/package-query && makepkg -si --noconfirm --noprogressbar &> "$DEFAULT_OUT")
 
     # Clone yay
     qecho "Cloning yay..."
-    git clone https://aur.archlinux.org/yay.git /tmp/yay
+    git clone $VERBOSITY_FLAG https://aur.archlinux.org/yay.git /tmp/yay
 }
 
 function install() {
     # Make package
     qecho "Making yay..."
-    (cd /tmp/yay && makepkg -si --noconfirm)
+    # Some non-error output goes to stderr
+    (cd /tmp/yay && makepkg -si --noconfirm --noprogressbar &> "$DEFAULT_OUT")
 }
 
 function cleanup() {

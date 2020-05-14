@@ -80,10 +80,12 @@ function install() {
         echo $password | sudo tee -a /etc/openvpn/client/login.conf >/dev/null
     fi
 
-    qecho "Copying files from $CONF_DIR/client/ to /etc/openvpn/client"
-    sudo install -m 600 $CONF_DIR/client/* /etc/openvpn/client/
+    if [[ "$(ls $CONF_DIR/client)" != "" ]]; then
+        qecho "Copying files from $CONF_DIR/client/ to /etc/openvpn/client"
+        sudo install -m 600 $CONF_DIR/client/* /etc/openvpn/client/
+    fi
 
-    qecho "To start the vpn, run systemctl start openvpn-client@<server>"
+    echo "To start the vpn, run systemctl start openvpn-client@<server>"
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

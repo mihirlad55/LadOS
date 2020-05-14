@@ -1,0 +1,3 @@
+include refind-manual.conf
+include refind-options.conf
+include themes/rEFInd-minimal-black/theme.conf

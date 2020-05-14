@@ -93,17 +93,17 @@ function install() {
 
 function post_install() {
     qecho "Enabling gcp-tunnel.service..."
-    sudo systemctl enable --now gcp-tunnel
+    sudo systemctl enable $VERBOSITY_FLAG gcp-tunnel
 
     qecho "Enabling sshd.service"
-    sudo systemctl enable --now sshd
+    sudo systemctl enable $VERBOSITY_FLAG sshd
 
     qecho "Done enabling services"
 }
 
 function cleanup() {
     qecho "Removing /tmp/gcp-tunnel.env"
-    rm /tmp/gcp-tunnel.env
+    rm -f /tmp/gcp-tunnel.env
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

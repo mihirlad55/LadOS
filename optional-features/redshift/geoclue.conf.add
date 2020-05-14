@@ -1,0 +1,5 @@
+[redshift]
+allowed=true
+system=false
+users=
+url=https://location.services.mozilla.com/v1/geolocate?key=geoclue

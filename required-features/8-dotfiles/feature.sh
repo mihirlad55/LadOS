@@ -84,9 +84,9 @@ function check_install() {
 
 function prepare() {
     qecho "Cloning dotfiles..."
-    git clone https://github.com/mihirlad55/dotfiles /tmp/dotfiles
+    git clone $VERBOSITY_FLAG https://github.com/mihirlad55/dotfiles /tmp/dotfiles
     qecho "Updating submodules..."
-    (cd /tmp/dotfiles && git submodule init && git submodule update --init)
+    (cd /tmp/dotfiles && git submodule $VERBOSITY_FLAG init && git submodule update $VERBOSITY_FLAG --init)
 }
 
 function install() {
@@ -104,7 +104,7 @@ function install() {
 
 function post_install() {
     qecho "Changing shell to zsh..."
-    sudo chsh -s /usr/bin/zsh "$USER"
+    sudo chsh -s /usr/bin/zsh "$USER" > "$DEFAULT_OUT"
 
     qecho "Setting up git and doom emacs..."
     if [[ "$CONF_FULL_NAME" != "" ]]; then
