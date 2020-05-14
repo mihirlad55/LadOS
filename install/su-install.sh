@@ -8,7 +8,7 @@ OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
-VERBOSE=
+VERBOSITY=
 VERBOSITY_FLAG="-q"
 
 source "$CONF_DIR/conf.sh"
@@ -62,7 +62,7 @@ function install_packages() {
         typ=$(echo "$package" | cut -d',' -f3)
         req=$(echo "$package" | cut -d',' -f4)
 
-        [[ -n "$VERBOSE" ]] && echo "$name ($desc)"
+        [[ -n "$VERBOSITY" ]] && echo "$name ($desc)"
 
         if [[ $install_optional -eq 1 ]] && [[ "$req" = "optional" ]] || [[ "$req" = "required" ]]; then
             if [[ "$typ" = "system" ]]; then
@@ -141,7 +141,7 @@ function install_optional_features() {
 
     excluded_features=("$(get_excluded_features)")
 
-    [[ -n "$VERBOSE" ]] && echo "Excluding features ${excluded_features[*]}"
+    [[ -n "$VERBOSITY" ]] && echo "Excluding features ${excluded_features[*]}"
 
     for feature in "${features[@]}"; do
         if ! echo "${excluded_features[@]}" | grep -q "$feature"; then
@@ -193,7 +193,7 @@ function check_optional_features() {
     local total=$(( ${#optional[@]} - ${#excluded[@]} ))
     local i=1
 
-    [[ -n "$VERBOSE" ]] && echo "Not checking excluded features ${excluded[*]}"
+    [[ -n "$VERBOSITY" ]] && echo "Not checking excluded features ${excluded[*]}"
 
     for feature in "${optional[@]}"; do
         if ! echo "${excluded[@]}" | grep -q "$feature"; then
@@ -229,11 +229,11 @@ function remove_temp_sudoers() {
 }
 
 
-if [[ "$1" = "-v" ]]; then
-    VERBOSE=1
+if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
+    VERBOSITY=1
     VERBOSITY_FLAG=""
-elif [[ "$1" = "-vv" ]]; then
-    VERBOSE=1
+elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
+    VERBOSITY=2
     VERBOSITY_FLAG="-v"
 fi
 

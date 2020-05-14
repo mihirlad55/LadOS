@@ -6,7 +6,7 @@ CONF_DIR="$LAD_OS_DIR/conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
 VERBOSITY_FLAG="-q"
-VERBOSE=
+VERBOSITY=
 
 source "$CONF_DIR/conf.sh"
 source "$LAD_OS_DIR/common/message.sh"
@@ -26,26 +26,26 @@ function enable_localrepo() {
 }
 
 function update_mkinitcpio_modules() {
-    [[ -n "$VERBOSE" ]] && echo "Updating mkinitcpio..."
+    [[ -n "$VERBOSITY" ]] && echo "Updating mkinitcpio..."
 
     NEW_MODULES=("$@")
 
-    [[ -n "$VERBOSE" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
+    [[ -n "$VERBOSITY" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
 
     source /etc/mkinitcpio.conf
 
     for module in "${NEW_MODULES[@]}"; do
         if ! echo "${MODULES[@]}" | grep -q "$module"; then
-            [[ -n "$VERBOSE" ]] && echo "$module not found in mkinitcpio.conf"
+            [[ -n "$VERBOSITY" ]] && echo "$module not found in mkinitcpio.conf"
 
-            [[ -n "$VERBOSE" ]] && echo "Staging $module for addition"
+            [[ -n "$VERBOSITY" ]] && echo "Staging $module for addition"
             MODULES=( "${MODULES[@]}" "$module" )
         else
-            [[ -n "$VERBOSE" ]] && echo "$module already found"
+            [[ -n "$VERBOSITY" ]] && echo "$module already found"
         fi
     done
 
-    [[ -n "$VERBOSE" ]] && echo "Updating /etc/mkinitcpio.conf..."
+    [[ -n "$VERBOSITY" ]] && echo "Updating /etc/mkinitcpio.conf..."
     MODULES_LINE="MODULES=(${MODULES[*]})"
     sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 }
@@ -224,11 +224,11 @@ function setup_sudo_and_su() {
 }
 
 
-if [[ "$1" = "-v" ]]; then
-    VERBOSE=1
+if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
+    VERBOSITY=1
     VERBOSITY_FLAG=""
-elif [[ "$1" = "-vv" ]]; then
-    VERBOSE=1
+elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
+    VERBOSITY=2
     VERBOSITY_FLAG="-v"
 fi
 

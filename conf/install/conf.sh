@@ -4,6 +4,9 @@ echo "Sourcing conf.sh"
 ### Global ###
 # Set to yes to skip script pauses
 CONF_NOCONFIRM=no
+# Set to 1 for level 1 verbosity
+# Set to 2 for level 2 verbosity
+CONF_VERBOSITY=0
 
 ### Wifi ###
 # Set to yes to use WiFi for installation
