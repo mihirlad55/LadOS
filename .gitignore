@@ -1,0 +1,9 @@
+# Ignore confs
+/conf/dotfiles/conf.sh
+/conf/gcp-tunnel/gcp-tunnel.env
+/conf/install/conf.sh
+/conf/install/network.conf
+/conf/restic-b2/constants.sh
+
+# Ignore localrepo
+/localrepo

@@ -13,7 +13,12 @@ OPTIONAL_FEATURES_SELECTED=()
 VERBOSITY=
 VERBOSITY_FLAG="-q"
 
-source "$CONF_DIR/conf.sh"
+if [[ -f "$CONF_DIR/conf.sh" ]]; then
+    source "$CONF_DIR/conf.sh"
+else
+    source "$CONF_DIR/conf.sh.sample"
+fi
+
 source "$LAD_OS_DIR/common/message.sh"
 
 
@@ -103,7 +108,7 @@ function install_required_features() {
             
             "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
 
-            if [[ "$CONF_NOCONFIRM" = "no" ]]; then
+            if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
                 pause
             fi
         fi
@@ -152,7 +157,7 @@ function install_optional_features() {
 
             "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
 
-            if [[ "$CONF_NOCONFIRM" = "no" ]]; then
+            if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
                 pause
             fi
         fi
@@ -179,7 +184,7 @@ function check_required_features() {
             exit 1
         fi
 
-        if [[ "$CONF_NOCONFIRM" = "no" ]]; then
+        if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
             pause
         fi
     done
@@ -205,7 +210,7 @@ function check_optional_features() {
             exit 1
         fi
 
-        if [[ "$CONF_NOCONFIRM" = "no" ]]; then
+        if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
             pause
         fi
     done

@@ -20,7 +20,7 @@ depends_pacman=(restic)
 
 
 function check_conf() (
-    source "$CONF_DIR/constants.sh"
+    [[ -f "$CONF_DIR/constants.sh" ]] && source "$CONF_DIR/constants.sh"
     res="$?"
 
     if [[ "$?" -eq 0 ]]; then

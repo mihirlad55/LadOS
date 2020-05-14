@@ -8,7 +8,12 @@ REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 VERBOSITY_FLAG="-q"
 VERBOSITY=
 
-source "$CONF_DIR/conf.sh"
+if [[ -f "$CONF_DIR/conf.sh" ]]; then
+    source "$CONF_DIR/conf.sh"
+else
+    source "$CONF_DIR/conf.sh.sample"
+fi
+
 source "$LAD_OS_DIR/common/message.sh"
 
 
@@ -143,7 +148,7 @@ function setup_hosts() {
     echo "127.0.0.1  localhost" > /etc/hosts
     echo "::1        localhost" >> /etc/hosts
 
-    hosts="$(cat "$CONF_DIR"/hosts)"
+    [[ -f "$CONF_DIR/hosts" ]] && hosts="$(cat "$CONF_DIR"/hosts)"
 
     if [[ "$hosts" != "" ]]; then
         echo "$hosts" >> /etc/hosts
