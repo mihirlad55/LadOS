@@ -230,8 +230,11 @@ function remove_temp_sudoers() {
 
 
 if [[ "$1" = "-v" ]]; then
-    VERBOSITY_FLAG="-v"
     VERBOSE=1
+    VERBOSITY_FLAG=""
+elif [[ "$1" = "-vv" ]]; then
+    VERBOSE=1
+    VERBOSITY_FLAG="-v"
 fi
 
 enable_community_repo
