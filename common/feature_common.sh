@@ -87,7 +87,7 @@ case "$1" in
             cleanup
         fi
 
-        if [[ "$1" = "full_no_check" ]] && type -p check_install; then
+        if [[ "$1" = "full" ]] && type -p check_install; then
             qecho "Checking if feature was installed correctly..."
             check_install
         fi
