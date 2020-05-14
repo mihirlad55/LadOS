@@ -26,12 +26,14 @@ function print_usage() {
 function install_dependencies() {
     if [[ "${depends_pacman[@]}" != "" ]]; then
         qecho "Installing ${depends_pacman[@]}..."
-        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed > "$DEFAULT_OUT"
+        # Reinstall warnings go to stderr
+        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed &> "$DEFAULT_OUT"
     fi
 
     if [[ "${depends_aur[@]}" != "" ]]; then
         qecho "Installing ${depends_aur[@]}..."
-        yay -S ${depends_aur[@]} --noconfirm --needed > "$DEFAULT_OUT"
+        # Some normal output goes to stderr
+        yay -S ${depends_aur[@]} --noconfirm --needed &> "$DEFAULT_OUT"
     fi
 
     if [[ "${depends_pip3[@]}" != "" ]]; then
