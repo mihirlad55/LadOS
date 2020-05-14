@@ -79,12 +79,12 @@ function prepare() {
     fi
 
     qecho "Making package..."
-    (cd $REPO_PATH/ttf-ms-win10 && makepkg --skipinteg &> "$DEFAULT_OUT")
+    (cd $REPO_PATH/ttf-ms-win10 && makepkg --skipinteg --noconfirm &> "$DEFAULT_OUT")
 }
 
 function install() {
     qecho "Installing package..."
-    (cd $REPO_PATH/ttf-ms-win10 && makepkg -si &> "$DEFAULT_OUT")
+    (cd $REPO_PATH/ttf-ms-win10 && makepkg -si --noconfirm &> "$DEFAULT_OUT")
 }
 
 function cleanup() {
