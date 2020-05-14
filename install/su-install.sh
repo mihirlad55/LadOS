@@ -216,9 +216,65 @@ function disable_localrepo() {
     sudo sed -i /etc/pacman.conf -e '\;Include = /LadOS/install/localrepo.conf;d'
 }
 
+
 function remove_temp_sudoers() {
     msg "Removing temp sudoers..."
     sudo rm -f /etc/sudoers.d/20-sudoers-temp
+}
+
+function review() {
+    msg "Configuration review..."
+    
+    local pacman_mirrors fstab modules hooks locale lang hostname hosts
+    local default_user required_features optional_features
+
+    pacman_mirrors="$(cat /etc/pacman.d/mirrorlist)"
+    fstab="$(cat /etc/fstab)"
+    timezone="$(readlink -f /etc/localtime)"
+    locale="$(grep -P -o "^[^#].*" /etc/locale.gen)"
+    hostname="$(cat /etc/hostname)"
+    hosts="$(cat /etc/hosts)"
+    default_user="$USER"
+    required_features="$(ls "$REQUIRED_FEATURES_DIR")"
+    optional_features="${OPTIONAL_FEATURES_SELECTED[*]}"
+    modules="$(source /etc/mkinitcpio.conf; echo "${MODULES[*]}")"
+    hooks="$(source /etc/mkinitcpio.conf; echo "${HOOKS[*]}")"
+    lang="$(source /etc/locale.conf; echo "$LANG")"
+
+    msg2 "Pacman mirrors:"
+    echo "$pacman_mirrors"
+
+    msg2 "fstab:"
+    echo "$fstab"
+
+    msg2 "mkinitcpio modules:"
+    echo "$modules"
+
+    msg2 "mkinitcpio hooks:"
+    echo "$hooks"
+
+    msg2 "Locale:"
+    echo "$locale"
+
+    msg2 "Lang"
+    echo "$lang"
+
+    msg2 "Hostname:"
+    echo "$hostname"
+
+    msg2 "Hosts:"
+    echo "$hosts"
+
+    msg2 "Default User:"
+    echo "$default_user"
+
+    msg2 "Installed Required Features:"
+    echo $required_features
+
+    msg2 "Installed Optional Features:"
+    echo $optional_features
+
+    pause
 }
 
 
@@ -247,3 +303,5 @@ check_optional_features
 disable_localrepo
 
 remove_temp_sudoers
+
+review
