@@ -68,7 +68,7 @@ function post_install() {
     qecho "Disabling lightdm.service..."
     sudo systemctl disable $VERBOSITY_FLAG lightdm
     qecho "Enabling lightdm-plymouth.service"
-    sudo systemctl enable $VERBOSITY_FLAG lightdm-plymouth
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} lightdm-plymouth
 }
 
 

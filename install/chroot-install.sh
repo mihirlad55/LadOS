@@ -211,7 +211,7 @@ function setup_sudo_and_su() {
     pacman -Syyu --noconfirm
 
     msg2 "Installing sudo..."
-    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" full
+    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
 
     # Temporary no password prompt for installation
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp

@@ -5,6 +5,7 @@ QUIET=
 DEFAULT_OUT="/dev/fd/1"
 VERBOSITY_FLAG=
 SILENT_FLAG=
+SYSTEMD_FLAGS=()
 
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
@@ -20,7 +21,7 @@ function vecho() {
 }
 
 function print_usage() {
-    echo "usage: feature.sh [ -q | -v ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
+    echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
 }
 
 function install_dependencies() {
@@ -55,7 +56,19 @@ elif [[ "$1" = "-q" ]]; then
     DEFAULT_OUT="/dev/null"
     VERBOSITY_FLAG="-q"
     SILENT_FLAG="-s"
+    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "-q")
     shift
+fi
+
+if [[ "$1" = "--no-service-start" ]]; then
+    shift
+else
+    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "--now")
+fi
+
+if [[ "$#" -ne 1 ]]; then
+    print_usage
+    exit 1
 fi
 
 case "$1" in

@@ -34,7 +34,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling cronie..."
-    sudo systemctl enable $VERBOSITY_FLAG cronie
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} cronie
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

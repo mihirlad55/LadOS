@@ -23,7 +23,7 @@ function enable_community_repo() {
     local path_to_feature
     path_to_feature=("$REQUIRED_FEATURES_DIR"/*enable-community-pacman/feature.sh)
 
-    "${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
+    "${path_to_feature[0]}" "${VERBOSITY_FLAG}" --no-service-start full
 }
 
 function install_yay() {
@@ -37,7 +37,7 @@ function install_yay() {
         local path_to_feature
         path_to_feature=("$REQUIRED_FEATURES_DIR"/*yay/feature.sh)
 
-        "${path_to_feature[0]}" "${VERBOSITY_FLAG}" full
+        "${path_to_feature[0]}" "${VERBOSITY_FLAG}" --no-service-start full
     fi
 }
 
@@ -101,7 +101,7 @@ function install_required_features() {
         if ! (echo "$feature" | grep "yay" || echo "$feature" | grep "sudoers"); then
             msg2 "Installing $feature..."
             
-            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" full_no_check
+            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
 
             if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause
@@ -150,7 +150,7 @@ function install_optional_features() {
             OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
             msg2 "Installing $feature..."
 
-            "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" full_no_check
+            "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
 
             if [[ "$CONF_NOCONFIRM" = "no" ]]; then
                 pause

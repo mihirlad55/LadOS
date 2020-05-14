@@ -35,7 +35,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling powertop.service..."
-    sudo systemctl enable $VERBOSITY_FLAG powertop.service
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} powertop.service
 }
 
 

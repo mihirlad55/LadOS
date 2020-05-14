@@ -45,9 +45,9 @@ function install() {
 
 function post_install() {
     qecho "Enabling lightdm..."
-    sudo systemctl enable $VERBOSITY_FLAG lightdm
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} lightdm
 
-    sudo systemctl set-default $VERBOSITY_FLAG graphical.target
+    sudo systemctl set-default ${SYSTEMD_FLAGS[*]} graphical.target
 }
 
 function cleanup() {
