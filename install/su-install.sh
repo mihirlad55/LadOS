@@ -248,10 +248,10 @@ function review() {
     echo "$fstab"
 
     msg2 "mkinitcpio modules:"
-    echo "$modules"
+    echo $modules
 
     msg2 "mkinitcpio hooks:"
-    echo "$hooks"
+    echo $hooks
 
     msg2 "Locale:"
     echo "$locale"
