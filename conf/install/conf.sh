@@ -1,6 +1,5 @@
 #!/usr/bin/bash
 
-echo "Sourcing conf.sh"
 ### Global ###
 # Set to yes to skip script pauses
 CONF_NOCONFIRM=no
