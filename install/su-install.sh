@@ -143,7 +143,7 @@ function get_excluded_features() {
 function install_optional_features() {
     msg "Installing optional features..."
 
-    local features excluded_features
+    local features excluded_features feature_path excluded
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     excluded_features=("$(get_excluded_features)")
@@ -152,10 +152,27 @@ function install_optional_features() {
 
     for feature in "${features[@]}"; do
         if ! echo "${excluded_features[@]}" | grep -q "$feature"; then
-            OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
-            msg2 "Installing $feature..."
 
-            "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
+            feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
+            mapfile -t conflicts < <("$feature_path" $VERBOSITY_FLAG conflicts)
+
+            for c in "${conflicts[@]}"; do
+                if ! echo "${excluded_features[*]}" | grep -q "$c"; then
+                    plain "$c conflicts with $feature"
+                    if prompt "Would you like to exclude $c and continue to install $feature?"; then
+                        excluded_features=("${excluded_features[@]}" "$c")
+                    else
+                        excluded_features=("${excluded_features[@]}" "${feature[@]}")
+                        excluded=1
+                    fi
+                fi
+            done
+            [[ -n "$excluded" ]] && excluded=0 && continue
+
+            OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
+
+            msg2 "Installing $feature..."
+            "$feature_path" "${VERBOSITY_FLAG}" --no-service-start full_no_check
 
             if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
                 pause
