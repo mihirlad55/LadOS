@@ -6,7 +6,7 @@ BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/webkit2-feature"
 
-feature_name="webkit2-feature"
+feature_name="webkit2-greeter"
 feature_desc="Install lightdm-webkit2-greeter with user avatar and background"
 
 conflicts=(gtk-greeter)
