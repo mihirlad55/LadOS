@@ -25,7 +25,7 @@ depends_pip3=()
 
 
 function check_install() {
-    if grep /etc/lightdm/lightdm.conf -e "^greeter-session=lightdm-gtk-greeter$" > /dev/null &&
+    if grep -q /etc/lightdm/lightdm.conf -e "^greeter-session=lightdm-gtk-greeter$" &&
         pacman -Q lightdm-gtk-greeter > /dev/null &&
         diff "$BASE_DIR/lightdm-gtk-greeter.conf" "/etc/lightdm/lightdm-gtk-greeter.conf"; then
         qecho "$feature_name is installed"

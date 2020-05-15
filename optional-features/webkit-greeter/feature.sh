@@ -23,7 +23,7 @@ depends_pip3=()
 
 
 function check_install() {
-    if grep /etc/lightdm/lightdm.conf -e "^greeter-session=lightdm-webkit2-greeter$" > /dev/null &&
+    if grep -q /etc/lightdm/lightdm.conf -e "^greeter-session=lightdm-webkit2-greeter$" &&
         pacman -Q lightdm-webkit2-greeter > /dev/null; then
         qecho "$feature_name is installed"
         return 0

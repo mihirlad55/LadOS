@@ -21,7 +21,7 @@ depends_pacman=()
 
 function check_install() {
     for mod in ${NEW_MODULES[@]}; do
-        if ! grep /etc/mkinitcpio.conf -e "$mod" > /dev/null; then
+        if ! grep -q /etc/mkinitcpio.conf -e "$mod"; then
             echo "$mod is missing from mkinitcpio.conf" >&2
             echo "$feature_name is not installed" >&2
             return 1
@@ -42,7 +42,7 @@ function install() {
     qecho "Adding ${NEW_MODULES[@]} to /etc/mkinitcpio.conf, if not present"
     source /etc/mkinitcpio.conf
     for module in ${NEW_MODULES[@]}; do
-        if ! echo ${MODULES[@]} | grep "$module" > /dev/null; then
+        if ! echo ${MODULES[@]} | grep -q -e "$module"; then
             vecho $MODULES
             vecho "$module not found in mkinitcpio.conf"
 
