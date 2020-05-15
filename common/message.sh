@@ -29,6 +29,7 @@ function pause() {
 
 function ask() {
     local mesg="$1"
+    local resp
     printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}:"
     read resp
 
@@ -37,6 +38,7 @@ function ask() {
 
 function ask_words() {
     local mesg="$1"
+    local resp
     printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}:"
     read -a resp
 
@@ -44,8 +46,11 @@ function ask_words() {
 }
 
 function prompt() {
+    local mesg="$1"
+    local resp
     while true; do
-        resp="$(ask "$1 [Y/n]")"
+	printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR} [Y/n]:"
+	read resp
 
         if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
             return 0
