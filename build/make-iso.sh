@@ -107,7 +107,7 @@ function build_aur_packages() {
             echo $pkg_path
             if ! test -f $pkg_path; then
                 cd "/var/tmp/$pkg_name"
-                makepkg -s
+                makepkg -s --noconfirm
                 sudo cp *.pkg.tar.xz "$PKG_PATH"
             else
                 echo "$pkgname already exists at $PKG_PATH"
