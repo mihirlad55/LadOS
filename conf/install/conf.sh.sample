@@ -57,4 +57,5 @@ CONF_EXCLUDE_FEATURES=( "corsair-headset" \
                             "gogh" \
                             "huion" \
                             "hp-printer" \
-                            "setup-gpu-passthrough")
+                            "setup-gpu-passthrough" \
+                            "webkit2-greeter")
