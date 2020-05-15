@@ -10,6 +10,9 @@ feature_name=
 # Description of feature
 feature_desc=
 
+# Features (required/optional) that conflict with this feature
+conflicts=()
+
 # New packages (not including depends) that are installed permenantly
 provides=()
 # Paths to files/folders that are permenantly created by the install. This

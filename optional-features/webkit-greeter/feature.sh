@@ -4,10 +4,12 @@
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/webkit2"
+CONF_DIR="$LAD_OS_DIR/conf/webkit2-feature"
 
-feature_name="webkit2"
+feature_name="webkit2-feature"
 feature_desc="Install lightdm-webkit2-greeter with user avatar and background"
+
+conflicts=(gtk-greeter)
 
 provides=()
 new_files=("/var/lib/AccountsService/users/$USER" \
