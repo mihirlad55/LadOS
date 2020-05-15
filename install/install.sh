@@ -137,19 +137,33 @@ function generate_fstab() {
     genfstab -U /mnt > /mnt/etc/fstab
 }
 
-function start_chroot_install() {
-    msg "Preparing to chroot..."
-    msg2 "Copying LadOS to new system"
+function start_root_install() {
+    msg "Preparing for root install..."
+
+    msg2 "Copying LadOS to new system..."
     cp -rft "/mnt" "$LAD_OS_DIR"
     chmod -R go=u /mnt/LadOS
 
     if [[ "$WIFI_ENABLED" -eq 1 ]]; then
-	msg2 "Copying wpa_supplicant to new system..."
+        msg2 "Copying wpa_supplicant to new system..."
         mkdir -p /mnt/etc/wpa_supplicant
         install -Dm 644 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
     fi
-    msg2 "Arch-chrooting to system"
-    arch-chroot /mnt /LadOS/install/chroot-install.sh "$VERBOSITY_FLAG"
+
+    msg2 "Arch-chrooting to system as root..."
+    arch-chroot /mnt /LadOS/install/root-install.sh "$VERBOSITY_FLAG"
+}
+
+function start_user_install() {
+    msg "Preparing for user install..."
+
+    msg2 "Getting default username..."
+    local username
+    read -r username < /tmp/default_user
+    rm -f /tmp/default_user
+
+    msg2 "Arch-chrooting with $username..."
+    arch-chroot -u $username /mnt /LadOS/install/user-install.sh $VERBOSITY_FLAG
 }
 
 
@@ -177,4 +191,6 @@ pacstrap_install
 
 generate_fstab
 
-start_chroot_install
+start_root_install
+
+start_user_install

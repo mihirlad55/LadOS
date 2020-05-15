@@ -181,6 +181,16 @@ function create_initramfs() {
     mkinitcpio --nocolor -P linux
 }
 
+function sync_pacman() {
+    pacman -Syyu --noconfirm
+}
+
+function install_sudo() {
+    msg "Installing sudo..."
+
+    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
+}
+
 function set_root_passwd() {
     msg "Setting root password..."
 
@@ -194,6 +204,8 @@ function set_root_passwd() {
 function create_user_account() {
     msg "Creating new default user account..."
 
+    local username
+
     if [[ "$CONF_USERNAME" != "" ]]; then
         username="$CONF_USERNAME"
     else
@@ -203,29 +215,22 @@ function create_user_account() {
     msg2 "Creating user $username..."
     useradd -m "$username"
 
+    msg2 "Adding $username to group wheel..."
+    usermod -a -G wheel "$username"
+
     msg2 "Setting password for $username..."
     if [[ "$CONF_PASSWORD" != "" ]]; then
         echo "$username:$CONF_PASSWORD" | chpasswd
     else
         until passwd "$username"; do sleep 1s; done
     fi
-}
-
-function setup_sudo_and_su() {
-    msg "Preparing to switch user to $username..."
-    pacman -Syyu --noconfirm
-
-    msg2 "Installing sudo..."
-    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
 
     # Temporary no password prompt for installation
+    msg2 "Temporarily disabling $username's sudo password prompt..."
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
 
-    msg2 "Adding $username to group wheel..."
-    usermod -a -G wheel "$username"
-
-    msg "Changing user to $username..."
-    su -P -c "/LadOS/install/su-install.sh ${VERBOSITY_FLAG}" - "$username"
+    # Store username in /tmp/default_user for second chroot
+    echo "$username" > /tmp/default_user
 }
 
 
@@ -255,8 +260,10 @@ update_mkinitcpio
 
 create_initramfs
 
+sync_pacman
+
+install_sudo
+
 set_root_passwd
 
 create_user_account
-
-setup_sudo_and_su
