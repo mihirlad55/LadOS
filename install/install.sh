@@ -9,7 +9,12 @@ WIFI_ENABLED=0
 VERBOSITY=
 VERBOSITY_FLAG="-q"
 
-source "$CONF_DIR/conf.sh"
+if [[ -f "$CONF_DIR/conf.sh" ]]; then
+    source "$CONF_DIR/conf.sh"
+else
+    source "$CONF_DIR/conf.sh.sample"
+fi
+
 source "$LAD_OS_DIR/common/message.sh"
 
 
@@ -49,7 +54,8 @@ function setup_wifi() {
     msg "Setting up WiFI..."
 
     local network_conf
-    network_conf="$(cat "$CONF_DIR/network.conf")"
+
+    [[ -f "$CONF_DIR/network.conf" ]] && network_conf="$(cat "$CONF_DIR/network.conf")"
 
     conf_path="/tmp/wpa_supplicant.conf"
 

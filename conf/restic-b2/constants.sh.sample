@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+# Duplicate this file and rename to constants.sh
+
 B2_KEY_NAME=
 B2_BUCKET=
 

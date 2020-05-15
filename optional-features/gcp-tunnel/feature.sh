@@ -20,7 +20,7 @@ depends_pacman=(openssh)
 
 
 function check_conf() (
-    source "$CONF_DIR/gcp-tunnel.env"
+    [[ -f "$CONF_DIR/gcp-tunnel.env" ]] && source "$CONF_DIR/gcp-tunnel.env"
     if [[ "$HOSTNAME" =  "" ]] ||
         [[ "$REMOTE_USERNAME" = "" ]] ||
         [[ "$LOCAL_PORT" = "" ]] ||

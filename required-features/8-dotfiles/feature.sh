@@ -33,7 +33,7 @@ function update_git_doom_config() {
 }
 
 function check_conf() {
-    source "$CONF_DIR/conf.sh"
+    [[ -f "$CONF_DIR/conf.sh" ]] && source "$CONF_DIR/conf.sh"
     res="$?"
 
     if [[ "$res" -eq 0 ]] && 

@@ -1,8 +1,10 @@
 #!/usr/bin/bash
 
+# Duplicate this file and rename to conf.sh to use
+
 # To be used for global gitconfig and emacs
-CONF_FULL_NAME=
+CONF_FULL_NAME=""
 # To be used for global gitconfig and emacs
-CONF_EMAIL=
+CONF_EMAIL=""
 # To be used for global gitconfig
-CONF_EDITOR=
+CONF_EDITOR=""
