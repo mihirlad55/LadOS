@@ -28,7 +28,7 @@ function vecho() {
 }
 
 function print_usage() {
-    echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | check_conflicts | help ]"
+    echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | conflicts | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | check_conflicts | help ]"
 }
 
 function check_conflicts() {
@@ -136,9 +136,15 @@ case "$1" in
     name)
         echo "$feature_name"
         ;;
+
     desc)
         echo "$feature_desc"
         ;;
+
+    conflicts)
+        echo "${conflicts[*]}"
+        ;;
+
     check_conf | load_conf | check_install | prepare | install |  post_install \
         | cleanup | check_conflicts)
         if type -p "$1"; then
