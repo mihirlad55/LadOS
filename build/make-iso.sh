@@ -166,9 +166,8 @@ function copy_pacman_packages() {
 
 function increase_tty_scrollback() {
     local ENTRIES_DIR="$1"
-    local OPTION="fbcon=scrollback:8192k"
+    local OPTION="fbcon=scrollback:1024k"
 
-    sudo sed -i $ENTRIES_DIR/* -e "s/^options.*$/& $OPTION/"
     sudo sed -i $ENTRIES_DIR/* -e "s/^options.*$/& $OPTION/"
 }
 
