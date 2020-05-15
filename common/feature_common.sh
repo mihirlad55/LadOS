@@ -39,7 +39,7 @@ function check_conflicts() {
             "$REQUIRED_FEATURES_DIR"/"$c"/feature.sh -q check_install &> "$DEFAULT_OUT" ||
             [[ -d "$OPTIONAL_FEATURES_DIR/$c" ]] &&
             "$OPTIONAL_FEATURES_DIR"/"$c"/feature.sh -q check_install &> "$DEFAULT_OUT"; then
-            echo "Cannot install $feature_name. It conflicts with $c"
+            qecho "Cannot install $feature_name. It conflicts with $c"
             return 1
         fi
     done
