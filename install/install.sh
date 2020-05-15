@@ -1,5 +1,9 @@
 #!/usr/bin/bash
 
+set -o errtrace
+set -o pipefail
+trap error_trap ERR
+
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/install"
@@ -10,14 +14,22 @@ VERBOSITY=
 VERBOSITY_FLAG="-q"
 DEFAULT_OUT="/dev/null"
 
-if [[ -f "$CONF_DIR/conf.sh" ]]; then
-    source "$CONF_DIR/conf.sh"
-else
-    source "$CONF_DIR/conf.sh.sample"
-fi
+
+if [[ -f "$CONF_DIR/conf.sh" ]]; then source "$CONF_DIR/conf.sh";
+else source "$CONF_DIR/conf.sh.sample"; fi
 
 source "$LAD_OS_DIR/common/message.sh"
 
+
+function error_trap() {
+    error_code="$?"
+    last_command="$BASH_COMMAND"
+    command_caller="$(caller)"
+    
+    echo "$command_caller: \"$last_command\" returned error code $error_code" >&2
+
+    exit $error_code
+}
 
 function check_efi_mode() {
     msg "Checking if system booted in EFI mode..."
