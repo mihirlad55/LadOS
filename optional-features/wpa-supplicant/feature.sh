@@ -71,8 +71,8 @@ function install() {
 
 function post_install() {
     qecho "Enabling wpa_supplicant@${card}.service and dhcpcd.service..."
-    sudo systemctl enable --now wpa_supplicant@${card}.service
-    sudo systemctl enable --now dhcpcd.service
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} wpa_supplicant@${card}.service
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} dhcpcd.service
     qecho "Enabled wpa_supplicant@${card}.service and dhcpcd.service"
 }
 

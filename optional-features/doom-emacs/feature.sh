@@ -31,13 +31,13 @@ function check_install() {
 
 function install() {
     qecho "Cloning doom emacs..."
-    git clone --depth 1 https://github.com/hlissner/doom-emacs $HOME/.emacs.d
+    git clone --depth 1 $VERBOSITY_FLAG https://github.com/hlissner/doom-emacs $HOME/.emacs.d
 
     qecho "Installing doom emacs"
-    $HOME/.emacs.d/bin/doom install
+    $HOME/.emacs.d/bin/doom -y install > "$DEFAULT_OUT"
 
     qecho "Syncing doom emacs"
-    $HOME/.emacs.d/bin/doom sync
+    $HOME/.emacs.d/bin/doom -y sync > "$DEFAULT_OUT"
 
     qecho "Done installing doom emacs"
 }

@@ -28,13 +28,13 @@ function check_install() {
 
 function install() {
     qecho "Installing root crontab..."
-    cat $BASE_DIR/root-cron
+    cat $BASE_DIR/root-cron > "$DEFAULT_OUT"
     sudo crontab $BASE_DIR/root-cron
 }
 
 function post_install() {
     qecho "Enabling cronie..."
-    sudo systemctl enable --now cronie
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} cronie
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

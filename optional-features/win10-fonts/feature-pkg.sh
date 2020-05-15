@@ -30,7 +30,7 @@ function check_install() {
 }
 
 function install() {
-    sudo pacman -S $provides --noconfirm --needed
+    sudo pacman -S $provides --noconfirm --needed &> "$DEFAULT_OUT"
 }
 
 

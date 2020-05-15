@@ -6,42 +6,46 @@ CONF_DIR="$LAD_OS_DIR/conf/install"
 REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
 VERBOSITY_FLAG="-q"
-VERBOSE=
+VERBOSITY=
 
 source "$CONF_DIR/conf.sh"
 source "$LAD_OS_DIR/common/message.sh"
 
 
 function enable_localrepo() {
-    msg "Checking localrepo..."
+    msg "Checking for localrepo..."
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
-        msg2 "Found localrepo. Enabling..."
-        sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+	if ! grep -q /etc/pacman.conf -e "LadOS"; then
+	    msg2 "Found localrepo. Enabling..."
+	    sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+	else
+            msg2 "Localrepo already enabled"
+	fi
         pacman -Sy
     fi
 }
 
 function update_mkinitcpio_modules() {
-    [[ -n "$VERBOSE" ]] && echo "Updating mkinitcpio..."
+    [[ -n "$VERBOSITY" ]] && echo "Updating mkinitcpio..."
 
     NEW_MODULES=("$@")
 
-    [[ -n "$VERBOSE" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
+    [[ -n "$VERBOSITY" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
 
     source /etc/mkinitcpio.conf
 
     for module in "${NEW_MODULES[@]}"; do
         if ! echo "${MODULES[@]}" | grep -q "$module"; then
-            [[ -n "$VERBOSE" ]] && echo "$module not found in mkinitcpio.conf"
+            [[ -n "$VERBOSITY" ]] && echo "$module not found in mkinitcpio.conf"
 
-            [[ -n "$VERBOSE" ]] && echo "Staging $module for addition"
+            [[ -n "$VERBOSITY" ]] && echo "Staging $module for addition"
             MODULES=( "${MODULES[@]}" "$module" )
         else
-            [[ -n "$VERBOSE" ]] && echo "$module already found"
+            [[ -n "$VERBOSITY" ]] && echo "$module already found"
         fi
     done
 
-    [[ -n "$VERBOSE" ]] && echo "Updating /etc/mkinitcpio.conf..."
+    [[ -n "$VERBOSITY" ]] && echo "Updating /etc/mkinitcpio.conf..."
     MODULES_LINE="MODULES=(${MODULES[*]})"
     sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 }
@@ -169,7 +173,7 @@ function update_mkinitcpio() {
 
 function create_initramfs() {
     msg "Creating initramfs..."
-    mkinitcpio -P linux
+    mkinitcpio --nocolor -P linux
 }
 
 function set_root_passwd() {
@@ -207,7 +211,7 @@ function setup_sudo_and_su() {
     pacman -Syyu --noconfirm
 
     msg2 "Installing sudo..."
-    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" full
+    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
 
     # Temporary no password prompt for installation
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
@@ -216,13 +220,16 @@ function setup_sudo_and_su() {
     usermod -a -G wheel "$username"
 
     msg "Changing user to $username..."
-    su -P -c "/LadOS/install/su-install.sh" - "$username"
+    su -P -c "/LadOS/install/su-install.sh ${VERBOSITY_FLAG}" - "$username"
 }
 
 
-if [[ "$1" = "-v" ]]; then
+if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
+    VERBOSITY=1
+    VERBOSITY_FLAG=""
+elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
+    VERBOSITY=2
     VERBOSITY_FLAG="-v"
-    VERBOSE=1
 fi
 
 enable_localrepo

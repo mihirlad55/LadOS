@@ -66,7 +66,7 @@ function image_usb() {
 function build_win10_fonts() {
     local PKG_PATH="$1"
 
-    if ! find "$PKG_PATH" -name "*ttf-ms-win10*" &> /dev/null; then
+    if ! find "$PKG_PATH" -name "*ttf-ms-win10*" | grep -q '.'; then
         mkdir -p /var/tmp/win10-fonts
         $BASE_DIR/misc/build-ttf-ms-win10.sh "/var/tmp/win10-fonts"
 
@@ -75,7 +75,7 @@ function build_win10_fonts() {
         rm -r /var/tmp/win10-fonts
     else
         echo "ttf-ms-win10 package already found in $PKG_PATH"
-        echo "Not going to rebuild tff-ms-win10"{
+        echo "Not going to rebuild tff-ms-win10"
     fi
 }
 
@@ -195,7 +195,7 @@ function create_localrepo() {
 function build_from_scratch() {
     local ARCH_ISO_DIR="/var/tmp/archiso"
     local AIRROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
-    local BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/entries/"
+    local BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/loader/entries/"
 
     echo "Removing old ISOs..."
     rm -f $BASE_DIR/*.iso

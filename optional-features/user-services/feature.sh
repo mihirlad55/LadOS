@@ -77,23 +77,23 @@ function install() {
 function post_install() {
     qecho "Enabling services..."
     mkdir -p $TARGET_PATH
-    ln -sP $INSTALL_PATH/battery-check-notify.service $TARGET_PATH/battery-check-notify.service
-    ln -sP $INSTALL_PATH/compton.service $TARGET_PATH/compton.service
-    ln -sP $INSTALL_PATH/dunst.service $TARGET_PATH/dunst.service
-    ln -sP $INSTALL_PATH/nitrogen-delayed.service $TARGET_PATH/nitrogen-delayed.service
-    ln -sP $INSTALL_PATH/nitrogen.service $TARGET_PATH/nitrogen.service
-    ln -sP $INSTALL_PATH/polybar.service $TARGET_PATH/polybar.service
-    ln -sP $INSTALL_PATH/redshift.service $TARGET_PATH/redshift.service
-    ln -sP $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@slack.service
-    ln -sP $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@mailspring.service
-    ln -sP $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@franz.service
-    ln -sP $INSTALL_PATH/update-notify.timer $TARGET_PATH/update-notify.timer
-    ln -sP $INSTALL_PATH/xautolock.service $TARGET_PATH/xautolock.service
-    ln -sP $INSTALL_PATH/xbindkeys.service $TARGET_PATH/xbindkeys.service
-    ln -sP $INSTALL_PATH/startup.service $TARGET_PATH/startup.service
+    ln -sPf $INSTALL_PATH/battery-check-notify.service $TARGET_PATH/battery-check-notify.service
+    ln -sPf $INSTALL_PATH/compton.service $TARGET_PATH/compton.service
+    ln -sPf  $INSTALL_PATH/dunst.service $TARGET_PATH/dunst.service
+    ln -sPf $INSTALL_PATH/nitrogen-delayed.service $TARGET_PATH/nitrogen-delayed.service
+    ln -sPf $INSTALL_PATH/nitrogen.service $TARGET_PATH/nitrogen.service
+    ln -sPf $INSTALL_PATH/polybar.service $TARGET_PATH/polybar.service
+    ln -sPf $INSTALL_PATH/redshift.service $TARGET_PATH/redshift.service
+    ln -sPf $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@slack.service
+    ln -sPf $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@mailspring.service
+    ln -sPf $INSTALL_PATH/startup-application@.service $TARGET_PATH/startup-application@franz.service
+    ln -sPf $INSTALL_PATH/update-notify.timer $TARGET_PATH/update-notify.timer
+    ln -sPf $INSTALL_PATH/xautolock.service $TARGET_PATH/xautolock.service
+    ln -sPf $INSTALL_PATH/xbindkeys.service $TARGET_PATH/xbindkeys.service
+    ln -sPf $INSTALL_PATH/startup.service $TARGET_PATH/startup.service
 
-    ln -sP /usr/lib/systemd/user/insync.service $TARGET_PATH/insync.service
-    ln -sP /usr/lib/systemd/user/spotify-listener.service $TARGET_PATH/spotify-listener.service
+    ln -sPf /usr/lib/systemd/user/insync.service $TARGET_PATH/insync.service
+    ln -sPf /usr/lib/systemd/user/spotify-listener.service $TARGET_PATH/spotify-listener.service
 
     qecho "Done"
 }

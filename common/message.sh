@@ -61,6 +61,18 @@ function plain() {
     printf "${BOLD}    ${mesg}${CLEAR}\n" "$@"
 }
 
+function plain2() {
+    local mesg="$1"
+    shift
+    printf "${BOLD}      ${mesg}${CLEAR}\n" "$@"
+}
+
+function plain3() {
+    local mesg="$1"
+    shift
+    printf "${BOLD}        ${mesg}${CLEAR}\n" "$@"
+}
+
 function msg() {
     local mesg="$1"
     shift

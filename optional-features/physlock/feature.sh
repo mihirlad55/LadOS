@@ -35,7 +35,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling physlock.service..."
-    sudo systemctl enable --now physlock.service
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} physlock.service
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

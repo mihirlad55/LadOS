@@ -2,36 +2,15 @@
 
 VERBOSE=
 QUIET=
-
+DEFAULT_OUT="/dev/fd/1"
+VERBOSITY_FLAG=
+SILENT_FLAG=
+SYSTEMD_FLAGS=()
 
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
-function print_usage() {
-    echo "usage: feature.sh [-q | -v ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
-}
-
-function install_dependencies() {
-    if [[ "${depends_pacman[@]}" != "" ]]; then
-        [[ ! -n "$QUIET" ]] && echo "Installing ${depends_pacman[@]}..."
-        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed
-    fi
-
-    if [[ "${depends_aur[@]}" != "" ]]; then
-        [[ ! -n "$QUIET" ]] && echo "Installing ${depends_aur[@]}..."
-        yay -S ${depends_aur[@]} --noconfirm --needed
-    fi
-
-    if [[ "${depends_pip3[@]}" != "" ]]; then
-        if ! command -v pip3 > /dev/null; then
-            sudo pacman -S python-pip --noconfirm --needed
-        fi
-
-        [[ ! -n "$QUIET" ]] && echo "Installing ${depends_pip3[@]}..."
-        sudo pip3 install ${depends_pip3[@]}
-    fi
-}
 
 function qecho() {
     [[ ! -n "$QUIET" ]] && echo "$@"
@@ -41,21 +20,61 @@ function vecho() {
     [[ -n "$VERBOSE" ]] && echo "$@"
 }
 
+function print_usage() {
+    echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
+}
 
-if echo "$@" | grep -q "-v"; then
-    $@="$(echo "$@" | sed 's/-v//')"
+function install_dependencies() {
+    if [[ "${depends_pacman[@]}" != "" ]]; then
+        qecho "Installing ${depends_pacman[@]}..."
+        # Reinstall warnings go to stderr
+        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed &> "$DEFAULT_OUT"
+    fi
+
+    if [[ "${depends_aur[@]}" != "" ]]; then
+        qecho "Installing ${depends_aur[@]}..."
+        # Some normal output goes to stderr
+        yay -S ${depends_aur[@]} --noconfirm --needed &> "$DEFAULT_OUT"
+    fi
+
+    if [[ "${depends_pip3[@]}" != "" ]]; then
+        if ! command -v pip3 > /dev/null; then
+            sudo pacman -S python-pip --noconfirm --needed > "$DEFAULT_OUT"
+        fi
+
+        qecho "Installing ${depends_pip3[@]}..."
+        sudo pip3 install ${depends_pip3[@]} > "$DEFAULT_OUT"
+    fi
+}
+
+
+if [[ "$1" = "-v" ]]; then
     VERBOSE=1
+    shift
+elif [[ "$1" = "-q" ]]; then
+    QUIET=1
+    DEFAULT_OUT="/dev/null"
+    VERBOSITY_FLAG="-q"
+    SILENT_FLAG="-s"
+    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "-q")
+    shift
 fi
 
-if echo "$@" | grep -q "-q"; then
-    $@="$(echo "$@" | sed 's/-q//')"
-    QUIET=1
+if [[ "$1" = "--no-service-start" ]]; then
+    shift
+else
+    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "--now")
+fi
+
+if [[ "$#" -ne 1 ]]; then
+    print_usage
+    exit 1
 fi
 
 case "$1" in
     full | full_no_check)
         if type -p check_conf && type -p load_conf; then
-            [[ ! -n "$QUIET" ]] && echo "Checking and loading configuration..."
+            qecho "Checking and loading configuration..."
             check_conf && load_conf
         fi
 
@@ -64,29 +83,29 @@ case "$1" in
         fi
 
         if type -p prepare; then
-            [[ ! -n "$QUIET" ]] && echo "Beginning prepare..."
+            qecho "Beginning prepare..."
             prepare
         fi
 
-        [[ ! -n "$QUIET" ]] && echo "Installing feature..."
+        qecho "Installing feature..."
         install
 
         if type -p post_install; then
-            [[ ! -n "$QUIET" ]] && echo "Starting post_install..."
+            qecho "Starting post_install..."
             post_install
         fi
 
         if type -p cleanup; then
-            [[ ! -n "$QUIET" ]] && echo "Starting cleanup..."
+            qecho "Starting cleanup..."
             cleanup
         fi
 
-        if [[ "$1" = "full_no_check" ]] && type -p check_install; then
-            [[ ! -n "$QUIET" ]] && echo "Checking if feature was installed correctly..."
+        if [[ "$1" = "full" ]] && type -p check_install; then
+            qecho "Checking if feature was installed correctly..."
             check_install
         fi
-
         ;;
+
     name)
         echo "$feature_name"
         ;;
@@ -96,13 +115,13 @@ case "$1" in
     check_conf | load_conf | check_install | prepare | install |  post_install \
         | cleanup)
         if type -p "$1"; then
-            [[ ! -n "$QUIET" ]] && echo "Starting $1..."
+            qecho "Starting $1..."
             $1
             res="$?"
-            [[ ! -n "$QUIET" ]] && echo "Done $1"
+            qecho "Done $1"
             exit "$res"
         else
-            [[ ! -n "$QUIET" ]] && echo "$1 is not defined for this feature"
+            qecho "$1 is not defined for this feature"
             exit 1
         fi
         ;;
@@ -111,7 +130,7 @@ case "$1" in
         if [[ "${depends_pacman[@]}" != "" ]] || [[ "${depends_aur[@]}" != "" ]]; then
             install_dependencies
         else
-            [[ ! -n "$QUIET" ]] && echo "No dependencies to install"
+            qecho "No dependencies to install"
             exit 1
         fi
         ;;

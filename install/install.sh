@@ -6,7 +6,7 @@ CONF_DIR="$LAD_OS_DIR/conf/install"
 LOCAL_REPO_DIR="$LAD_OS_DIR/localrepo"
 
 WIFI_ENABLED=0
-VERBOSE=
+VERBOSITY=
 VERBOSITY_FLAG="-q"
 
 source "$CONF_DIR/conf.sh"
@@ -25,7 +25,7 @@ function check_efi_mode() {
 
 function setup_partitions() {
     msg "Partition setup..."
-    echo -ne "Make sure you create the system partitions, format them, and mount root on /mnt with all the filesystems mounted on root\n"
+    plain "Make sure you create the system partitions, format them, and mount root on /mnt with all the filesystems mounted on root"
     if [[ "$CONF_NOCONFIRM" = "no" ]]; then
         if ! prompt "Are the filesystems mounted?"; then
             msg2 "Please partition the drive and exit the shell once finished..."
@@ -105,8 +105,12 @@ function rank_mirrors() {
 function enable_localrepo() {
     msg "Checking for localrepo..."
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
-        msg2 "Found localrepo. Enabling..."
-        sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+	if ! grep -q /etc/pacman.conf -e "LadOS"; then
+	    msg2 "Found localrepo. Enabling..."
+	    sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+	else
+            msg2 "Localrepo already enabled"
+	fi
         pacman -Sy
     fi
 }
@@ -130,7 +134,7 @@ function generate_fstab() {
 function start_chroot_install() {
     msg "Preparing to chroot..."
     msg2 "Copying LadOS to new system"
-    cp -rf "$LAD_OS_DIR" "/mnt/LadOS"
+    cp -rft "/mnt" "$LAD_OS_DIR"
     chmod -R go=u /mnt/LadOS
 
     if [[ "$WIFI_ENABLED" -eq 1 ]]; then
@@ -143,9 +147,12 @@ function start_chroot_install() {
 }
 
 
-if [[ "$1" = "-v" ]]; then
+if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
+    VERBOSITY=1
+    VERBOSITY_FLAG=""
+elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
+    VERBOSITY=2
     VERBOSITY_FLAG="-v"
-    VERBOSE=1
 fi
 
 check_efi_mode

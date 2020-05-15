@@ -64,7 +64,8 @@ function prepare() {
 }
 
 function install() {
-    sudo bootctl install
+    # Normal output goes to stderr
+    sudo bootctl install &> "$DEFAULT_OUT"
 
     qecho "Installing boot entry>.."
     sudo mkdir -p /boot/loader/entries

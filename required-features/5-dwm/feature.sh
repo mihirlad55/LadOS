@@ -35,19 +35,19 @@ function check_install() {
 
 function prepare() {
     qecho "Cloning dwm..."
-    git clone https://github.com/mihirlad55/dwm /tmp/dwm
+    git clone $VERBOSITY_FLAG https://github.com/mihirlad55/dwm /tmp/dwm
 }
 
 function install() {
     qecho "Making dwm..."
-    (cd /tmp/dwm && sudo make clean install)
+    (cd /tmp/dwm && sudo make clean install &> "$DEFAULT_OUT")
 }
 
 function post_install() {
     qecho "Enabling lightdm..."
-    sudo systemctl enable lightdm
+    sudo systemctl enable ${SYSTEMD_FLAGS[*]} lightdm
 
-    sudo systemctl set-default graphical.target
+    sudo systemctl set-default ${SYSTEMD_FLAGS[*]} graphical.target
 }
 
 function cleanup() {

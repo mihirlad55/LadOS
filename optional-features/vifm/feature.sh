@@ -5,6 +5,8 @@ BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 
+EPUB_THUMBNAILER_URL="https://github.com/marianosimone/epub-thumbnailer"
+
 feature_name="vifm"
 feature_desc="Install vifm with image previews"
 
@@ -34,10 +36,10 @@ function check_install() {
 
 function install() {
     qecho "Cloning epub-thumbnailer..."
-    git clone https://github.com/marianosimone/epub-thumbnailer /tmp/epub-thumbnailer
+    git clone $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
 
     qecho "Installing epub-thumbnailer..."
-    sudo python /tmp/epub-thumbnailer/install.py install
+    sudo python /tmp/epub-thumbnailer/install.py install &> "$DEFAULT_OUT"
 
     qecho "Installing vifmimg and vifmrun..."
     sudo install -Dm 755 $BASE_DIR/vifmrun /usr/local/bin/vifmrun
