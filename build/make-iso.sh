@@ -161,14 +161,18 @@ function copy_pacman_packages() {
         --dbpath "$TEMP_DB_PATH" \
         --noconfirm --needed
 
-    sudo sed -i "$PACMAN_CONF_PATH" -e '1 i\Include = /LadOS/install/localrepo.conf'
+	if ! grep -q "$PACMAN_CONF_PATH" -e "LadOS"; then
+	    sudo sed -i "$PACMAN_CONF_PATH" -e '1 i\Include = /LadOS/install/localrepo.conf'
+    fi
 }
 
 function increase_tty_scrollback() {
     local ENTRIES_DIR="$1"
     local OPTION="fbcon=scrollback:1024k"
 
-    sudo sed -i $ENTRIES_DIR/* -e "s/^options.*$/& $OPTION/"
+    if ! grep -q -F "$OPTION" $ENTRIES_DIR/*; then
+        sudo sed -i $ENTRIES_DIR/* -e "s/^options.*$/& $OPTION/"
+    fi
 }
 
 function create_localrepo() {
