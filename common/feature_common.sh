@@ -1,5 +1,12 @@
 #!/usr/bin/bash
 
+# Get absolute path to directory of script
+BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+# Get absolute path to root of repo
+LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
+OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
+
 VERBOSE=
 QUIET=
 DEFAULT_OUT="/dev/fd/1"
@@ -21,7 +28,23 @@ function vecho() {
 }
 
 function print_usage() {
-    echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | help ]"
+    echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | check_conflicts | help ]"
+}
+
+function check_conflicts() {
+    for c in "${conflicts[@]}"; do
+        local feature_path
+        feature_path="$REQUIRED_FEATURES_DIR/$c"
+        if [[ -d "$REQUIRED_FEATURES_DIR/$c" ]] &&
+            "$REQUIRED_FEATURES_DIR"/"$c"/feature.sh -q check_install &> "$DEFAULT_OUT" ||
+            [[ -d "$OPTIONAL_FEATURES_DIR/$c" ]] &&
+            "$OPTIONAL_FEATURES_DIR"/"$c"/feature.sh -q check_install &> "$DEFAULT_OUT"; then
+            echo "Cannot install $feature_name. It conflicts with $c"
+            return 1
+        fi
+    done
+
+    return 0
 }
 
 function install_dependencies() {
@@ -87,8 +110,12 @@ case "$1" in
             prepare
         fi
 
-        qecho "Installing feature..."
-        install
+        if check_conflicts; then
+            qecho "Installing feature..."
+            install
+        else
+            exit 1
+        fi
 
         if type -p post_install; then
             qecho "Starting post_install..."
@@ -113,7 +140,7 @@ case "$1" in
         echo "$feature_desc"
         ;;
     check_conf | load_conf | check_install | prepare | install |  post_install \
-        | cleanup)
+        | cleanup | check_conflicts)
         if type -p "$1"; then
             qecho "Starting $1..."
             $1
