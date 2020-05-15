@@ -8,6 +8,7 @@ LOCAL_REPO_DIR="$LAD_OS_DIR/localrepo"
 WIFI_ENABLED=0
 VERBOSITY=
 VERBOSITY_FLAG="-q"
+DEFAULT_OUT="/dev/null"
 
 if [[ -f "$CONF_DIR/conf.sh" ]]; then
     source "$CONF_DIR/conf.sh"
@@ -78,8 +79,8 @@ function setup_wifi() {
         adapter="$(ask "Enter name of WiFI adapter")"
     fi
 
-    wpa_supplicant -B -i"${adapter}" -c "$conf_path"
-    dhcpcd
+    wpa_supplicant -B -i"${adapter}" -c "$conf_path" > "$DEFAULT_OUT"
+    dhcpcd > "$DEFAULT_OUT"
 
     WIFI_ENABLED=1
 }
@@ -170,9 +171,11 @@ function start_user_install() {
 if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
     VERBOSITY=1
     VERBOSITY_FLAG=""
+    DEFAULT_OUT="/dev/stdout"
 elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
     VERBOSITY=2
     VERBOSITY_FLAG="-v"
+    DEFAULT_OUT="/dev/stdout"
 fi
 
 check_efi_mode
