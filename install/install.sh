@@ -125,7 +125,7 @@ function enable_localrepo() {
 function pacstrap_install() {
     msg "Starting pacstrap install..."
 
-    if mount | grep /mnt; then
+    if mount | grep -q /mnt; then
         pacstrap /mnt base linux linux-firmware
     else
         error "Parititions not mounted on /mnt. Please mount the filesystems."
