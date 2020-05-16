@@ -46,7 +46,9 @@ function setup_wifi() {
 
     local network_conf
 
-    [[ -f "$CONF_DIR/network.conf" ]] && network_conf="$(cat "$CONF_DIR/network.conf")"
+    if [[ -f "$CONF_DIR/network.conf" ]]; then
+        network_conf="$(cat "$CONF_DIR/network.conf")"
+    fi
 
     conf_path="/tmp/wpa_supplicant.conf"
 

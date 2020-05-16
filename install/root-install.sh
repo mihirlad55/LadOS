@@ -67,7 +67,7 @@ function set_timezone() (
             num="$(ask "Select closest match")"
 
             re='^[0-9]+$'
-            ! [[ $num =~ $re ]] && continue
+            if ! [[ $num =~ $re ]]; then continue; fi
 
             num=$((num-1))
 
@@ -137,7 +137,9 @@ function setup_hosts() {
     echo "127.0.0.1  localhost" > /etc/hosts
     echo "::1        localhost" >> /etc/hosts
 
-    [[ -f "$CONF_DIR/hosts" ]] && hosts="$(cat "$CONF_DIR"/hosts)"
+    if [[ -f "$CONF_DIR/hosts" ]]; then
+        hosts="$(cat "$CONF_DIR"/hosts)"
+    fi
 
     if [[ "$hosts" != "" ]]; then
         echo "$hosts" >> /etc/hosts

@@ -153,7 +153,11 @@ function install_optional_features() {
                     fi
                 fi
             done
-            [[ -n "$excluded" ]] && excluded=0 && continue
+
+            if [[ "$excluded" -eq 1 ]]; then
+                excluded=0
+                continue
+            fi
 
             OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
 
