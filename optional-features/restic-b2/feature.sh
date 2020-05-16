@@ -98,5 +98,15 @@ function install() {
     qecho "Done copying configuration for restic"
 }
 
+function uninstall() {
+    qecho "Resetting configuration at $TARGET_CONSTANTS_PATH..."
+    sed -i "$TARGET_CONSTANTS_PATH" \
+        -e "s/^B2_KEY_NAME=.*/B2_KEY_NAME=/" \
+        -e "s/^B2_BUCKET=.*/B2_BUCKET=/" \
+        -e "s/^B2_ACCOUNT_ID=.*/B2_ACCOUNT_ID=/" \
+        -e "s/^B2_ACCOUNT_KEY=.*/B2_ACCOUNT_KEY=/" \
+        -e "s/^RESTIC_PASSWORD=.*/RESTIC_PASSWORD="
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

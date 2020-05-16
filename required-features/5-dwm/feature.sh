@@ -55,6 +55,11 @@ function cleanup() {
     rm -rf /tmp/dwm
 }
 
+function uninstall() {
+    qecho "Removing dwm..."
+    sudo rm -f "${new_files[@]}"
+}
+
 source "$LAD_OS_DIR/common/feature_common.sh"
 
 

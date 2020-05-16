@@ -34,5 +34,12 @@ function install() {
         -e '/\[community\]/!b;n;cInclude = \/etc\/pacman.d\/mirrorlist'
 }
 
+function uninstall() {
+    qecho "Editing /etc/pacman.conf"
+    sudo sed -i /etc/pacman.conf -e "s/^\[community\]$/#&/"
+    sudo sed -i /etc/pacman.conf \
+        -e '/^#\[community\]/!b;n;c#Include = \/etc\/pacman.d\/mirrorlist'
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

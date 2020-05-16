@@ -13,19 +13,37 @@ feature_name="user-services"
 feature_desc="Install custom user-services for applications"
 
 provides=()
-new_files=("$INSTALL_PATH/battery-check-notify.service" \
-           "$INSTALL_PATH/compton.service" \
-           "$INSTALL_PATH/dunst.service" \
-           "$INSTALL_PATH/nitrogen-delayed.service" \
-           "$INSTALL_PATH/nitrogen.service" \
-           "$INSTALL_PATH/polybar.service" \
-           "$INSTALL_PATH/redshift.service" \
-           "$INSTALL_PATH/startup-application@.service" \
-           "$INSTALL_PATH/update-notify.service" \
-           "$INSTALL_PATH/update-notify.timer" \
-           "$INSTALL_PATH/xautolock.service" \
-           "$INSTALL_PATH/xbindkeys.service" \
-           "$INSTALL_PATH/startup.service")
+new_files=( \
+    "$INSTALL_PATH/battery-check-notify.service" \
+    "$TARGET_PATH/battery-check-notify.service" \
+    "$INSTALL_PATH/compton.service" \
+    "$TARGET_PATH/compton.service" \
+    "$INSTALL_PATH/dunst.service" \
+    "$TARGET_PATH/dunst.service" \
+    "$INSTALL_PATH/nitrogen-delayed.service" \
+    "$TARGET_PATH/nitrogen-delayed.service" \
+    "$INSTALL_PATH/nitrogen.service" \
+    "$TARGET_PATH/nitrogen.service" \
+    "$INSTALL_PATH/polybar.service" \
+    "$TARGET_PATH/polybar.service" \
+    "$INSTALL_PATH/redshift.service" \
+    "$TARGET_PATH/redshift.service" \
+    "$INSTALL_PATH/startup-application@.service" \
+    "$TARGET_PATH/startup-application@slack.service" \
+    "$INSTALL_PATH/startup-application@.service" \
+    "$TARGET_PATH/startup-application@mailspring.service" \
+    "$INSTALL_PATH/startup-application@.service" \
+    "$TARGET_PATH/startup-application@franz.service" \
+    "$INSTALL_PATH/update-notify.timer" \
+    "$TARGET_PATH/update-notify.timer" \
+    "$INSTALL_PATH/xautolock.service" \
+    "$TARGET_PATH/xautolock.service" \
+    "$INSTALL_PATH/xbindkeys.service" \
+    "$TARGET_PATH/xbindkeys.service" \
+    "$INSTALL_PATH/startup.service" \
+    "$TARGET_PATH/startup.service" \
+    "$TARGET_PATH/insync.service" \
+    "$TARGET_PATH/spotify-listener.service")
 modified_files=()
 temp_files=()
 
@@ -79,7 +97,7 @@ function post_install() {
     mkdir -p $TARGET_PATH
     ln -sPf $INSTALL_PATH/battery-check-notify.service $TARGET_PATH/battery-check-notify.service
     ln -sPf $INSTALL_PATH/compton.service $TARGET_PATH/compton.service
-    ln -sPf  $INSTALL_PATH/dunst.service $TARGET_PATH/dunst.service
+    ln -sPf $INSTALL_PATH/dunst.service $TARGET_PATH/dunst.service
     ln -sPf $INSTALL_PATH/nitrogen-delayed.service $TARGET_PATH/nitrogen-delayed.service
     ln -sPf $INSTALL_PATH/nitrogen.service $TARGET_PATH/nitrogen.service
     ln -sPf $INSTALL_PATH/polybar.service $TARGET_PATH/polybar.service
@@ -98,5 +116,9 @@ function post_install() {
     qecho "Done"
 }
 
+function uninstall() {
+    qecho "Disabling and removing services..."
+    rm -f "${new_files[@]}"
+}
 
 source "$LAD_OS_DIR/common/feature_common.sh"

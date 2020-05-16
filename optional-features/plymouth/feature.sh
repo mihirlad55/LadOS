@@ -71,5 +71,18 @@ function post_install() {
     sudo systemctl enable ${SYSTEMD_FLAGS[*]} lightdm-plymouth
 }
 
+function uninstall() {
+    qecho "Disbaling lightdm-plymouth.service"
+    sudo systemctl disable ${SYSTEMD_FLAGS[*]} lightdm-plymouth
+    qecho "Enabling lightdm.service..."
+    sudo systemctl enable $VERBOSITY_FLAG lightdm
+
+    qecho "Removing plymouth hook..."
+    sudo sed -i /etc/mkinitcpio.conf -e "s/plymouth //"
+
+    qecho "Removing ${new_files[@]}..."
+    rm -f "${new_files[@]} /etc/plymouth/plymouthd.conf"
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

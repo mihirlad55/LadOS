@@ -9,10 +9,10 @@ LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 feature_name="Yay AUR Helper"
 feature_desc="Install yay AUR helper"
 
-provides=("yay" "package-query")
+provides=("yay")
 new_files=()
 modified_files=()
-temp_files=("/tmp/yay" "/tmp/package-query")
+temp_files=("/tmp/yay")
 
 depends_aur=()
 depends_pacman=(base-devel git wget yajl)
@@ -29,15 +29,6 @@ function check_install() {
 }
 
 function prepare() {
-    # Clone package-query
-    qecho "Cloning package-query..."
-    git clone $VERBOSITY_FLAG https://aur.archlinux.org/package-query.git /tmp/package-query
-
-    # Make package
-    qecho "Making package package-query..."
-    # Some non-error output goes to stderr
-    (cd /tmp/package-query && makepkg -si --noconfirm --noprogressbar &> "$DEFAULT_OUT")
-
     # Clone yay
     qecho "Cloning yay..."
     git clone $VERBOSITY_FLAG https://aur.archlinux.org/yay.git /tmp/yay
@@ -53,6 +44,10 @@ function install() {
 function cleanup() {
     qecho "Removing /tmp/yay and /tmp/package-query..."
     rm -dRf ${temp_files[@]}
+}
+
+function uninstall() {
+    sudo pacman -Rsu "${provides[@]}" --noconfirm
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

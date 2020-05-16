@@ -104,4 +104,11 @@ function cleanup() {
     rm -f /tmp/refind-manual.conf
 }
 
+function uninstall() {
+    qecho "Removing ${new_files[@]}..."
+    sudo rm -rf "${new_files[@]}"
+
+}
+
+
 source "$LAD_OS_DIR/common/feature_common.sh"

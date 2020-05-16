@@ -88,4 +88,10 @@ function install() {
     echo "To start the vpn, run systemctl start openvpn-client@<server>"
 }
 
+function uninstall() {
+    qecho "Removing ${new_files[@]}..."
+    rm -f "${new_files[@]}"
+}
+
+
 source "$LAD_OS_DIR/common/feature_common.sh"

@@ -43,6 +43,7 @@ libreoffice-fresh,Word processing,system,optional
 libsecret,For mailspring,system,optional
 lightdm,Display manager,system,required
 lightdm-webkit2-greeter,Pretty greeter,system,required
+maia-gtk-theme,Theme for gtk-greeter,aur,optional
 mailspring,Main email client,aur,optional
 make,For making stuff,system,required
 man-db,Man pages,system,required

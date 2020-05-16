@@ -4,7 +4,7 @@
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/webkit2-feature"
+CONF_DIR="$LAD_OS_DIR/conf/webkit2-greeter"
 
 feature_name="webkit2-greeter"
 feature_desc="Install lightdm-webkit2-greeter with user avatar and background"
@@ -14,7 +14,8 @@ conflicts=(gtk-greeter)
 provides=()
 new_files=("/var/lib/AccountsService/users/$USER" \
     "/var/lib/AccountsService/icons/$USER.png")
-modified_files=("/etc/lightdm/lightdm.conf")
+modified_files=("/etc/lightdm/lightdm.conf" \
+    "/usr/share/backgrounds")
 temp_files=()
 
 depends_aur=()
@@ -59,6 +60,20 @@ function install() {
     fi
 
     qecho "Done installing lightdm-webkit2-greeter"
+}
+
+function uninstall() {
+    local backgrounds
+
+    qecho "Removing ${new_files[@]}..."
+    rm -f "${new_files[@]}"
+
+    qecho "Changing greeter session in /etc/lightdm/lightdm.conf"
+    sudo sed -i 's/greeter-session=lightdm-webkit2-greeter$/#greeter-session=/' /etc/lightdm/lightdm.conf
+
+    qecho "Removing backgrounds from /usr/share/backgrounds..."
+    mapfile -t backgrounds < <(cd "$CONF_DIR/backgrounds" && find . -not -path '*/\.*' -type f)
+    (cd /usr/share/backgrounds && rm -rf "${backgrounds[@]}")
 }
 
 

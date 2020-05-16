@@ -2,55 +2,44 @@
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/install"
-REQUIRED_FEATURES_DIR="$BASE_DIR/../required-features"
 
-VERBOSITY_FLAG="-q"
-VERBOSITY=
-
-if [[ -f "$CONF_DIR/conf.sh" ]]; then
-    source "$CONF_DIR/conf.sh"
-else
-    source "$CONF_DIR/conf.sh.sample"
-fi
-
-source "$LAD_OS_DIR/common/message.sh"
+source "$LAD_OS_DIR/common/install_common.sh"
 
 
 function enable_localrepo() {
     msg "Checking for localrepo..."
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
-	if ! grep -q /etc/pacman.conf -e "LadOS"; then
-	    msg2 "Found localrepo. Enabling..."
-	    sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
-	else
-            msg2 "Localrepo already enabled"
-	fi
+        if ! grep -q /etc/pacman.conf -e "LadOS"; then
+            msg2 "Found localrepo. Enabling..."
+            sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+        else
+                msg2 "Localrepo already enabled"
+        fi
         pacman -Sy
     fi
 }
 
 function update_mkinitcpio_modules() {
-    [[ -n "$VERBOSITY" ]] && echo "Updating mkinitcpio..."
+    vecho "Updating mkinitcpio..."; fi
 
     NEW_MODULES=("$@")
 
-    [[ -n "$VERBOSITY" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
+    vecho "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
 
     source /etc/mkinitcpio.conf
 
     for module in "${NEW_MODULES[@]}"; do
         if ! echo "${MODULES[@]}" | grep -q "$module"; then
-            [[ -n "$VERBOSITY" ]] && echo "$module not found in mkinitcpio.conf"
+            vecho "$module not found in mkinitcpio.conf"
 
-            [[ -n "$VERBOSITY" ]] && echo "Staging $module for addition"
+            vecho "Staging $module for addition"
             MODULES=( "${MODULES[@]}" "$module" )
         else
-            [[ -n "$VERBOSITY" ]] && echo "$module already found"
+            vecho "$module already found"
         fi
     done
 
-    [[ -n "$VERBOSITY" ]] && echo "Updating /etc/mkinitcpio.conf..."
+    vecho "Updating /etc/mkinitcpio.conf..."
     MODULES_LINE="MODULES=(${MODULES[*]})"
     sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 }
@@ -78,7 +67,7 @@ function set_timezone() (
             num="$(ask "Select closest match")"
 
             re='^[0-9]+$'
-            ! [[ $num =~ $re ]] && continue
+            if ! [[ $num =~ $re ]]; then continue; fi
 
             num=$((num-1))
 
@@ -148,7 +137,9 @@ function setup_hosts() {
     echo "127.0.0.1  localhost" > /etc/hosts
     echo "::1        localhost" >> /etc/hosts
 
-    [[ -f "$CONF_DIR/hosts" ]] && hosts="$(cat "$CONF_DIR"/hosts)"
+    if [[ -f "$CONF_DIR/hosts" ]]; then
+        hosts="$(cat "$CONF_DIR"/hosts)"
+    fi
 
     if [[ "$hosts" != "" ]]; then
         echo "$hosts" >> /etc/hosts
@@ -233,14 +224,6 @@ function create_user_account() {
     echo "$username" > /tmp/default_user
 }
 
-
-if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
-    VERBOSITY=1
-    VERBOSITY_FLAG=""
-elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
-    VERBOSITY=2
-    VERBOSITY_FLAG="-v"
-fi
 
 enable_localrepo
 

@@ -69,6 +69,11 @@ function cleanup() {
 
 }
 
+# Commands to uninstall feature
+function uninstall() {
+
+}
+
 source "$LAD_OS_DIR/common/feature_common.sh"
 
 # vim:ft=sh

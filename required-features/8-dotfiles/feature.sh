@@ -135,6 +135,18 @@ function cleanup() {
     rm -rf /tmp/dotfiles
 }
 
+function uninstall() (
+    local files
+
+    cd "$HOME"
+    mapfile -t files < <(git ls-tree -r HEAD --name-only)
+
+    qecho "Removing dotfiles..."
+    rm -rf "${files[@]}"
+    rm -rf ".git"
+)
+
+
 source "$LAD_OS_DIR/common/feature_common.sh"
 
 

@@ -2,21 +2,11 @@
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/install"
-LOCAL_REPO_DIR="$LAD_OS_DIR/localrepo"
+
+source "$LAD_OS_DIR/common/install_common.sh"
 
 WIFI_ENABLED=0
-VERBOSITY=
-VERBOSITY_FLAG="-q"
 DEFAULT_OUT="/dev/null"
-
-if [[ -f "$CONF_DIR/conf.sh" ]]; then
-    source "$CONF_DIR/conf.sh"
-else
-    source "$CONF_DIR/conf.sh.sample"
-fi
-
-source "$LAD_OS_DIR/common/message.sh"
 
 
 function check_efi_mode() {
@@ -56,7 +46,9 @@ function setup_wifi() {
 
     local network_conf
 
-    [[ -f "$CONF_DIR/network.conf" ]] && network_conf="$(cat "$CONF_DIR/network.conf")"
+    if [[ -f "$CONF_DIR/network.conf" ]]; then
+        network_conf="$(cat "$CONF_DIR/network.conf")"
+    fi
 
     conf_path="/tmp/wpa_supplicant.conf"
 
@@ -112,12 +104,12 @@ function rank_mirrors() {
 function enable_localrepo() {
     msg "Checking for localrepo..."
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
-	if ! grep -q /etc/pacman.conf -e "LadOS"; then
-	    msg2 "Found localrepo. Enabling..."
-	    sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
-	else
+        if ! grep -q /etc/pacman.conf -e "LadOS"; then
+            msg2 "Found localrepo. Enabling..."
+            sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+        else
             msg2 "Localrepo already enabled"
-	fi
+        fi
         pacman -Sy
     fi
 }
@@ -125,7 +117,7 @@ function enable_localrepo() {
 function pacstrap_install() {
     msg "Starting pacstrap install..."
 
-    if mount | grep /mnt; then
+    if mount | grep -q /mnt; then
         pacstrap /mnt base linux linux-firmware
     else
         error "Parititions not mounted on /mnt. Please mount the filesystems."
@@ -167,16 +159,6 @@ function start_user_install() {
     arch-chroot -u $username /mnt /LadOS/install/user-install.sh $VERBOSITY_FLAG
 }
 
-
-if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
-    VERBOSITY=1
-    VERBOSITY_FLAG=""
-    DEFAULT_OUT="/dev/stdout"
-elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
-    VERBOSITY=2
-    VERBOSITY_FLAG="-v"
-    DEFAULT_OUT="/dev/stdout"
-fi
 
 check_efi_mode
 
