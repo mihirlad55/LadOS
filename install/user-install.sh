@@ -90,7 +90,8 @@ function install_required_features() {
     total="${#features[@]}"
 
     for i in "${!features[@]}"; do
-        feature="${feature[i]}"
+        feature="${features[i]}"
+	i=$((i+1))
         progress="($i/$total)"
 
         if ! (echo "$feature" | grep "yay" || echo "$feature" | grep "sudoers"); then
@@ -158,13 +159,13 @@ function install_optional_features() {
                         excluded=("${excluded[@]}" "$c")
                     else
                         excluded=("${excluded[@]}" "${feature[@]}")
-                        excluded=1
+                        exclude_this=1
                     fi
                 fi
             done
 
-            if [[ "$excluded" -eq 1 ]]; then
-                excluded=0
+            if [[ "$excluded_this" -eq 1 ]]; then
+                exclude_this=0
                 continue
             fi
 
