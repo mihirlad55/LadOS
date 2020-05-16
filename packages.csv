@@ -60,6 +60,7 @@ openvpn,For VPNs,system,required
 pacman-contrib,Pacman scripts,system,required
 pamixer,Volume control,system,required
 papirus-icon-theme,Icon theme for Rofi,system,required
+patch,For patching stuff,system,required
 physlock,Secure lockscreens,system,required
 plymouth,Boot animation,aur,required
 polybar,Status bar,aur, required
