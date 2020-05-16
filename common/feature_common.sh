@@ -44,6 +44,21 @@ function vecho() {
     if [[ -n "$VERBOSE" ]]; then echo "$@"; fi
 }
 
+function prompt() {
+    local mesg resp
+    mesg="$1"
+
+    while true; do
+        read -p "$mesg [Y/n]: " resp
+
+        if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
+            return 0
+        elif [[ "$resp" = "n" ]] || [[ "$resp" = "N" ]]; then
+            return 1
+        fi
+    done
+}
+
 function print_usage() {
     echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | conflicts | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | check_conflicts | help ]"
 }
