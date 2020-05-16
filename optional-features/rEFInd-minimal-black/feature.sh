@@ -22,7 +22,8 @@ new_files=("/boot/EFI/refind/themes" \
     "/boot/EFI/refind/refind-options.conf")
 modified_files=()
 temp_files=("/tmp/refind-options.conf" \
-    "/tmp/refind-manual.conf")
+    "/tmp/refind-manual.conf" \
+    "/tmp/rEFInd-minimal-black")
 
 depends_aur=()
 depends_pacman=(refind)
@@ -64,7 +65,11 @@ function install() {
     sudo mkdir -p "$REFIND_PATH"/themes
     sudo rm -rf "$REFIND_THEME_PATH"
 
-    sudo git clone $VERBOSITY_FLAG "$REFIND_THEME_URL" "$REFIND_THEME_PATH"
+    if [[ ! -d "/tmp/rEFInd-minimal-black" ]]; then
+        git clone --depth 1 $VERBOSITY_FLAG "$REFIND_THEME_PATH" /tmp/rEFInd-minimal-black
+    fi
+
+    (shopt -s dotglob; sudo cp -rf /tmp/rEFInd-minimal-black/* "$REFIND_THEME_PATH")
 
     swap_path=$(cat /etc/fstab | grep -P -B 1 \
         -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | head -n1 | sed 's/# *//')
@@ -100,8 +105,7 @@ function install() {
 
 function cleanup() {
     qecho "Removing ${temp_files[@]}..."
-    rm -f /tmp/refind-options.conf
-    rm -f /tmp/refind-manual.conf
+    rm -rf "${temp_files[@]}"
 }
 
 function uninstall() {

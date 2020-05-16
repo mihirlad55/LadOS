@@ -34,8 +34,10 @@ function check_install() {
 }
 
 function prepare() {
-    qecho "Cloning dwm..."
-    git clone $VERBOSITY_FLAG https://github.com/mihirlad55/dwm /tmp/dwm
+    if [[ ! -d "/tmp/dwm" ]]; then
+        qecho "Cloning dwm..."
+        git clone --depth 1 $VERBOSITY_FLAG https://github.com/mihirlad55/dwm /tmp/dwm
+    fi
 }
 
 function install() {

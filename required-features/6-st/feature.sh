@@ -33,8 +33,10 @@ function check_install() {
 }
 
 function prepare() {
-    qecho "Cloning st..."
-    git clone $VERBOSITY_FLAG https://github.com/mihirlad55/st /tmp/st
+    if [[ ! -f "/tmp/st" ]]; then
+        qecho "Cloning st..."
+        git clone --depth 1 $VERBOSITY_FLAG https://github.com/mihirlad55/st /tmp/st
+    fi
 }
 
 function install() {

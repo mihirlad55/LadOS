@@ -83,8 +83,10 @@ function check_install() {
 }
 
 function prepare() {
-    qecho "Cloning dotfiles..."
-    git clone $VERBOSITY_FLAG https://github.com/mihirlad55/dotfiles /tmp/dotfiles
+    if [[ ! -d "/tmp/dotfiles" ]]; then
+        qecho "Cloning dotfiles..."
+        git clone --depth 1 $VERBOSITY_FLAG https://github.com/mihirlad55/dotfiles /tmp/dotfiles
+    fi
     qecho "Updating submodules..."
     (cd /tmp/dotfiles && git submodule $VERBOSITY_FLAG init && git submodule update $VERBOSITY_FLAG --init)
 }
