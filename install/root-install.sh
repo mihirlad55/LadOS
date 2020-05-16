@@ -20,7 +20,7 @@ function enable_localrepo() {
 }
 
 function update_mkinitcpio_modules() {
-    vecho "Updating mkinitcpio..."; fi
+    vecho "Updating mkinitcpio..."
 
     NEW_MODULES=("$@")
 
