@@ -12,7 +12,7 @@ feature_desc="Install doom emacs"
 provides=()
 new_files=("$HOME/.emacs.d")
 modified_files=()
-temp_files=()
+temp_files=("/tmp/doom-emacs")
 
 depends_aur=()
 depends_pacman=(emacs)
@@ -31,7 +31,11 @@ function check_install() {
 
 function install() {
     qecho "Cloning doom emacs..."
-    git clone --depth 1 $VERBOSITY_FLAG https://github.com/hlissner/doom-emacs $HOME/.emacs.d
+
+    if [[ ! -d "/tmp/doom-emacs" ]]; then
+        git clone --depth 1 $VERBOSITY_FLAG https://github.com/hlissner/doom-emacs "/tmp/doom-emacs"
+    fi
+    (shopt -s dotglob && cp -rf /tmp/doom-emacs/* $HOME/.emacs.d)
 
     qecho "Installing doom emacs"
     $HOME/.emacs.d/bin/doom -y install
@@ -40,6 +44,11 @@ function install() {
     $HOME/.emacs.d/bin/doom -y sync
 
     qecho "Done installing doom emacs"
+}
+
+function cleanup() {
+    qecho "Removing ${temp_files[@]}..."
+    rm -rf "${temp_files[@]}"
 }
 
 function uninstall() {

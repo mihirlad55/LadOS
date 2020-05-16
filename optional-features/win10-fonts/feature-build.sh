@@ -55,15 +55,14 @@ function load_conf() {
 }
 
 function prepare() {
-    # Copy hidden files
-    shopt -s dotglob nullglob
-
     mkdir -p "$REPO_PATH/ttf-ms-win10"
 
-    qecho "Cloning ttf-ms-win10 package..."
-    git clone $VERBOSITY_FLAG "$TTF_MS_WIN10_URL" "$TEMP_PATH"
+    if [[ ! -d "$TEMP_PATH" ]]; then
+        qecho "Cloning ttf-ms-win10 package..."
+        git clone --depth 1 $VERBOSITY_FLAG "$TTF_MS_WIN10_URL" "$TEMP_PATH"
+    fi
 
-    mv -f $TEMP_PATH/* $REPO_PATH/ttf-ms-win10/
+    (shopt -s dotglob && cp -rf $TEMP_PATH/* $REPO_PATH/ttf-ms-win10/)
 
     if ! check_conf; then
         echo "Enter url to windows 10 fonts zip file if available, otherwise leave blank"

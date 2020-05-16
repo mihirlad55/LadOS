@@ -35,11 +35,14 @@ function check_install() {
 }
 
 function install() {
-    qecho "Cloning epub-thumbnailer..."
-    git clone $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+    if [[ ! -d "/tmp/epub-thumbnailer" ]]; then
+        qecho "Cloning epub-thumbnailer..."
+        git clone --depth 1 $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+    fi
 
     qecho "Installing epub-thumbnailer..."
-    sudo python /tmp/epub-thumbnailer/install.py install &> "$DEFAULT_OUT"
+    # Returns 1 if can't find desktop environment
+    sudo python /tmp/epub-thumbnailer/install.py install &> "$DEFAULT_OUT" || true
 
     qecho "Installing vifmimg and vifmrun..."
     sudo install -Dm 755 $BASE_DIR/vifmrun /usr/local/bin/vifmrun
@@ -55,8 +58,10 @@ function cleanup() {
 }
 
 function uninstall() {
-    qecho "Cloning epub-thumbnailer..."
-    git clone $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+    if [[ ! -d "/tmp/epub-thumbnailer" ]]; then
+        qecho "Cloning epub-thumbnailer..."
+        git clone --depth 1 $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+    fi
 
     qecho "Uninstalling epub-thumbnailer..."
     sudo python /tmp/epub-thumbnailer/install.py uninstall &> "$DEFAULT_OUT"

@@ -29,9 +29,10 @@ function check_install() {
 }
 
 function prepare() {
-    # Clone yay
-    qecho "Cloning yay..."
-    git clone $VERBOSITY_FLAG https://aur.archlinux.org/yay.git /tmp/yay
+    if [[ ! -d "/tmp/yay" ]]; then
+        qecho "Cloning yay..."
+        git clone --depth 1 $VERBOSITY_FLAG https://aur.archlinux.org/yay.git /tmp/yay
+    fi
 }
 
 function install() {
@@ -42,7 +43,7 @@ function install() {
 }
 
 function cleanup() {
-    qecho "Removing /tmp/yay and /tmp/package-query..."
+    qecho "Removing ${temp_files[@]}..."
     rm -dRf ${temp_files[@]}
 }
 
