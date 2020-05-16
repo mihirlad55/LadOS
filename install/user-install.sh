@@ -85,12 +85,16 @@ function install_packages() {
 function install_required_features() {
     msg "Installing required features..."
 
-    local features
+    local features total
     mapfile -t features < <(ls "$REQUIRED_FEATURES_DIR")
+    total="${#features[@]}"
 
-    for feature in "${features[@]}"; do
+    for i in "${!features[@]}"; do
+        feature="${feature[i]}"
+        progress="($i/$total)"
+
         if ! (echo "$feature" | grep "yay" || echo "$feature" | grep "sudoers"); then
-            msg2 "Installing $feature..."
+            msg2 "$progress Installing $feature..."
             
             "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
 
@@ -106,7 +110,7 @@ function get_excluded_features() {
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
-        excluded_features=("${CONF_EXCLUDE_FEATURES[@]}")
+        excluded=("${CONF_EXCLUDE_FEATURES[@]}")
     else
         local i=1
         for feature in "${features[@]}"; do
@@ -119,36 +123,41 @@ function get_excluded_features() {
         
         for i in "${exclusions[@]}"; do
             excluded_feature="${features[ $(( i-1 )) ]}"
-            excluded_features=("${excluded_features[@]}" "$excluded_feature")
+            excluded=("${excluded[@]}" "$excluded_feature")
         done
     fi
 
-    echo "${excluded_features[@]}"
+    echo "${excluded[@]}"
 }
 
 function install_optional_features() {
     msg "Installing optional features..."
 
-    local features excluded_features feature_path excluded
+    local features excluded feature_path excluded i total
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
-    excluded_features=("$(get_excluded_features)")
+    i=0
+    excluded=("$(get_excluded_features)")
 
-    vecho "Excluding features ${excluded_features[*]}"
+    total=$(( ${#features[@]} - ${#excluded[@]} ))
+
+    vecho "Excluding features ${excluded[*]}"
 
     for feature in "${features[@]}"; do
-        if ! echo "${excluded_features[@]}" | grep -q "$feature"; then
+        if ! echo "${excluded[@]}" | grep -q "$feature"; then
+            i=$((i+1))
+            progress="($i/$total)"
 
             feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
             mapfile -t conflicts < <("$feature_path" $VERBOSITY_FLAG conflicts)
 
             for c in "${conflicts[@]}"; do
-                if ! echo "${excluded_features[*]}" | grep -q "$c"; then
+                if ! echo "${excluded[*]}" | grep -q "$c"; then
                     plain "$c conflicts with $feature"
                     if prompt "Would you like to exclude $c and continue to install $feature?"; then
-                        excluded_features=("${excluded_features[@]}" "$c")
+                        excluded=("${excluded[@]}" "$c")
                     else
-                        excluded_features=("${excluded_features[@]}" "${feature[@]}")
+                        excluded=("${excluded[@]}" "${feature[@]}")
                         excluded=1
                     fi
                 fi
@@ -161,7 +170,7 @@ function install_optional_features() {
 
             OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
 
-            msg2 "Installing $feature..."
+            msg2 "$progress Installing $feature..."
             "$feature_path" "${VERBOSITY_FLAG}" --no-service-start full_no_check
 
             if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
@@ -181,7 +190,7 @@ function check_required_features() {
         feature="${required[i]}"
         progress="($((i+1))/${#required[@]})"
 
-        msg2 "Checking $feature..." "$progress"
+        msg2 "$progress Checking $feature..."
 
         "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
         res="$?"
@@ -207,7 +216,7 @@ function check_optional_features() {
         feature="${optional[i]}"
         progress="($((i+1))/${#optional[@]})"
 
-        msg2 "Checking $feature..." "$progress"
+        msg2 "$progress Checking $feature..."
 
         "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
         res="$?"
