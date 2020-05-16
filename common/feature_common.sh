@@ -96,6 +96,10 @@ fi
 
 case "$1" in
     full | full_no_check)
+        if ! check_conflicts; then
+            exit 1
+        fi
+
         if type -p check_conf && type -p load_conf; then
             qecho "Checking and loading configuration..."
             check_conf && load_conf
@@ -110,12 +114,8 @@ case "$1" in
             prepare
         fi
 
-        if check_conflicts; then
-            qecho "Installing feature..."
-            install
-        else
-            exit 1
-        fi
+        qecho "Installing feature..."
+        install
 
         if type -p post_install; then
             qecho "Starting post_install..."
