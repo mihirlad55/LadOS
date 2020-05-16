@@ -151,8 +151,6 @@ function copy_pacman_packages() {
         fi
     done
 
-    echo "Removing older packages..."
-    paccache -rk1 -c "$PKG_PATH"
 
     sudo pacman -Sy --noconfirm --dbpath "$TEMP_DB_PATH"
 
@@ -160,6 +158,9 @@ function copy_pacman_packages() {
         -w --cachedir "$PKG_PATH" \
         --dbpath "$TEMP_DB_PATH" \
         --noconfirm --needed
+
+    echo "Removing older packages..."
+    paccache -rk1 -c "$PKG_PATH"
 
 	if ! grep -q "$PACMAN_CONF_PATH" -e "LadOS"; then
 	    sudo sed -i "$PACMAN_CONF_PATH" -e '1 i\Include = /LadOS/install/localrepo.conf'
