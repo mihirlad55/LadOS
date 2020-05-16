@@ -9,12 +9,12 @@ source "$LAD_OS_DIR/common/install_common.sh"
 function enable_localrepo() {
     msg "Checking for localrepo..."
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
-	if ! grep -q /etc/pacman.conf -e "LadOS"; then
-	    msg2 "Found localrepo. Enabling..."
-	    sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
-	else
-            msg2 "Localrepo already enabled"
-	fi
+        if ! grep -q /etc/pacman.conf -e "LadOS"; then
+            msg2 "Found localrepo. Enabling..."
+            sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+        else
+                msg2 "Localrepo already enabled"
+        fi
         pacman -Sy
     fi
 }
