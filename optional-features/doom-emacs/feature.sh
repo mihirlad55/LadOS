@@ -34,10 +34,10 @@ function install() {
     git clone --depth 1 $VERBOSITY_FLAG https://github.com/hlissner/doom-emacs $HOME/.emacs.d
 
     qecho "Installing doom emacs"
-    $HOME/.emacs.d/bin/doom -y install > "$DEFAULT_OUT"
+    $HOME/.emacs.d/bin/doom -y install
 
     qecho "Syncing doom emacs"
-    $HOME/.emacs.d/bin/doom -y sync > "$DEFAULT_OUT"
+    $HOME/.emacs.d/bin/doom -y sync
 
     qecho "Done installing doom emacs"
 }
