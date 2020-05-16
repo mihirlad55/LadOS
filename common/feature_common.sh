@@ -1,5 +1,10 @@
 #!/usr/bin/bash
 
+set -o errtrace
+set -o pipefail
+trap error_trap ERR
+
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
@@ -14,17 +19,29 @@ VERBOSITY_FLAG=
 SILENT_FLAG=
 SYSTEMD_FLAGS=()
 
+
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
 ( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
 
 
+
+function error_trap() {
+    error_code="$?"
+    last_command="$BASH_COMMAND"
+    command_caller="$(caller)"
+
+    echo "$command_caller: \"$last_command\" returned error code $error_code" >&2
+
+    exit $error_code
+}
+
 function qecho() {
-    [[ ! -n "$QUIET" ]] && echo "$@"
+    if [[ ! -n "$QUIET" ]]; then echo "$@"; fi
 }
 
 function vecho() {
-    [[ -n "$VERBOSE" ]] && echo "$@"
+    if [[ -n "$VERBOSE" ]]; then echo "$@"; fi
 }
 
 function print_usage() {
@@ -149,8 +166,8 @@ case "$1" in
         | cleanup | check_conflicts)
         if type -p "$1"; then
             qecho "Starting $1..."
-            $1
-            res="$?"
+            res=0
+            $1 || res=$?
             qecho "Done $1"
             exit "$res"
         else
