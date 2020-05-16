@@ -45,7 +45,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling lightdm..."
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} lightdm
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} lightdm
 
     sudo systemctl set-default ${SYSTEMD_FLAGS[*]} graphical.target
 }

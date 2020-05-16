@@ -48,7 +48,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling std..."
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} atd
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} atd
 }
 
 function uninstall() {

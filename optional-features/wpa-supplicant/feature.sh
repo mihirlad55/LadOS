@@ -71,8 +71,8 @@ function install() {
 
 function post_install() {
     qecho "Enabling wpa_supplicant@${card}.service and dhcpcd.service..."
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} wpa_supplicant@${card}.service
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} dhcpcd.service
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} wpa_supplicant@${card}.service
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} dhcpcd.service
     qecho "Enabled wpa_supplicant@${card}.service and dhcpcd.service"
 }
 
@@ -87,8 +87,8 @@ function uninstall() {
     read card
 
     qecho "Disabling wpa_supplicant@${card}.service and dhcpcd.service..."
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} wpa_supplicant@${card}.service
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} dhcpcd.service
+    sudo systemctl -f disable ${SYSTEMD_FLAGS[*]} wpa_supplicant@${card}.service
+    sudo systemctl -f disable ${SYSTEMD_FLAGS[*]} dhcpcd.service
 
     qecho "Removing /etc/wpa_supplicant/wpa_supplicant-${card}.conf..." 
     sudo rm -rf "/etc/wpa_supplicant/wpa_supplicant-${card}.conf"

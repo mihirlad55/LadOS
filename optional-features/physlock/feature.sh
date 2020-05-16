@@ -35,7 +35,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling physlock.service..."
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} physlock.service
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} physlock.service
 }
 
 function uninstall() {
