@@ -195,7 +195,7 @@ function set_root_passwd() {
 function create_user_account() {
     msg "Creating new default user account..."
 
-    local username
+    local username users
 
     if [[ "$CONF_USERNAME" != "" ]]; then
         username="$CONF_USERNAME"
@@ -203,17 +203,23 @@ function create_user_account() {
         username="$(ask "Enter username")"
     fi
 
-    msg2 "Creating user $username..."
-    useradd -m "$username"
+    mapfile -t users < <(cat /etc/passwd | cut -d':' -f1)
 
-    msg2 "Adding $username to group wheel..."
-    usermod -a -G wheel "$username"
-
-    msg2 "Setting password for $username..."
-    if [[ "$CONF_PASSWORD" != "" ]]; then
-        echo "$username:$CONF_PASSWORD" | chpasswd
+    if echo "${users[*]}" | grep -q "$username"; then
+        msg2 "$username already exists"
     else
-        until passwd "$username"; do sleep 1s; done
+        msg2 "Creating user $username..."
+        useradd -m "$username"
+
+        msg2 "Adding $username to group wheel..."
+        usermod -a -G wheel "$username"
+
+        msg2 "Setting password for $username..."
+        if [[ "$CONF_PASSWORD" != "" ]]; then
+            echo "$username:$CONF_PASSWORD" | chpasswd
+        else
+            until passwd "$username"; do sleep 1s; done
+        fi
     fi
 
     # Temporary no password prompt for installation
