@@ -152,8 +152,8 @@ function start_user_install() {
 
     msg2 "Getting default username..."
     local username
-    read -r username < /tmp/default_user
-    rm -f /tmp/default_user
+    read -r username < /mnt/var/tmp/default_user
+    rm -f /mnt/var/tmp/default_user
 
     msg2 "Arch-chrooting with $username..."
     arch-chroot -u $username /mnt /LadOS/install/user-install.sh $VERBOSITY_FLAG

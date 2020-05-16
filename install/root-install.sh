@@ -227,7 +227,7 @@ function create_user_account() {
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
 
     # Store username in /tmp/default_user for second chroot
-    echo "$username" > /tmp/default_user
+    echo "$username" > /var/tmp/default_user
 }
 
 
