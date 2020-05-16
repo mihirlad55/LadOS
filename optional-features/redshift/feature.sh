@@ -52,5 +52,15 @@ function install() {
     qecho "Done installing redshift"
 }
 
+function uninstall() {
+    qecho "Removing redshift directive from $GEOCLUE_CONF_PATH..."
+    text="$(diff \
+        --suppress-common-lines \
+        -D --GTYPE-group-format='' \
+        redshift/geoclue.conf.add /etc/geoclue/geoclue.conf)"
+    
+    text | sudo tee "$GEOCLUE_CONF_PATH" > /dev/null
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

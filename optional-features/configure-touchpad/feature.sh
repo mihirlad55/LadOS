@@ -33,6 +33,11 @@ function install() {
     sudo install -Dm 644 $BASE_DIR/30-touchpad.conf /etc/X11/xorg.conf.d/30-touchpad.conf
 }
 
+function uninstall() {
+    qecho "Removing ${new_files[@]}..."
+    rm -f "${new_files[@]}"
+}
+
 source "$LAD_OS_DIR/common/feature_common.sh"
 
 

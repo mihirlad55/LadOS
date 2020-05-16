@@ -106,6 +106,17 @@ function cleanup() {
     rm -f /tmp/gcp-tunnel.env
 }
 
+function uninstall() {
+    qecho "Disabling gcp-tunnel.service..."
+    sudo systemctl disable ${SYSTEMD_FLAGS[*]} gcp-tunnel
+
+    qecho "Disabling sshd.service"
+    sudo systemctl disable ${SYSTEMD_FLAGS[*]} sshd
+
+    qecho "Removing ${new_files[@]}..."
+    rm -f "${new_files[@]}"
+}
+
 source "$LAD_OS_DIR/common/feature_common.sh"
 
 

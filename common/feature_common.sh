@@ -60,7 +60,10 @@ function prompt() {
 }
 
 function print_usage() {
-    echo "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | full_no_check | name | desc | conflicts | check_conf | load_conf | check_install | prepare | install | post_install | cleanup | install_dependencies | check_conflicts | help ]"
+    echo -n "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | "
+    echo -n "full_no_check | name | desc | conflicts | check_conf | load_conf "
+    echo -n "| check_install | prepare | install | uninstall | post_install | "
+    echo "cleanup | install_dependencies | check_conflicts | help ]"
 }
 
 function check_conflicts() {
@@ -77,6 +80,14 @@ function check_conflicts() {
     done
 
     return 0
+}
+
+function has_dependencies() {
+    if [[ "${depends_pacman[@]}${depends_aur[@]}${depends_pip3[@]}" = "" ]]; then
+        return 1
+    else
+        return 0
+    fi
 }
 
 function install_dependencies() {
@@ -99,6 +110,25 @@ function install_dependencies() {
 
         qecho "Installing ${depends_pip3[@]}..."
         sudo pip3 install ${depends_pip3[@]} > "$DEFAULT_OUT"
+    fi
+}
+
+function uninstall_dependencies() {
+    if [[ "${depends_pacman[@]}" != "" ]]; then
+        qecho "Uninstalling ${depends_pacman[@]}..."
+        # Some warnings go to stderr
+        sudo pacman -Rsu ${depends_pacman[@]} --noconfirm &> "$DEFAULT_OUT"
+    fi
+
+    if [[ "${depends_aur[@]}" != "" ]]; then
+        qecho "Installing ${depends_aur[@]}..."
+        # Some normal output goes to stderr
+        yay -Rsu ${depends_aur[@]} --noconfirm &> "$DEFAULT_OUT"
+    fi
+
+    if [[ "${depends_pip3[@]}" != "" ]]; then
+        qecho "Installing ${depends_pip3[@]}..."
+        sudo pip3 uninstall ${depends_pip3[@]} > "$DEFAULT_OUT"
     fi
 }
 
@@ -191,8 +221,33 @@ case "$1" in
         fi
         ;;
 
+    uninstall)
+        if ! check_install &> /dev/null; then
+            echo "$feature_name is not installed"
+            exit 1
+        fi
+
+        if prompt "Are you sure you want to uninstall $feature_name?"; then
+            echo "Uninstalling $feature_name..."
+
+            if has_dependencies; then
+                echo -n "$feature_name depends on ${depends_pacman[@]} "
+                echo "${depends_aur[@]} ${depends_pip3[@]}"
+                if prompt "Would you like to uninstall these dependencies?"; then
+                    uninstall_dependencies
+                fi
+            fi
+
+            if type -p uninstall; then
+                uninstall
+            fi
+
+            echo "Finished uninstalling $feature_name"
+        fi
+        ;;
+
     install_dependencies)
-        if [[ "${depends_pacman[@]}" != "" ]] || [[ "${depends_aur[@]}" != "" ]]; then
+        if has_dependencies; then
             install_dependencies
         else
             qecho "No dependencies to install"

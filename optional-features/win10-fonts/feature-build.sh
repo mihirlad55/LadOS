@@ -92,5 +92,10 @@ function cleanup() {
     rm -rf ${temp_files[@]}
 }
 
+function uninstall() {
+    qecho "Uninstalling ttf-ms-win10..."
+    sudo pacman -Rsu --noconfirm "${provides[@]}"
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

@@ -78,5 +78,12 @@ function cleanup() {
     rm -f /tmp/arch.conf
 }
 
+function uninstall() {
+    sudo bootctl uninstall &> "$DEFAULT_OUT"
+
+    qecho "Removing ${new_files[@]}..."
+    sudo rm -f "${new_files[@]}"
+}
+
 source "$LAD_OS_DIR/common/feature_common.sh"
 

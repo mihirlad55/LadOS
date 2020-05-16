@@ -54,5 +54,20 @@ function cleanup() {
     rm -rf /tmp/epub-thumbnailer
 }
 
+function uninstall() {
+    qecho "Cloning epub-thumbnailer..."
+    git clone $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+
+    qecho "Uninstalling epub-thumbnailer..."
+    sudo python /tmp/epub-thumbnailer/install.py uninstall &> "$DEFAULT_OUT"
+    sudo rm -rf /tmp/epub-thumbnailer
+
+    qecho "Removing ${new_files[@]}..."
+    sudo rm -f "${new_files[@]}"
+
+    qecho "Reverting vifm.desktop..."
+    sudo sed -i 's/Exec=vifmrun\b/Exec=vifm/' /usr/share/applications/vifm.desktop
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

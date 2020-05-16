@@ -47,5 +47,20 @@ function install() {
     qecho "DONE!"
 }
 
+function uninstall() {
+    qecho "Uninstalling steam..."
+    sudo pacman -Rsu steam --noconfirm &> "$DEFAULT_OUT"
+
+    qecho "Removing ${new_files[@]}..."
+    rm -f "${new_files[@]}"
+    sudo ldconfig
+
+    qecho "Disabling multilib repo"
+    sudo sed -i /etc/pacman.conf -e "s/^\[multilib\]$/#&/"
+    sudo sed -i /etc/pacman.conf \
+        -e '/^#\[multilib\]/!b;n;c#Include = \/etc\/pacman.d\/mirrorlist'
+
+    sudo pacman -Sy &> "$DEFAULT_OUT"
+}
 
 source "$LAD_OS_DIR/common/feature_common.sh"

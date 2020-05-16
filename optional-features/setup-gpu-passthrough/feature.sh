@@ -67,5 +67,15 @@ function install() {
     echo "Make sure you have virtualization enabled in your BIOS"
 }
 
+function uninstall() {
+    qecho "Removing hooks..."
+    for mod in "${NEW_MODULES[@]}"; do
+        sudo sed -i /etc/mkinitcpio.conf -e "s/$mod //"
+    done
+
+    qecho "Removing ${new_files[@]}..."
+    sudo rm -f "${new_files[@]}"
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

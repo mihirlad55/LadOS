@@ -46,4 +46,8 @@ function cleanup() {
     rm -dRf ${temp_files[@]}
 }
 
+function uninstall() {
+    sudo pacman -Rsu "${provides[@]}" --noconfirm
+}
+
 source "$LAD_OS_DIR/common/feature_common.sh"

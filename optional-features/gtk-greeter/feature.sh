@@ -65,5 +65,12 @@ function install() {
     qecho "Done installing lightdm-gtk-greeter"
 }
 
+function uninstall() {
+    sudo sed -i 's/^greeter-session=lightdm-gtk-greeter$/#greeter-session=/' /etc/lightdm/lightdm.conf
+
+    qecho "Removing ${new_files[@]}..."
+    rm -f "${new_files[@]}"
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"

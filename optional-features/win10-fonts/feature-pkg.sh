@@ -33,5 +33,10 @@ function install() {
     sudo pacman -S $provides --noconfirm --needed &> "$DEFAULT_OUT"
 }
 
+function uninstall() {
+    qecho "Uninstalling ttf-ms-win10..."
+    sudo pacman -Rsu --noconfirm "${provides[@]}"
+}
+
 
 source "$LAD_OS_DIR/common/feature_common.sh"
