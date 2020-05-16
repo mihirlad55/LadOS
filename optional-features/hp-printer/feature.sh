@@ -34,7 +34,7 @@ function check_install() {
 
 function prepare() {
     qecho "Enabling and starting cupsd..."
-    sudo systemctl enable --now org.cups.cupsd
+    sudo systemctl enable -f --now org.cups.cupsd
 }
 
 function install() {

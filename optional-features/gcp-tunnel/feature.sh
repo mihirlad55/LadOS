@@ -93,7 +93,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling gcp-tunnel.service..."
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} gcp-tunnel
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} gcp-tunnel
 
     qecho "Enabling sshd.service"
     sudo systemctl enable ${SYSTEMD_FLAGS[*]} sshd

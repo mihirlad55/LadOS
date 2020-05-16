@@ -34,7 +34,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling cronie..."
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} cronie
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} cronie
 }
 
 

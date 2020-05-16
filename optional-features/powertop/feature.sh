@@ -35,12 +35,12 @@ function install() {
 
 function post_install() {
     qecho "Enabling powertop.service..."
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} powertop.service
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} powertop.service
 }
 
 function uninstall() {
     qecho "Disabling powertop.service..."
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} powertop.service
+    sudo systemctl disable -f ${SYSTEMD_FLAGS[*]} powertop.service
 
     qecho "Removing ${new_files[@]}..."
     rm -f "${new_files[@]}"

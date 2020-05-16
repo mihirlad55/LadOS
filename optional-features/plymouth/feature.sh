@@ -66,16 +66,16 @@ function install() {
 
 function post_install() {
     qecho "Disabling lightdm.service..."
-    sudo systemctl disable $VERBOSITY_FLAG lightdm
+    sudo systemctl disable -f $VERBOSITY_FLAG lightdm
     qecho "Enabling lightdm-plymouth.service"
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} lightdm-plymouth
+    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} lightdm-plymouth
 }
 
 function uninstall() {
     qecho "Disbaling lightdm-plymouth.service"
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} lightdm-plymouth
+    sudo systemctl disable -f ${SYSTEMD_FLAGS[*]} lightdm-plymouth
     qecho "Enabling lightdm.service..."
-    sudo systemctl enable $VERBOSITY_FLAG lightdm
+    sudo systemctl enable -f $VERBOSITY_FLAG lightdm
 
     qecho "Removing plymouth hook..."
     sudo sed -i /etc/mkinitcpio.conf -e "s/plymouth //"
