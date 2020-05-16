@@ -9,7 +9,7 @@ CONF_DIR="$LAD_OS_DIR/conf/gtk-greeter"
 feature_name="gtk-greeter"
 feature_desc="Install lightdm-gtk-greeter with user avatar and background and maia-gtk-theme"
 
-conflicts=(webkit-greeter)
+conflicts=(webkit2-greeter)
 
 provides=()
 new_files=("/var/lib/AccountsService/users/$USER" \
