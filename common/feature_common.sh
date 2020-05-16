@@ -22,7 +22,12 @@ SYSTEMD_FLAGS=()
 
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
-( [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null ) && alias sudo=
+if [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null; then
+	echo "$USER"
+	echo $(command -v sudo)
+    echo "Aliasing sudo to nothing"
+    alias sudo=
+fi
 
 
 
