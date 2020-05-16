@@ -54,7 +54,7 @@ function check_install() {
 function prepare() {
     cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
 
-    port=$(egrep /etc/ssh/sshd_config -e "^Port [0-9]*$")
+    port=$(egrep /etc/ssh/sshd_config -e "^#*Port [0-9]*$")
 
     if ! check_conf; then
         echo -n "Enter a port to run sshd on (blank to leave default: $port): "
