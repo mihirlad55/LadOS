@@ -4,11 +4,13 @@ amd-ucode,CPU microcode,system,required
 arc-gtk-theme,GTK theme,system,required
 aspell,Spell check,system,required
 audacity,Audio editing,system,optional
+base,Base packages,system,required
 bluez-utils,Bluetooth,system,required
 chromium,main browser,system,required
 chromium-widevine,widevine patch for Netflix,aur,required
 clang,For C-code formatting,system,optional
 cmatrix,To be a hacker,system,required
+colorpicker,Color picker,aur,optional
 compton-tryone-git,Compton with blur,aur,required
 cpulimit,To limit CPU usage on processes,system,required
 cronie,For scheduling tasks,system,required
@@ -28,7 +30,6 @@ geoclue2,For redshift location,system,required
 gimp,Main image editor,system,optional
 git,Cause git,system,required
 gnome-keyring,For mailspring,system,optional
-colorpicker,Color picker,aur,optional
 gucharmap,Viewing character map,system,optional
 hunspell-en_US,Spell check,system,required
 i3-gaps,Backup window manager,system,optional
@@ -43,6 +44,8 @@ libreoffice-fresh,Word processing,system,optional
 libsecret,For mailspring,system,optional
 lightdm,Display manager,system,required
 lightdm-webkit2-greeter,Pretty greeter,system,required
+linux,Base packages,system,required
+linux-firmware,Base packages,system,required
 maia-gtk-theme,Theme for gtk-greeter,aur,optional
 mailspring,Main email client,aur,optional
 make,For making stuff,system,required
