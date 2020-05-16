@@ -38,4 +38,6 @@ function error_trap() {
     exit $error_code
 }
 
-
+function vecho() {
+    if [[ -n "$VERBOSE" ]]; then echo "$@"; fi
+}

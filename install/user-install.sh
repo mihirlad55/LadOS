@@ -55,7 +55,7 @@ function install_packages() {
         typ=$(echo "$package" | cut -d',' -f3)
         req=$(echo "$package" | cut -d',' -f4)
 
-        [[ -n "$VERBOSITY" ]] && echo "$name ($desc)"
+        vecho "$name ($desc)"
 
         if [[ $install_optional -eq 1 ]] && [[ "$req" = "optional" ]] || [[ "$req" = "required" ]]; then
             if [[ "$typ" = "system" ]]; then
@@ -134,7 +134,7 @@ function install_optional_features() {
 
     excluded_features=("$(get_excluded_features)")
 
-    [[ -n "$VERBOSITY" ]] && echo "Excluding features ${excluded_features[*]}"
+    vecho "Excluding features ${excluded_features[*]}"
 
     for feature in "${features[@]}"; do
         if ! echo "${excluded_features[@]}" | grep -q "$feature"; then

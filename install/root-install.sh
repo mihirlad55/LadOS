@@ -20,26 +20,26 @@ function enable_localrepo() {
 }
 
 function update_mkinitcpio_modules() {
-    [[ -n "$VERBOSITY" ]] && echo "Updating mkinitcpio..."
+    vecho "Updating mkinitcpio..."; fi
 
     NEW_MODULES=("$@")
 
-    [[ -n "$VERBOSITY" ]] && echo "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
+    vecho "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
 
     source /etc/mkinitcpio.conf
 
     for module in "${NEW_MODULES[@]}"; do
         if ! echo "${MODULES[@]}" | grep -q "$module"; then
-            [[ -n "$VERBOSITY" ]] && echo "$module not found in mkinitcpio.conf"
+            vecho "$module not found in mkinitcpio.conf"
 
-            [[ -n "$VERBOSITY" ]] && echo "Staging $module for addition"
+            vecho "Staging $module for addition"
             MODULES=( "${MODULES[@]}" "$module" )
         else
-            [[ -n "$VERBOSITY" ]] && echo "$module already found"
+            vecho "$module already found"
         fi
     done
 
-    [[ -n "$VERBOSITY" ]] && echo "Updating /etc/mkinitcpio.conf..."
+    vecho "Updating /etc/mkinitcpio.conf..."
     MODULES_LINE="MODULES=(${MODULES[*]})"
     sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 }
