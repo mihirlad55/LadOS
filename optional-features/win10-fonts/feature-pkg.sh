@@ -20,7 +20,7 @@ depends_pip3=()
 
 function check_install() {
     if pacman -Q ttf-ms-win10 > /dev/null; then
-        echo "$feature_name is installed"
+        qecho "$feature_name is installed"
         return 0
     else
         echo "$feature_name is not installed"
