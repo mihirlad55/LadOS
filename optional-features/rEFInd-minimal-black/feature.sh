@@ -66,9 +66,10 @@ function install() {
     sudo rm -rf "$REFIND_THEME_PATH"
 
     if [[ ! -d "/tmp/rEFInd-minimal-black" ]]; then
-        git clone --depth 1 $VERBOSITY_FLAG "$REFIND_THEME_PATH" /tmp/rEFInd-minimal-black
+        git clone --depth 1 $VERBOSITY_FLAG "$REFIND_THEME_URL" /tmp/rEFInd-minimal-black
     fi
 
+    sudo mkdir -p "$REFIND_THEME_PATH"
     (shopt -s dotglob; sudo cp -rf /tmp/rEFInd-minimal-black/* "$REFIND_THEME_PATH")
 
     swap_path=$(cat /etc/fstab | grep -P -B 1 \
