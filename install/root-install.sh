@@ -195,7 +195,7 @@ function set_root_passwd() {
 function create_user_account() {
     msg "Creating new default user account..."
 
-    local username users
+    local users
 
     if [[ "$CONF_USERNAME" != "" ]]; then
         username="$CONF_USERNAME"
@@ -225,9 +225,13 @@ function create_user_account() {
     # Temporary no password prompt for installation
     msg2 "Temporarily disabling $username's sudo password prompt..."
     echo "$username ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/20-sudoers-temp
+}
 
-    # Store username in /tmp/default_user for second chroot
-    echo "$username" > /var/tmp/default_user
+function start_user_install() {
+    msg "Preparing for user install..."
+
+    msg2 "Switching user to $username..."
+    su -P -c "/LadOS/install/user-install.sh $VERBOSITY_FLAG" - "$username"
 }
 
 
@@ -256,3 +260,5 @@ install_sudo
 set_root_passwd
 
 create_user_account
+
+start_user_install
