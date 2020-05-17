@@ -99,14 +99,14 @@ function install() {
     nvim -c "PlugInstall | qa"
 
     qecho "Installing zsh plguins..."
-    zsh -c "source $HOME/.zshrc; exit" &> "$DEFAULT_OUT"
+    zsh -c "source $HOME/.zshrc; exit"
 
     vecho "Done installing dotfiles"
 }
 
 function post_install() {
     qecho "Changing shell to zsh..."
-    sudo chsh -s /usr/bin/zsh "$USER" > "$DEFAULT_OUT"
+    sudo chsh -s /usr/bin/zsh "$USER"
 
     qecho "Setting up git and doom emacs..."
     if [[ "$CONF_FULL_NAME" != "" ]]; then

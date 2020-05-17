@@ -6,7 +6,6 @@ LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 source "$LAD_OS_DIR/common/install_common.sh"
 
 WIFI_ENABLED=0
-DEFAULT_OUT="/dev/null"
 
 
 function check_efi_mode() {
@@ -71,8 +70,8 @@ function setup_wifi() {
         adapter="$(ask "Enter name of WiFI adapter")"
     fi
 
-    wpa_supplicant -B -i"${adapter}" -c "$conf_path" > "$DEFAULT_OUT"
-    dhcpcd > "$DEFAULT_OUT"
+    wpa_supplicant $VERBOSITY_FLAG -B -i"${adapter}" -c "$conf_path"
+    dhcpcd $VERBOSITY_FLAG
 
     WIFI_ENABLED=1
 }

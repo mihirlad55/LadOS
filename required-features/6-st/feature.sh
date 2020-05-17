@@ -41,7 +41,7 @@ function prepare() {
 
 function install() {
     qecho "Making st..."
-    (cd /tmp/st && sudo make clean install &> "$DEFAULT_OUT")
+    (cd /tmp/st && sudo make clean install)
 }
 
 function cleanup() {

@@ -28,7 +28,7 @@ function check_install() {
 
 function install() {
     qecho "Installing root crontab..."
-    cat $BASE_DIR/root-cron > "$DEFAULT_OUT"
+    cat $BASE_DIR/root-cron
     sudo crontab $BASE_DIR/root-cron
 }
 

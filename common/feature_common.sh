@@ -14,7 +14,6 @@ OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 
 VERBOSE=
 QUIET=
-DEFAULT_OUT="/dev/stdout"
 VERBOSITY_FLAG=
 SILENT_FLAG=
 SYSTEMD_FLAGS=()
@@ -76,9 +75,9 @@ function check_conflicts() {
         local feature_path
         feature_path="$REQUIRED_FEATURES_DIR/$c"
         if [[ -d "$REQUIRED_FEATURES_DIR/$c" ]] &&
-            "$REQUIRED_FEATURES_DIR"/"$c"/feature.sh -q check_install &> "$DEFAULT_OUT" ||
+            "$REQUIRED_FEATURES_DIR"/"$c"/feature.sh -q check_install &> /dev/null ||
             [[ -d "$OPTIONAL_FEATURES_DIR/$c" ]] &&
-            "$OPTIONAL_FEATURES_DIR"/"$c"/feature.sh -q check_install &> "$DEFAULT_OUT"; then
+            "$OPTIONAL_FEATURES_DIR"/"$c"/feature.sh -q check_install &> /dev/null; then
             qecho "Cannot install $feature_name. It conflicts with $c"
             return 1
         fi
@@ -99,22 +98,22 @@ function install_dependencies() {
     if [[ "${depends_pacman[@]}" != "" ]]; then
         qecho "Installing ${depends_pacman[@]}..."
         # Reinstall warnings go to stderr
-        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed &> "$DEFAULT_OUT"
+        sudo pacman -S ${depends_pacman[@]} --noconfirm --needed
     fi
 
     if [[ "${depends_aur[@]}" != "" ]]; then
         qecho "Installing ${depends_aur[@]}..."
         # Some normal output goes to stderr
-        yay -S ${depends_aur[@]} --noconfirm --needed &> "$DEFAULT_OUT"
+        yay -S ${depends_aur[@]} --noconfirm --needed
     fi
 
     if [[ "${depends_pip3[@]}" != "" ]]; then
         if ! command -v pip3 > /dev/null; then
-            sudo pacman -S python-pip --noconfirm --needed > "$DEFAULT_OUT"
+            sudo pacman -S python-pip --noconfirm --needed
         fi
 
         qecho "Installing ${depends_pip3[@]}..."
-        sudo pip3 install ${depends_pip3[@]} > "$DEFAULT_OUT"
+        sudo pip3 install ${depends_pip3[@]}
     fi
 }
 
@@ -122,18 +121,18 @@ function uninstall_dependencies() {
     if [[ "${depends_pacman[@]}" != "" ]]; then
         qecho "Uninstalling ${depends_pacman[@]}..."
         # Some warnings go to stderr
-        sudo pacman -Rsu ${depends_pacman[@]} --noconfirm &> "$DEFAULT_OUT"
+        sudo pacman -Rsu ${depends_pacman[@]} --noconfirm
     fi
 
     if [[ "${depends_aur[@]}" != "" ]]; then
         qecho "Installing ${depends_aur[@]}..."
         # Some normal output goes to stderr
-        yay -Rsu ${depends_aur[@]} --noconfirm &> "$DEFAULT_OUT"
+        yay -Rsu ${depends_aur[@]} --noconfirm
     fi
 
     if [[ "${depends_pip3[@]}" != "" ]]; then
         qecho "Installing ${depends_pip3[@]}..."
-        sudo pip3 uninstall ${depends_pip3[@]} > "$DEFAULT_OUT"
+        sudo pip3 uninstall ${depends_pip3[@]}
     fi
 }
 
@@ -143,7 +142,6 @@ if [[ "$1" = "-v" ]]; then
     shift
 elif [[ "$1" = "-q" ]]; then
     QUIET=1
-    DEFAULT_OUT="/dev/null"
     VERBOSITY_FLAG="-q"
     SILENT_FLAG="-s"
     SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "-q")

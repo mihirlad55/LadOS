@@ -39,7 +39,7 @@ function install() {
     # Make package
     qecho "Making yay..."
     # Some non-error output goes to stderr
-    (cd /tmp/yay && makepkg -si --noconfirm --noprogressbar &> "$DEFAULT_OUT")
+    (cd /tmp/yay && makepkg -si --noconfirm --noprogressbar)
 }
 
 function cleanup() {
