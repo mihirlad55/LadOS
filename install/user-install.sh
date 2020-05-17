@@ -138,7 +138,7 @@ function install_optional_features() {
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     i=0
-    excluded=("$(get_excluded_features)")
+    excluded=($(get_excluded_features))
 
     total=$(( ${#features[@]} - ${#excluded[@]} ))
 
