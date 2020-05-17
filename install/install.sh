@@ -146,17 +146,6 @@ function start_root_install() {
     arch-chroot /mnt /LadOS/install/root-install.sh "$VERBOSITY_FLAG"
 }
 
-function start_user_install() {
-    msg "Preparing for user install..."
-
-    msg2 "Getting default username..."
-    local username
-    read -r username < /mnt/var/tmp/default_user
-    rm -f /mnt/var/tmp/default_user
-
-    msg2 "Arch-chrooting with $username..."
-    arch-chroot -u $username /mnt /LadOS/install/user-install.sh $VERBOSITY_FLAG
-}
 
 
 check_efi_mode
@@ -176,5 +165,3 @@ pacstrap_install
 generate_fstab
 
 start_root_install
-
-start_user_install
