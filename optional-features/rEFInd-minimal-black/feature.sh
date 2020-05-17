@@ -59,7 +59,7 @@ function prepare() {
 
 function install() {
     qecho "Running refind-install..."
-    sudo refind-install > "$DEFAULT_OUT"
+    sudo refind-install
 
     qecho "Copying theme to $REFIND_PATH/themes..."
     sudo mkdir -p "$REFIND_PATH"/themes

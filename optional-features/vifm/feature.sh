@@ -42,7 +42,7 @@ function install() {
 
     qecho "Installing epub-thumbnailer..."
     # Returns 1 if can't find desktop environment
-    sudo python /tmp/epub-thumbnailer/install.py install &> "$DEFAULT_OUT" || true
+    sudo python /tmp/epub-thumbnailer/install.py install || true
 
     qecho "Installing vifmimg and vifmrun..."
     sudo install -Dm 755 $BASE_DIR/vifmrun /usr/local/bin/vifmrun
@@ -64,7 +64,7 @@ function uninstall() {
     fi
 
     qecho "Uninstalling epub-thumbnailer..."
-    sudo python /tmp/epub-thumbnailer/install.py uninstall &> "$DEFAULT_OUT"
+    sudo python /tmp/epub-thumbnailer/install.py uninstall
     sudo rm -rf /tmp/epub-thumbnailer
 
     qecho "Removing ${new_files[@]}..."

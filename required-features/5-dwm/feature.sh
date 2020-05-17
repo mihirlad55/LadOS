@@ -42,7 +42,7 @@ function prepare() {
 
 function install() {
     qecho "Making dwm..."
-    (cd /tmp/dwm && sudo make clean install &> "$DEFAULT_OUT")
+    (cd /tmp/dwm && sudo make clean install)
 }
 
 function post_install() {

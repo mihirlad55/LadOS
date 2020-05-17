@@ -34,11 +34,11 @@ function install() {
     sudo sed -i '/\[multilib\]/!b;n;cInclude = \/etc\/pacman.d\/mirrorlist' /etc/pacman.conf
 
     qecho "Updating database..."
-    sudo pacman -Sy &> "$DEFAULT_OUT"
+    sudo pacman -Sy
 
     qecho "Installing Steam..."
 
-    sudo pacman -S steam --needed --noconfirm &> "$DEFAULT_OUT"
+    sudo pacman -S steam --needed --noconfirm
 
     qecho "Configuring library paths for steam..."
     sudo install -Dm 644 $BASE_DIR/steam.conf /etc/ld.so.conf.d/steam.conf
@@ -49,7 +49,7 @@ function install() {
 
 function uninstall() {
     qecho "Uninstalling steam..."
-    sudo pacman -Rsu steam --noconfirm &> "$DEFAULT_OUT"
+    sudo pacman -Rsu steam --noconfirm
 
     qecho "Removing ${new_files[@]}..."
     rm -f "${new_files[@]}"
@@ -60,7 +60,7 @@ function uninstall() {
     sudo sed -i /etc/pacman.conf \
         -e '/^#\[multilib\]/!b;n;c#Include = \/etc\/pacman.d\/mirrorlist'
 
-    sudo pacman -Sy &> "$DEFAULT_OUT"
+    sudo pacman -Sy
 }
 
 source "$LAD_OS_DIR/common/feature_common.sh"

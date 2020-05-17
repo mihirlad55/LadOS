@@ -65,7 +65,7 @@ function prepare() {
 
 function install() {
     # Normal output goes to stderr
-    sudo bootctl install &> "$DEFAULT_OUT"
+    sudo bootctl install
 
     qecho "Installing boot entry>.."
     sudo mkdir -p /boot/loader/entries
@@ -79,7 +79,7 @@ function cleanup() {
 }
 
 function uninstall() {
-    sudo bootctl uninstall &> "$DEFAULT_OUT"
+    sudo bootctl uninstall
 
     qecho "Removing ${new_files[@]}..."
     sudo rm -f "${new_files[@]}"

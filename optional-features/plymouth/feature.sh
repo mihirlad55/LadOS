@@ -22,8 +22,8 @@ depends_pacman=()
 
 function check_install() {
     if egrep -q /etc/mkinitcpio.conf -e "plymouth" &&
-        diff $BASE_DIR/deus_ex /usr/share/plymouth/themes/deus_ex > "$DEFAULT_OUT" &&
-        diff $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf > "$DEFAULT_OUT"; then
+        diff $BASE_DIR/deus_ex /usr/share/plymouth/themes/deus_ex &&
+        diff $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf; then
         qecho "$feature_name is installed"
         return 0
     else
@@ -61,7 +61,7 @@ function install() {
     add_mkinitcpio_hook "plymouth"
 
     qecho "Updating mkinitcpio..."
-    sudo mkinitcpio --nocolor -P linux > "$DEFAULT_OUT"
+    sudo mkinitcpio --nocolor -P linux
 }
 
 function post_install() {
