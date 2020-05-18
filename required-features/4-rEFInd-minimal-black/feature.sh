@@ -72,15 +72,18 @@ function install() {
     sudo mkdir -p "$REFIND_THEME_PATH"
     (shopt -s dotglob; sudo cp -rf /tmp/rEFInd-minimal-black/* "$REFIND_THEME_PATH")
 
-    swap_path=$(cat /etc/fstab | grep -P -B 1 \
-        -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | head -n1 | sed 's/# *//')
-    root_path=$(cat /etc/fstab | grep -P -B 1 \
-        -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | head -n1 | sed 's/# *//')
+    swap_uuid=$(cat /etc/fstab | \
+        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | \
+        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
+        sed 's/UUID=//')
 
-    partuuid=$(blkid -s PARTUUID -o value $root_path)
+    root_uuid=$(cat /etc/fstab | \
+        grep -P -B 1 -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
+        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
+        sed 's/UUID=//')
 
-    sed -i /tmp/refind-options.conf -e "s/root=PARTUUID=[a-z0-9\-]*/root=PARTUUID=$partuuid/"
-    sed -i /tmp/refind-options.conf -e "s;resume=;resume=$swap_path;"
+    sed -i /tmp/refind-options.conf -e "s/root=UUID=[a-z0-9\-]*/root=UUID=$root_uuid/"
+    sed -i /tmp/refind-options.conf -e "s/resume=UUID=[a-z0-9\-]*/resume=UUID=$swap_uuid/"
 
     echo "Opening configuration files for any changes. The root PARTUUID has already been set along with the swap paritition path for resume"
     read -p "Press enter to continue..."

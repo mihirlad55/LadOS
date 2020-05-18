@@ -20,14 +20,18 @@ depends_pacman=(intel-ucode amd-ucode)
 
 
 function get_options_line() {
-    swap_path=$(cat /etc/fstab | grep -P -B 1 \
-        -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | head -n1 | sed 's/# *//')
-    root_path=$(cat /etc/fstab | grep -P -B 1 \
+    swap_uuid=$(cat /etc/fstab | \
+        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | \
+        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
+        sed 's/UUID=//')
+
+    root_uuid=$(cat /etc/fstab | \
+        grep -P -B 1 -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
+        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
+        sed 's/UUID=//')
         -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | head -n1 | sed 's/# *//')
 
-    partuuid=$(blkid -s PARTUUID -o value $root_path)
-
-    options="options root=PARTUUID=$partuuid rw add_efi_memmap resume=$swap_path"
+    options="options root=UUID=$root_uuid rw add_efi_memmap resume=UUID=$swap_uuid"
 
     echo "$options"
 }
