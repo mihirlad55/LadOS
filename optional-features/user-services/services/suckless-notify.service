@@ -1,0 +1,13 @@
+[Unit]
+Description=Sends notification when mihirlad55's forked version of st or dwm are out-of-date with suckless's version.
+
+[Service]
+ExecStart=%h/.scripts/dunst/suckless-notification/suckless-notification
+
+Type=simple
+
+RestartSec=3
+Restart=always
+
+[Install]
+WantedBy=default.target
