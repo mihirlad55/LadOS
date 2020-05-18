@@ -107,6 +107,7 @@ vifm,Main file explorer,system,required
 vlc,Main video viewer,system,optional
 watchman,Watching commands,system,optional
 wpa_supplicant,WiFi,system,required
+wget,Downloading files,system,required
 x11vnc,For VNC control,system,optional
 xautolock,Auto screenlock,system,required
 xbindkeys,Main custom keybinds,aur,required
