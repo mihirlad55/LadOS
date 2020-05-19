@@ -17,6 +17,7 @@ cronie,For scheduling tasks,system,required
 cups,Printing,system,optional
 dhcpcd,DHCP,system,required
 discord,It's discord,system,optional
+dracut,Generating initramfs,system,required
 dunst,Main notification agent,system,required
 elinks,If stuck in TTY,system,optional
 emacs,Experimenting with new editor,system,optional
