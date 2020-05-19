@@ -55,6 +55,16 @@ function get_gpu_drivers() {
     echo "${drivers[@]}"
 }
 
+function install_ucode() {
+    model_line="$(lscpu | grep 'Model name:')"
+
+    if echo "$model_line" | grep -q -i 'intel'; then
+        sudo pacman -S intel-ucode --needed --noconfirm
+    elif echo "$model_line" | grep -q -i 'amd'; then
+        sudo pacman -S amd-ucode --needed --noconfirm
+    fi
+}
+
 function disable_mkinitcpio() {
     sudo mkdir -p "$PACMAN_HOOKS_DIR"
     sudo ln -sf /dev/null "$PACMAN_HOOKS_DIR/90-mkinitcpio-install.hook"
@@ -130,6 +140,12 @@ function install() {
 }
 
 function post_install() {
+    qecho "Installing ucode..."
+    install_ucode
+
+    qecho "Generating image..."
+    sudo $BIN_INSTALL_DIR/dracut-install-default.sh
+
     qecho "Disabling mkinitcpio pacman hooks..."
     disable_mkinitcpio
 }
