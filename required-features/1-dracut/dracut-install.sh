@@ -10,7 +10,6 @@ while read -r line; do
 		kver="${line#'usr/lib/modules/'}"
 		kver="${kver%'/pkgbase'}"
 
-		install -Dm0644 "/${line%'/pkgbase'}/vmlinuz" "/boot/vmlinuz-${pkgbase}"
 		dracut "${args[@]}" --hostonly "/boot/${pkgbase}.efi" --kver "$kver"
 		dracut "${args[@]}" --no-hostonly "/boot/${pkgbase}-fallback.efi" --kver "$kver"
 	fi
