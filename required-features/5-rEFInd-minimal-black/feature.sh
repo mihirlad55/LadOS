@@ -72,20 +72,7 @@ function install() {
     sudo mkdir -p "$REFIND_THEME_PATH"
     (shopt -s dotglob; sudo cp -rf /tmp/rEFInd-minimal-black/* "$REFIND_THEME_PATH")
 
-    swap_uuid=$(cat /etc/fstab | \
-        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
-
-    root_uuid=$(cat /etc/fstab | \
-        grep -P -B 1 -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
-
-    sed -i /tmp/refind-options.conf -e "s/root=UUID=[a-z0-9\-]*/root=UUID=$root_uuid/"
-    sed -i /tmp/refind-options.conf -e "s/resume=UUID=[a-z0-9\-]*/resume=UUID=$swap_uuid/"
-
-    echo "Opening configuration files for any changes. The root PARTUUID has already been set along with the swap paritition path for resume"
+    echo "Opening configuration files for any changes. Default commandline options are set in dracut's configuration"
     read -p "Press enter to continue..."
 
     if [[ "$EDITOR" != "" ]]; then
