@@ -23,8 +23,7 @@ depends_pacman=()
 
 
 function check_install() {
-    if egrep -q /etc/mkinitcpio.conf -e "plymouth" &&
-        diff $BASE_DIR/deus_ex /usr/share/plymouth/themes/deus_ex &&
+    if diff $BASE_DIR/deus_ex /usr/share/plymouth/themes/deus_ex &&
         diff $BASE_DIR/plymouthd.conf /etc/plymouth/plymouthd.conf &&
         diff $BASE_DIR/plymouth-dracut.conf $DRACUT_CONF_DIR/plymouth-dracut.conf; then
         qecho "$feature_name is installed"

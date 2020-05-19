@@ -247,7 +247,7 @@ function remove_temp_sudoers() {
 function review() {
     msg "Configuration review..."
     
-    local pacman_mirrors fstab modules hooks locale lang hostname hosts
+    local pacman_mirrors fstab dracut_conf locale lang hostname hosts
     local default_user required_features optional_features
 
     pacman_mirrors="$(cat /etc/pacman.d/mirrorlist)"
@@ -259,8 +259,7 @@ function review() {
     default_user="$USER"
     required_features="$(ls "$REQUIRED_FEATURES_DIR")"
     optional_features="${OPTIONAL_FEATURES_SELECTED[*]}"
-    modules="$(source /etc/mkinitcpio.conf; echo "${MODULES[*]}")"
-    hooks="$(source /etc/mkinitcpio.conf; echo "${HOOKS[*]}")"
+    dracut_conf="$(cat /etc/dracut.conf.d/*.conf)"
     lang="$(source /etc/locale.conf; echo "$LANG")"
 
     msg2 "Pacman mirrors:"
@@ -269,11 +268,8 @@ function review() {
     msg2 "fstab:"
     echo "$fstab"
 
-    msg2 "mkinitcpio modules:"
-    echo $modules
-
-    msg2 "mkinitcpio hooks:"
-    echo $hooks
+    msg2 "Dracut Configuration:"
+    echo $dracut_conf
 
     msg2 "Locale:"
     echo "$locale"
