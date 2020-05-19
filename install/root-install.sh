@@ -19,31 +19,6 @@ function enable_localrepo() {
     fi
 }
 
-function update_mkinitcpio_modules() {
-    vecho "Updating mkinitcpio..."
-
-    NEW_MODULES=("$@")
-
-    vecho "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
-
-    source /etc/mkinitcpio.conf
-
-    for module in "${NEW_MODULES[@]}"; do
-        if ! echo "${MODULES[@]}" | grep -q "$module"; then
-            vecho "$module not found in mkinitcpio.conf"
-
-            vecho "Staging $module for addition"
-            MODULES=( "${MODULES[@]}" "$module" )
-        else
-            vecho "$module already found"
-        fi
-    done
-
-    vecho "Updating /etc/mkinitcpio.conf..."
-    MODULES_LINE="MODULES=(${MODULES[*]})"
-    sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
-}
-
 function set_timezone() (
     msg "Setting timezone..."
 
@@ -150,26 +125,10 @@ function setup_hosts() {
     fi
 }
 
-function update_mkinitcpio() {
-    msg "Updating mkinitcpio..."
-    pci_info=$(lspci | cut -d' ' -f2- | grep -e '^VGA' -e '3D' -e 'Display')
-    NEW_MODULES=()
+function install_dracut() {
+    msg "Installing dracut..."
 
-    if echo "$pci_info" | grep -q -i 'amd'; then
-        NEW_MODULES=("${NEW_MODULES[@]}" "amdgpu")
-    fi
-
-    if echo "$pci_info" | grep -q -i 'intel'; then
-        NEW_MODULES=("${NEW_MODULES[@]}" "i915")
-    fi
-
-    msg2 "Ensuring ${NEW_MODULES[*]} are present in mkinitcpio.conf"
-    update_mkinitcpio_modules "${NEW_MODULES[@]}"
-}
-
-function create_initramfs() {
-    msg "Creating initramfs..."
-    mkinitcpio --nocolor -P linux
+    "$REQUIRED_FEATURES_DIR"/*dracut/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
 }
 
 function sync_pacman() {
@@ -179,7 +138,7 @@ function sync_pacman() {
 function install_sudo() {
     msg "Installing sudo..."
 
-    "$REQUIRED_FEATURES_DIR"/1-sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
+    "$REQUIRED_FEATURES_DIR"/*sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
 }
 
 function set_root_passwd() {
@@ -249,9 +208,7 @@ set_hostname
 
 setup_hosts
 
-update_mkinitcpio
-
-create_initramfs
+install_dracut
 
 sync_pacman
 
