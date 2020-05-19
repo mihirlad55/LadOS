@@ -13,57 +13,20 @@ new_files=("/boot/loader/entries/arch.conf" \
     "/boot/EFI/systemd/systemd-bootx64.efi" \
     "/boot/EFI/BOOT/BOOTX64.EFI")
 modified_files=()
-temp_files=("/tmp/arch.conf")
+temp_files=()
 
 depends_aur=()
 depends_pacman=(intel-ucode amd-ucode)
 
 
-function get_options_line() {
-    swap_uuid=$(cat /etc/fstab | \
-        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
-
-    root_uuid=$(cat /etc/fstab | \
-        grep -P -B 1 -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
-        -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | head -n1 | sed 's/# *//')
-
-    options="options root=UUID=$root_uuid rw add_efi_memmap resume=UUID=$swap_uuid"
-
-    echo "$options"
-}
 
 function check_install() {
-    options="$(get_options_line)"
-
-    contents="$(cat $BASE_DIR/arch.conf | sed -e "s;^options root=.*$;$options;")"
-
-    if diff /boot/loader/entries/arch.conf <(echo "$contents") > /dev/null; then
+    if diff /boot/loader/entries/arch.conf "$BASE_DIR/arch.conf" > /dev/null; then
         qecho "$feature_name is installed"
         return 0
     else
         echo "$feature_name is not installed" >&2
         return 1
-    fi
-}
-
-function prepare() {
-    cp $BASE_DIR/arch.conf /tmp/arch.conf
-
-    options="$(get_options_line)"
-
-    sed -i /tmp/arch.conf -e "s;^options root=.*$;$options;"
-
-    echo "Opening configuration files for any changes. The root PARTUUID has already been set along with the swap paritition path for resume"
-    read -p "Press enter to continue..."
-
-    if [[ "$EDITOR" != "" ]]; then
-        $EDITOR /tmp/arch.conf
-    else
-        vim /tmp/arch.conf
     fi
 }
 
@@ -73,13 +36,7 @@ function install() {
 
     qecho "Installing boot entry>.."
     sudo mkdir -p /boot/loader/entries
-    sudo install -Dm 755 /tmp/arch.conf /boot/loader/entries/arch.conf
-}
-
-
-function cleanup() {
-    qecho "Removing /tmp/arch.conf..."
-    rm -f /tmp/arch.conf
+    sudo install -Dm 755 $BASE_DIR/arch.conf /boot/loader/entries/arch.conf
 }
 
 function uninstall() {
