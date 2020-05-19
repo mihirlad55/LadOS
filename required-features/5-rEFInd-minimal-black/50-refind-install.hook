@@ -1,0 +1,10 @@
+[Trigger]
+Type = Package
+Operation = Install
+Operation = Upgrade
+Target = refind
+
+[Action]
+Description = "Installing refind bootloader"
+When = PostTransaction
+Exec = /usr/bin/refind-install

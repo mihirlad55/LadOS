@@ -5,7 +5,10 @@ BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 
+PACMAN_HOOKS_DIR="/etc/pacman.d/hooks"
+
 REFIND_CONF_ADD="$BASE_DIR/refind.conf.add"
+REFIND_INSTALL_HOOK="$BASE_DIR/50-refind-install.hook"
 REFIND_THEME_URL="https://github.com/andersfischernielsen/rEFInd-minimal-black.git"
 REFIND_PATH="/boot/EFI/refind"
 REFIND_CONF="$REFIND_PATH/refind.conf"
@@ -19,7 +22,8 @@ provides=()
 new_files=("/boot/EFI/refind/themes" \
     "/boot/EFI/refind/refind.conf" \
     "/boot/EFI/refind/refind-manual.conf" \
-    "/boot/EFI/refind/refind-options.conf")
+    "/boot/EFI/refind/refind-options.conf" \
+    "$PACMAN_HOOKS_DIR/50-refind-install.hook")
 modified_files=()
 temp_files=("/tmp/refind-options.conf" \
     "/tmp/refind-manual.conf" \
@@ -40,9 +44,10 @@ function check_refind_conf() {
 function check_install() {
     HEAD="$(cat /boot/EFI/refind/themes/rEFInd-minimal-black/.git/HEAD)"
     if check_refind_conf &&
-        [[ -e "/boot/EFI/refind/refind-options.conf" ]] &&
-        [[ -e "/boot/EFI/refind/refind-manual.conf" ]] &&
-        [[ -d "/boot/EFI/refind/themes/rEFInd-minimal-black" ]]; then
+        [[ -f "/boot/EFI/refind/refind-options.conf" ]] &&
+        [[ -f "/boot/EFI/refind/refind-manual.conf" ]] &&
+        [[ -d "/boot/EFI/refind/themes/rEFInd-minimal-black" ]] &&
+        [[ -f "$PACMAN_HOOKS_DIR/50-refind-install.hook" ]]; then
         qecho "$feature_name is installed"
         return 0
     else
@@ -72,20 +77,7 @@ function install() {
     sudo mkdir -p "$REFIND_THEME_PATH"
     (shopt -s dotglob; sudo cp -rf /tmp/rEFInd-minimal-black/* "$REFIND_THEME_PATH")
 
-    swap_uuid=$(cat /etc/fstab | \
-        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
-
-    root_uuid=$(cat /etc/fstab | \
-        grep -P -B 1 -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
-
-    sed -i /tmp/refind-options.conf -e "s/root=UUID=[a-z0-9\-]*/root=UUID=$root_uuid/"
-    sed -i /tmp/refind-options.conf -e "s/resume=UUID=[a-z0-9\-]*/resume=UUID=$swap_uuid/"
-
-    echo "Opening configuration files for any changes. The root PARTUUID has already been set along with the swap paritition path for resume"
+    echo "Opening configuration files for any changes. Default commandline options are set in dracut's configuration"
     read -p "Press enter to continue..."
 
     if [[ "$EDITOR" != "" ]]; then
@@ -103,6 +95,9 @@ function install() {
 
     echo | sudo tee -a "$REFIND_CONF" > /dev/null
     cat "$REFIND_CONF_ADD" | sudo tee -a "$REFIND_CONF" > /dev/null
+
+    qecho "Copying refind-install hook to $PACMAN_HOOKS_DIR..."
+    sudo install -Dm 644 "$REFIND_INSTALL_HOOK" "$PACMAN_HOOKS_DIR/50-refind-install.hook"
 
     qecho "Done"
 }
