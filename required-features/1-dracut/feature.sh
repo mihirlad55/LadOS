@@ -87,9 +87,17 @@ function get_cmdline() {
         grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
         sed 's/UUID=//')
 
+    root_fstype=$(cat /etc/fstab | \
+        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
+        sed 's/\t/ /g' | \
+        tr -s ' ' | \
+        cut -d' ' -f3)
+
+    root_flags="rw,relatime"
+
     cmdline="add_efi_memmap splash quiet loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0"
 
-    cmdline="root=UUID=$root_uuid resume=UUID=$swap_uuid $cmdline"
+    cmdline="root=UUID=$root_uuid rootfstype=$root_fstype rootflags=$root_flags resume=UUID=$swap_uuid $cmdline"
 
     echo "$cmdline"
 }
