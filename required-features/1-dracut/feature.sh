@@ -83,7 +83,7 @@ function get_cmdline() {
         sed 's/UUID=//')
 
     root_uuid=$(cat /etc/fstab | \
-        grep -P -B 1 -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
+        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
         grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
         sed 's/UUID=//')
 
