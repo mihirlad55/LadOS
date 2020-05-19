@@ -22,7 +22,7 @@ depends_pacman=()
 function check_install() {
     for f in ${new_files[@]}; do
         if [[ ! -f "$f" ]]; then
-            echo "$f is missing" &>2
+            echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
             return 1
         fi
