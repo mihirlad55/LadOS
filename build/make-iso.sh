@@ -279,6 +279,7 @@ function use_existing_iso() {
 
 function remaster() {
     MOUNT_PATH="/mnt/archiso"
+    EFI_BOOT_MOUNT_PATH="/mnt/efiboot"
     CUSTOM_ISO_PATH="/var/tmp/customiso"
     AIROOTFS_PATH="$CUSTOM_ISO_PATH/arch/x86_64/airootfs.sfs"
     SHA512_AIROOTFS_PATH="$CUSTOM_ISO_PATH/arch/x86_64/airootfs.sha512"
@@ -289,6 +290,9 @@ function remaster() {
         sudo pacman -R archiso-git --noconfirm
         sudo pacman -S archiso cdrtools --needed --noconfirm
     fi
+
+    echo "Removing ISOs from LadOS..."
+    rm -rf "$BASE_DIR"/*.iso
     
     sudo mkdir -p "$MOUNT_PATH"
 
@@ -308,14 +312,6 @@ function remaster() {
         create_localrepo "$SQUASHFS_ROOT_PATH" "$SQUASHFS_ROOT_PATH/etc/pacman.conf"
     fi
 
-    if prompt "Would you like to sign the archiso bootloader and binaries with custom secure boot keys?"; then
-        read -p "Enter path to the private key: " sb_key_path
-        read -p "Enter path to the crt: " sb_crt_path
-
-        find "$CUSTOM_ISO_PATH" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
-            -exec sudo sbsign --key "$sb_key_path" --cert "$sb_crt_path" --output {} {} \;
-    fi
-
     # Avoid permission errors
     sudo chown -R root:root "$CUSTOM_ISO_PATH"
 
@@ -332,6 +328,26 @@ function remaster() {
 
     echo "Updating SHA512 checksum..."
     sudo sha512sum "$AIROOTFS_PATH" | sudo tee "$SHA512_AIROOTFS_PATH"
+
+    if prompt "Would you like to sign the archiso bootloader and binaries with custom secure boot keys?"; then
+        read -p "Enter path to the private key: " sb_key_path
+        read -p "Enter path to the crt: " sb_crt_path
+
+        echo "Signing EFI and vmlinuz binaries in $CUSTOM_ISO_PATH..."
+        sudo find "$CUSTOM_ISO_PATH" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" --output {} {} \;
+
+        echo "Mounting efiboot.img on $EFI_BOOT_MOUNT_PATH..."
+        sudo mkdir -p "$EFI_BOOT_MOUNT_PATH"
+        sudo mount -t vfat -o loop "$CUSTOM_ISO_PATH/EFI/archiso/efiboot.img" "$EFI_BOOT_MOUNT_PATH"
+
+        echo "Signing EFI and vmlinuz binaries in $EFI_BOOT_MOUNT_PATH..."
+        sudo find "$EFI_BOOT_MOUNT_PATH" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" --output {} {} \;
+        
+        echo "Unmounting efiboot.img..."
+        sudo umount "$EFI_BOOT_MOUNT_PATH"
+    fi
 
     echo "Creating new iso..."
     local LABEL="$(cat /mnt/archiso/loader/entries/archiso-x86_64.conf | \
