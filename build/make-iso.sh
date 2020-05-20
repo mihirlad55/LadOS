@@ -195,11 +195,11 @@ function create_localrepo() {
     (cd "$LOCAL_REPO_PATH" && sudo repo-add localrepo.db.tar.gz pkg/*)
 }
 
-
 function build_from_scratch() {
     local ARCH_ISO_DIR="/var/tmp/archiso"
     local AIRROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
     local BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/loader/entries/"
+    local sb_key_path sb_crt_path
 
     echo "Removing old ISOs..."
     rm -f $BASE_DIR/*.iso
@@ -208,14 +208,19 @@ function build_from_scratch() {
     sudo rm -rf "$ARCH_ISO_DIR/work"
 
     sudo pacman -R archiso --noconfirm
-    yay -S archiso-git --needed --noconfirm
+    sudo pacman -S arch-install-scripts btrfs-progs dosfstools libisoburn lynx squashfs-tools git --needed --noconfirm
 
-    sudo cp -af /usr/share/archiso/configs/releng "$ARCH_ISO_DIR"
+    sudo cp -afT "$BASE_DIR/archiso" "$ARCH_ISO_DIR"
 
-    sudo cp -rf -t "$AIRROOTFS_DIR" "$LAD_OS_DIR"
+    sudo cp -rft "$AIRROOTFS_DIR" "$LAD_OS_DIR"
 
     if prompt "Pre-compile and download packages?"; then
         create_localrepo "$AIRROOTFS_DIR" "$ARCH_ISO_DIR/pacman.conf"
+    fi
+
+    if prompt "Would you like to sign the archiso bootloader and binaries with custom secure boot keys?"; then
+        read -p "Enter path to the private key: " sb_key_path
+        read -p "Enter path to the crt: " sb_crt_path
     fi
 
     # Avoid permission errors
@@ -229,15 +234,21 @@ function build_from_scratch() {
             -N "$ISO_NAME" \
             -P "$ISO_PUBLISHER" \
             -A "$ISO_APPLICATION" \
-            -o "$BASE_DIR"
+            -o "$BASE_DIR" \
+            -k "$sb_key_path" \
+            -c "$sb_crt_path"
     )
+    res="$?"
 
-    out="$BASE_DIR/$(date +$ISO_NAME-%Y.%m.%d-x86_64.iso)"
-    echo "ISO has been created at $out"
-    image_usb "$out"
+    if [[ "$res" -eq 0 ]]; then
+        out="$BASE_DIR/$(date +$ISO_NAME-%Y.%m.%d-x86_64.iso)"
+        echo "ISO has been created at $out"
+        image_usb "$out"
 
-    echo "Done"
-    exit 0
+        exit 0
+    else
+        exit 1
+    fi
 }
 
 
@@ -295,6 +306,14 @@ function remaster() {
 
     if prompt "Pre-compile and download packages?"; then
         create_localrepo "$SQUASHFS_ROOT_PATH" "$SQUASHFS_ROOT_PATH/etc/pacman.conf"
+    fi
+
+    if prompt "Would you like to sign the archiso bootloader and binaries with custom secure boot keys?"; then
+        read -p "Enter path to the private key: " sb_key_path
+        read -p "Enter path to the crt: " sb_crt_path
+
+        find "$CUSTOM_ISO_PATH" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sudo sbsign --key "$sb_key_path" --cert "$sb_crt_path" --output {} {} \;
     fi
 
     # Avoid permission errors

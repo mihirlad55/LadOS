@@ -11,6 +11,8 @@ install_dir=arch
 work_dir=work
 out_dir=out
 gpg_key=
+sb_key_path=
+sb_crt_path=
 
 verbose=""
 script_path=$(readlink -f ${0%/*})
@@ -38,6 +40,12 @@ _usage ()
     echo "                        Default: ${work_dir}"
     echo "    -o <out_dir>       Set the output directory"
     echo "                        Default: ${out_dir}"
+    echo "    -k <sb_key_path>   Set the path to your secure boot private key"
+    echo "                       to sign the bootloader and binaries"
+    echo
+    echo "    -c <sb_crt_path>   Set the path to your secure boot certificate"
+    echo "                       to sign the bootloader and binaries"
+    echo
     echo "    -v                 Enable verbose output"
     echo "    -h                 This help message"
     exit ${1}
@@ -87,7 +95,8 @@ make_setup_mkinitcpio() {
       gpg --export ${gpg_key} >${work_dir}/gpgkey
       exec 17<>${work_dir}/gpgkey
     fi
-    ARCHISO_GNUPG_FD=${gpg_key:+17} mkarchiso ${verbose} -w "${work_dir}/x86_64" -C "${work_dir}/pacman.conf" -D "${install_dir}" -r 'mkinitcpio -c /etc/mkinitcpio-archiso.conf -k /boot/vmlinuz-linux -g /boot/archiso.img' run
+    pkgbase="$(uname -r)"
+    ARCHISO_GNUPG_FD=${gpg_key:+17} mkarchiso ${verbose} -w "${work_dir}/x86_64" -C "${work_dir}/pacman.conf" -D "${install_dir}" -r 'mkinitcpio -c /etc/mkinitcpio-archiso.conf -k /usr/lib/modules/*/vmlinuz -g /boot/archiso.img' run
     if [[ ${gpg_key} ]]; then
       exec 17<&-
     fi
@@ -111,7 +120,14 @@ make_customize_airootfs() {
 make_boot() {
     mkdir -p ${work_dir}/iso/${install_dir}/boot/x86_64
     cp ${work_dir}/x86_64/airootfs/boot/archiso.img ${work_dir}/iso/${install_dir}/boot/x86_64/archiso.img
-    cp ${work_dir}/x86_64/airootfs/boot/vmlinuz-linux ${work_dir}/iso/${install_dir}/boot/x86_64/vmlinuz
+    cp ${work_dir}/x86_64/airootfs/usr/lib/modules/*/vmlinuz ${work_dir}/iso/${install_dir}/boot/x86_64/vmlinuz
+    cp ${work_dir}/x86_64/airootfs/usr/lib/modules/*/vmlinuz ${work_dir}/x86_64/airootfs/boot/vmlinuz-linux
+
+    if [[ -n "$sb_key_path" ]] && [[ -n "$sb_crt_path" ]]; then
+        find ${work_dir}/x86_64/airootfs/boot \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" --output {} {} \; \
+            -print
+    fi
 }
 
 # Add other aditional/extra files to ${install_dir}/boot/
@@ -171,6 +187,12 @@ make_efi() {
     curl -o ${work_dir}/iso/EFI/shellx64_v2.efi https://raw.githubusercontent.com/tianocore/edk2/UDK2018/ShellBinPkg/UefiShell/X64/Shell.efi
     # EFI Shell 1.0 for non UEFI 2.3+
     curl -o ${work_dir}/iso/EFI/shellx64_v1.efi https://raw.githubusercontent.com/tianocore/edk2/UDK2018/EdkShellBinPkg/FullShell/X64/Shell_Full.efi
+
+    if [[ -n "$sb_key_path" ]] && [[ -n "$sb_crt_path" ]]; then
+        find ${work_dir}/iso \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" --output {} {} \; \
+            -print
+    fi
 }
 
 # Prepare efiboot.img::/EFI for "El Torito" EFI boot mode
@@ -207,6 +229,12 @@ make_efiboot() {
     cp ${work_dir}/iso/EFI/shellx64_v2.efi ${work_dir}/efiboot/EFI/
     cp ${work_dir}/iso/EFI/shellx64_v1.efi ${work_dir}/efiboot/EFI/
 
+    if [[ -n "$sb_key_path" ]] && [[ -n "$sb_crt_path" ]]; then
+        find ${work_dir}/efiboot \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" --output {} {} \; \
+            -print
+    fi
+
     umount -d ${work_dir}/efiboot
 }
 
@@ -229,7 +257,7 @@ if [[ ${EUID} -ne 0 ]]; then
     _usage 1
 fi
 
-while getopts 'N:V:L:P:A:D:w:o:g:vh' arg; do
+while getopts 'N:V:L:P:A:D:w:o:g:k:c:vh' arg; do
     case "${arg}" in
         N) iso_name="${OPTARG}" ;;
         V) iso_version="${OPTARG}" ;;
@@ -240,6 +268,8 @@ while getopts 'N:V:L:P:A:D:w:o:g:vh' arg; do
         w) work_dir="${OPTARG}" ;;
         o) out_dir="${OPTARG}" ;;
         g) gpg_key="${OPTARG}" ;;
+        k) sb_key_path="${OPTARG}" ;;
+        c) sb_crt_path="${OPTARG}" ;;
         v) verbose="-v" ;;
         h) _usage 0 ;;
         *)
