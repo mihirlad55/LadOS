@@ -74,7 +74,12 @@ new_files=( \
 )
 
 modified_files=("${EFI_BINARIES[@]}")
-temp_files=()
+temp_files=( \
+    "$GUID_PATH" \
+    "$PK_DIR" \
+    "$KEK_DIR" \
+    "$DB_DIR" \
+)
 
 depends_aur=()
 depends_pacman=(openssl efitools sbsigntools)
@@ -265,6 +270,11 @@ function uninstall() {
 
     qecho "Regenerating dracut image..."
     sudo /usr/local/bin/dracut-install-default.sh
+}
+
+function cleanup() {
+    qecho "Removing ${temp_files[@]}..."
+    sudo rm -rf "${temp_files[@]}"
 }
 
 
