@@ -293,6 +293,9 @@ function remaster() {
 
     echo "Removing ISOs from LadOS..."
     rm -rf "$BASE_DIR"/*.iso
+
+    echo "Cleaning up mounts..."
+    sudo umount -f "$CUSTOM_ISO_PATH/work/efiboot"
     
     sudo mkdir -p "$MOUNT_PATH"
 
