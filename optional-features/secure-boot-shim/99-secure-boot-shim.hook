@@ -1,0 +1,12 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = refind
+Target = systemd
+
+[Action]
+Description = Sign bootloaders with custom secure boot keys
+When = PostTransaction
+Depends = sbsigntools
+Exec = /usr/local/bin/sign-loaders.sh
