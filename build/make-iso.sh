@@ -208,7 +208,7 @@ function build_from_scratch() {
     sudo rm -rf "$ARCH_ISO_DIR/work"
 
     sudo pacman -R archiso --noconfirm
-    sudo pacman -S arch-install-scripts btrfs-progs dosfstools libisoburn lynx squashfs-tools git --needed --noconfirm
+    yay -S archiso-git --noconfirm --needed
 
     sudo cp -afT "$BASE_DIR/archiso" "$ARCH_ISO_DIR"
 
