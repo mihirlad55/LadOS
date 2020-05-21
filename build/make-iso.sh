@@ -50,6 +50,27 @@ function is_arch_user() {
     pacman -V > /dev/null
 }
 
+function make_recovery() {
+    local RECOVERY_DIR="/var/tmp/recovery"
+    local install_dir
+
+    install_dir="$1"
+
+    echo "Cleaning up old mounts from $RECOVERY_DIR..."
+    sudo find "$RECOVERY_DIR" -type d -exec mountpoint -q {} \; -exec umount {} \;
+
+    sudo cp -afT "$BASE_DIR/recovery" "$RECOVERY_DIR"
+
+    sudo cp -rft "$AIRROOTFS_DIR" "$LAD_OS_DIR"
+
+    # Avoid permission errors
+    sudo chown -R root:root "$RECOVERY_DIR"
+
+    ( cd "$RECOVERY_DIR" && sudo ./build.sh )
+
+    sudo cp -rft "$install_dir" "$RECOVERY_DIR/work/iso/recovery"
+}
+
 function image_usb() {
     local ISO_PATH="$1"
 
@@ -226,6 +247,9 @@ function build_from_scratch() {
         read -p "Enter path to the crt: " sb_crt_path
     fi
 
+    echo "Making recovery files..."
+    make_recovery "$AIRROOTFS_DIR/LadOS/conf/recovery-mode/"
+
     # Avoid permission errors
     sudo chown -R root:root "$ARCH_ISO_DIR"
 
@@ -317,6 +341,9 @@ function remaster() {
     if prompt "Pre-compile and download packages?"; then
         create_localrepo "$SQUASHFS_ROOT_PATH" "$SQUASHFS_ROOT_PATH/etc/pacman.conf"
     fi
+    
+    echo "Making recovery files..."
+    make_recovery "$AIRROOTFS_DIR/LadOS/conf/recovery-mode/"
 
     # Avoid permission errors
     sudo chown -R root:root "$CUSTOM_ISO_PATH"
