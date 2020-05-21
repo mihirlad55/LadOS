@@ -52,11 +52,11 @@ function check_install() {
 }
 
 function prepare() {
-    cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
-
     port=$(egrep /etc/ssh/sshd_config -e "^#*Port [0-9]*$")
 
     if ! check_conf; then
+        cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
+
         echo -n "Enter a port to run sshd on (blank to leave default: $port): "
         read new_port
 
@@ -81,14 +81,18 @@ function prepare() {
 }
 
 function install() {
-    sudo sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
+    sudo sed -i /etc/ssh/sshd_config -e "s/^#*Port [0-9]*$/Port $port/"
 
     if ! sudo test -e "/root/.ssh/id_rsa"; then
         echo "Warning: Root's SSH keys are not setup" >&2
     fi
 
     sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
-    sudo install -Dm 600 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
+    if ! check_conf; then
+        sudo install -Dm 600 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
+    else
+        sudo install -Dm 600 "$CONF_DIR/gcp-tunnel.env" /etc/gcp-tunnel.env
+    fi
 }
 
 function post_install() {
