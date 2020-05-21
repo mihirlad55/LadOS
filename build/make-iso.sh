@@ -204,6 +204,9 @@ function build_from_scratch() {
     echo "Removing old ISOs..."
     rm -f $BASE_DIR/*.iso
     
+    echo "Cleaning up old mounts from $ARCH_ISO_DIR..."
+    sudo find "$ARCH_ISO_DIR" -type d -exec mountpoint -q {} \; -exec umount {} \;
+
     echo "Cleaning up work directory..."
     sudo rm -rf "$ARCH_ISO_DIR/work"
 
@@ -294,8 +297,8 @@ function remaster() {
     echo "Removing ISOs from LadOS..."
     rm -rf "$BASE_DIR"/*.iso
 
-    echo "Cleaning up mounts..."
-    sudo umount -f "$CUSTOM_ISO_PATH/work/efiboot"
+    echo "Cleaning up old mounts from $CUSTOM_ISO_PATH..."
+    sudo find "$CUSTOM_ISO_PATH" -type d -exec mountpoint -q {} \; -exec umount {} \;
     
     sudo mkdir -p "$MOUNT_PATH"
 
