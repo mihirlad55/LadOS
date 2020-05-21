@@ -10,3 +10,5 @@
 
 # Ignore todo
 /todo
+
+/build/LadOS*.iso
