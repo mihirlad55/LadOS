@@ -94,7 +94,7 @@ function install_required_features() {
 	i=$((i+1))
         progress="($i/$total)"
 
-        if ! (echo "$feature" | grep "yay" || echo "$feature" | grep "sudoers"); then
+        if ! (echo "$feature" | grep -e "yay" -e "sudoers" -e "dracut"); then
             msg2 "$progress Installing $feature..."
             
             "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
