@@ -1,14 +1,14 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 
-SECRET_FILE="/root/secret.bin"
-
 source "$LAD_OS_DIR/common/feature_header.sh"
 
+SECRET_FILE="/root/cryptroot.bin"
 TMP_SECRET_FILE="/root/temp-secret.bin"
 POLICY_DIGEST_FILE="/tmp/policy.digest"
 PRIMARY_CTX_FILE="/tmp/primary.context"
@@ -39,8 +39,8 @@ temp_files=( \
     "$TMP_SECRET_FILE" \
 )
 
-depends_aur=()
-depends_pacman=()
+depends_aur=() #dracut-luks-tpm2-module
+depends_pacman=(tpm2-tools)
 depends_pip3=()
 
 
@@ -93,8 +93,13 @@ function install() {
         head -n1 | \
         sed 's/[# ]*//')
 
+    root_dev="$(sudo cryptsetup status "$root_path" | grep device | tr -s ' ' | sed 's/^ *//' | cut -d' ' -f2)"
+
+    qecho "Removing old keys..."
+    sudo cryptsetup luksRemoveKey "$root_dev" "$SECRET_FILE" || true
+
     qecho "Adding new key to LUKS..."
-    cryptsetup luksAddKey "$root_path" "$SECRET_PATH"
+    sudo cryptsetup luksAddKey "$root_dev" "$SECRET_FILE"
 
     clear_tpm_handle "$TPM_HANDLE"
 
