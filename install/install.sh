@@ -115,6 +115,26 @@ function enable_localrepo() {
     fi
 }
 
+function create_swap_file() {
+    msg "Creating swap file..."
+    local total_mem, swap_path
+
+    total_mem="$(free -k | grep Mem | tr -s ' ' | cut -d' ' -f2)"
+    swap_path="/mnt/swapfile"
+
+    msg2 "Allocating ${total_mem}k file at $swap_path..."
+    fallocate -l "${total_mem}k" "$swap_path"
+
+    msg2 "Setting permissions on $swap_path"
+    chmod 600 "$swap_path"
+
+    msg2 "Making swap..."
+    mkswap "$swap_path"
+
+    msg2 "Turning on swap..."
+    swapon "$swap_path"
+}
+
 function pacstrap_install() {
     msg "Starting pacstrap install..."
 
@@ -172,6 +192,8 @@ update_system_clock
 rank_mirrors
 
 enable_localrepo
+
+create_swap_file
 
 pacstrap_install
 
