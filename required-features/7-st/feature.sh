@@ -13,7 +13,7 @@ feature_desc="Install st (Simple Terminal)"
 
 provides=()
 new_files=("/usr/local/bin/st" \
-    "/usr/share/applications/st.desktop" \
+    "/usr/local/share/applications/st.desktop" \
     "/usr/local/share/man/man1/st.1")
 modified_files=("/usr/share/terminfo")
 temp_files=("/tmp/st")
