@@ -269,7 +269,7 @@ function review() {
     echo "$fstab"
 
     msg2 "Dracut Configuration:"
-    echo $dracut_conf
+    echo "$dracut_conf"
 
     msg2 "Locale:"
     echo "$locale"
