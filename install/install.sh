@@ -2,6 +2,8 @@
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+CONF_DIR="$LAD_OS_DIR/conf/install"
+CRYPTTAB="$CONF_DIR/crypttab"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
@@ -129,6 +131,17 @@ function generate_fstab() {
     genfstab -U /mnt > /mnt/etc/fstab
 }
 
+function install_crypttab() {
+    msg "Installing crypttab..."
+
+    if [[ -f "$CRYPTTAB" ]]; then
+	msg2 "Found crypttab, copying to /mnt..."
+	cp -f "$CRYPTTAB" /mnt/etc/crypttab
+    else
+	msg2 "No crypttab found, continuing..."
+    fi
+}
+
 function start_root_install() {
     msg "Preparing for root install..."
 
@@ -163,5 +176,7 @@ enable_localrepo
 pacstrap_install
 
 generate_fstab
+
+install_crypttab
 
 start_root_install
