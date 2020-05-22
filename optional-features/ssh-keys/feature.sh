@@ -1,10 +1,13 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/ssh-keys"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 USER_SSH_DIR="$CONF_DIR/user/.ssh"
 ROOT_SSH_DIR="$CONF_DIR/root/.ssh"
@@ -97,4 +100,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

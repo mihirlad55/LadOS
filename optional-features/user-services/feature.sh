@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
@@ -8,6 +9,8 @@ LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 INSTALL_PATH="$HOME/.local/share/systemd/user"
 TARGET_PATH="$HOME/.config/systemd/user/default.target.wants"
 SERVICE_PATH="$BASE_DIR/services"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="user-services"
 feature_desc="Install custom user-services for applications"
@@ -125,4 +128,4 @@ function uninstall() {
     rm -f "${new_files[@]}"
 }
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

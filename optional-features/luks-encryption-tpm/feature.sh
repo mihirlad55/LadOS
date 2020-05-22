@@ -6,6 +6,9 @@ BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 SECRET_FILE="/root/secret.bin"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
+
 TMP_SECRET_FILE="/root/temp-secret.bin"
 POLICY_DIGEST_FILE="/tmp/policy.digest"
 PRIMARY_CTX_FILE="/tmp/primary.context"
@@ -150,4 +153,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

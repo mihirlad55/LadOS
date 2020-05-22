@@ -7,4 +7,4 @@ Target = refind
 [Action]
 Description = "Installing refind bootloader"
 When = PostTransaction
-Exec = /usr/bin/refind-install
+Exec = /usr/bin/refind-install --yes

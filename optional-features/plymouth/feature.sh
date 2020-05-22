@@ -1,11 +1,13 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
 
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="plymouth"
 feature_desc="Install plymouth with deus_ex theme"
@@ -70,4 +72,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

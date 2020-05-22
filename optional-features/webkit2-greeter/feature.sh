@@ -1,10 +1,13 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/webkit2-greeter"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="webkit2-greeter"
 feature_desc="Install lightdm-webkit2-greeter with user avatar and background"
@@ -77,4 +80,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

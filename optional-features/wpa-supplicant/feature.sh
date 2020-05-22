@@ -1,10 +1,13 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 INSTALL_CONF_DIR="$LAD_OS_DIR/conf/install"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="wpa_supplicant"
 feature_desc="Install wpa_supplicant and configuration for network card"
@@ -94,4 +97,4 @@ function uninstall() {
     sudo rm -rf "/etc/wpa_supplicant/wpa_supplicant-${card}.conf"
 }
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

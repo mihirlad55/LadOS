@@ -1,10 +1,13 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/gcp-tunnel"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="gcp-tunnel"
 feature_desc="Install gcp-tunnel which remote forwards your computer's SSH port to a Google Cloud Platform instance allowing it to be accessible over the Internet"
@@ -121,6 +124,6 @@ function uninstall() {
     rm -f "${new_files[@]}"
 }
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"
 
 

@@ -6,6 +6,8 @@ BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/win10-fonts"
 
+source "$LAD_OS_DIR/common/feature_header.sh"
+
 REPO_PATH="$HOME/.cache/yay"
 TEMP_PATH="/tmp/ttf-ms-win10"
 TTF_MS_WIN10_URL="https://aur.archlinux.org/ttf-ms-win10.git"
@@ -97,4 +99,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
@@ -9,6 +10,8 @@ SHIM_SIGNED_PATH="/usr/share/shim-signed"
 PACMAN_HOOKS_DIR="/etc/pacman.d/hooks"
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
 ROOT_KEYS_PATH="/root/sb-keys"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 EFI_BINARIES=("/boot/vmlinuz-linux" \
     "/boot/EFI/BOOT/BOOTX64.EFI" \
@@ -155,5 +158,5 @@ function cleanup() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"
 
