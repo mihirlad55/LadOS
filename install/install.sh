@@ -10,6 +10,32 @@ source "$LAD_OS_DIR/common/install_common.sh"
 WIFI_ENABLED=0
 
 
+function gencrypttab() {
+    local mountpoint path uuid mnt
+    mountpoint="$1"
+
+    while IFS=$' ' read path uuid mnt <&3; do
+        {
+            mnt="${mnt%$mountpoint}"
+            if [[ "$mnt" != "/" ]]; then
+                local name password crypt_info keysize cipher options
+
+                name="${path#/dev/mapper/}"
+                password="/root/${name}.bin"
+
+                crypt_info="$(cryptsetup status "$name" | tr -s ' ' | sed 's/ *//')"
+                keysize="$(echo "$crypt_info" | grep keysize |  cut -d' ' -f2)"
+                cipher="$(echo "$crypt_info" | grep cipher | cut -d' ' -f2)"
+
+                options="cipher=$cipher,size=$keysize"
+
+                printf "$name\tUUID=$uuid\t$password\t$options\n"
+            fi
+
+        } 3<&-
+    done 3< <(lsblk -n -o PATH,UUID,TYPE,MOUNTPOINT | sed -n 's/ *crypt//2p')
+}
+
 function check_efi_mode() {
     msg "Checking if system booted in EFI mode..."
     if ls /sys/firmware/efi/efivars &> /dev/null; then
@@ -151,15 +177,16 @@ function generate_fstab() {
     genfstab -U /mnt > /mnt/etc/fstab
 }
 
-function install_crypttab() {
-    msg "Installing crypttab..."
+function generate_crypttab() {
+    msg "Generating crypttab..."
 
-    if [[ -f "$CRYPTTAB" ]]; then
-	msg2 "Found crypttab, copying to /mnt..."
-	cp -f "$CRYPTTAB" /mnt/etc/crypttab
-    else
-	msg2 "No crypttab found, continuing..."
+    if ! lsblk | grep -q crypt; then
+        msg2 "No encrypted partitions detected, continuing..."
+        return
     fi
+
+    gencrypttab /mnt > /mnt/etc/crypttab
+    chmod 600 /mnt/etc/crypttab
 }
 
 function start_root_install() {
@@ -199,6 +226,6 @@ pacstrap_install
 
 generate_fstab
 
-install_crypttab
+generate_crypttab
 
 start_root_install
