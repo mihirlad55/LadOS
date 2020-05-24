@@ -19,6 +19,8 @@ OBJ_ATTR="noda|adminwithpolicy|fixedparent|fixedtpm"
 TPM_HANDLE="0x81000000"
 PCR_POLICY="sha1:0,2,4,7"
 
+KEY_SLOT=10
+
 RESEAL_TPM_FILE="$BASE_DIR/reseal-tpm.sh"
 RESEAL_TPM_SERVICE="$BASE_DIR/reseal-tpm.service"
 TPMRM_RULES_FILE="$BASE_DIR/90-tpmrm.rules"
@@ -108,10 +110,6 @@ function install() {
 
     set_tpm_verbosity_flag
 
-    if sudo test -f "$SECRET_FILE"; then
-        sudo cp -f "$SECRET_FILE" "$TMP_SECRET_FILE"
-    fi
-
     qecho "Generating new secret for LUKS..."
     sudo dd if=/dev/random of="$SECRET_FILE" bs=32 count=1
 
@@ -122,16 +120,11 @@ function install() {
 
     root_dev="$(sudo cryptsetup status "$root_path" | grep device | tr -s ' ' | sed 's/^ *//' | cut -d' ' -f2)"
 
-    qecho "Adding new key to LUKS..."
-    if sudo test -f "$TMP_SECRET_FILE"; then
-        qecho "Using old key to authenticate..."
-        sudo cryptsetup luksAddKey --key-file "$TMP_SECRET_FILE" "$root_dev" "$SECRET_FILE"
-    else
-        sudo cryptsetup luksAddKey "$root_dev" "$SECRET_FILE"
-    fi
+    qecho "Clearing key slot 10..."
+    sudo cryptsetup luksKillSlot "$root_dev" "$KEY_SLOT" || true
 
-    qecho "Removing old keys..."
-    sudo cryptsetup luksRemoveKey "$root_dev" "$TMP_SECRET_FILE" || true
+    qecho "Adding new key to LUKS..."
+    sudo cryptsetup luksAddKey --key-slot "$KEY_SLOT" "$root_dev" "$SECRET_FILE"
 
     clear_tpm_handle "$TPM_HANDLE"
 
