@@ -13,10 +13,12 @@ REFIND_DIR="/boot/EFI/refind"
 REFIND_CONF="$REFIND_DIR/refind.conf"
 REFIND_RECOVERY_CONF="$BASE_DIR/refind-recovery.conf"
 
+MOUNT_POINT="/var/tmp/recovery"
+
 EFI_BINARIES=( \
-    "/boot/recovery/shellx64_v2.efi" \
-    "/boot/recovery/shellx64_v1.efi" \
-    "/boot/recovery/boot/x86_64/vmlinuz" \
+    "$MOUNT_POINT/shellx64_v2.efi" \
+    "$MOUNT_POINT/shellx64_v1.efi" \
+    "$MOUNT_POINT/boot/x86_64/vmlinuz" \
 )
 
 feature_name="Recovery Mode"
@@ -27,22 +29,22 @@ conflicts=()
 provides=()
 new_files=( \
     "$REFIND_DIR/refind-recovery.conf" \
-    "/boot/recovery" \
-    "/boot/recovery/shellx64_v2.efi" \
-    "/boot/recovery/shellx64_v1.efi" \
-    "/boot/recovery/x86_64" \
-    "/boot/recovery/pkglist.x86_64.txt" \
-    "/boot/recovery/x86_64/airootfs.sfs" \
-    "/boot/recovery/x86_64/airootfs.sha512" \
-    "/boot/recovery/boot" \
-    "/boot/recovery/boot/x86_64/archiso.img" \
-    "/boot/recovery/boot/x86_64/vmlinuz" \
-    "/boot/recovery/boot/memtest" \
-    "/boot/recovery/boot/memtest.COPYING" \
-    "/boot/recovery/boot/intel_ucode.img" \
-    "/boot/recovery/boot/intel_ucode.LICENSE" \
-    "/boot/recovery/boot/amd_ucode.img" \
-    "/boot/recovery/boot/amd_ucode.LICENSE" \
+    "$MOUNT_POINT" \
+    "$MOUNT_POINT/shellx64_v2.efi" \
+    "$MOUNT_POINT/shellx64_v1.efi" \
+    "$MOUNT_POINT/x86_64" \
+    "$MOUNT_POINT/pkglist.x86_64.txt" \
+    "$MOUNT_POINT/x86_64/airootfs.sfs" \
+    "$MOUNT_POINT/x86_64/airootfs.sha512" \
+    "$MOUNT_POINT/boot" \
+    "$MOUNT_POINT/boot/x86_64/archiso.img" \
+    "$MOUNT_POINT/boot/x86_64/vmlinuz" \
+    "$MOUNT_POINT/boot/memtest" \
+    "$MOUNT_POINT/boot/memtest.COPYING" \
+    "$MOUNT_POINT/boot/intel_ucode.img" \
+    "$MOUNT_POINT/boot/intel_ucode.LICENSE" \
+    "$MOUNT_POINT/boot/amd_ucode.img" \
+    "$MOUNT_POINT/boot/amd_ucode.LICENSE" \
 )
 modified_files=("$REFIND_CONF")
 temp_files=()
@@ -53,11 +55,11 @@ depends_pip3=()
 
 
 function check_boot_space() {
-    free_space="$(df /boot | tail -n1 | awk '{print $4}')"
-    recovery_size="$(du -d0 "$CONF_DIR/recovery" | cut -f1)"
-    overwritable_space="$(du ${new_files[@]} -c | tail -n1 | cut -f1)"
+    local free_space recovery_size part_path
+    part_path="$1"
 
-    free_space=$((free_space + overwritable_space))
+    free_space="$(sudo blockdev --getsize64 "$part_path")"
+    recovery_size="$(du -d0 "$CONF_DIR/recovery" | cut -f1)"
 
     if [[ "$free_space" -gt "$recovery_size" ]]; then
         vecho "There is enough space on the boot partition to copy the recovery files"
@@ -75,24 +77,54 @@ function check_install() {
         return 1
     fi
 
+    sudo mount "LABEL=RECOVERY" "$MOUNT_POINT"
+
     for f in ${new_files[@]}; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
+            sudo umount "$MOUNT_POINT"
             return 1
         fi
     done
 
+    sudo umount "$MOUNT_POINT"
     qecho "$feature_name is installed"
     return 0
 }
 
 function install() {
-    if check_boot_space; then
-        qecho "Copying recovery mode files to /boot"
-        sudo cp -rfT "$CONF_DIR/recovery" "/boot/recovery"
+    local part_path recovery_size
+
+    recovery_size="$(du -hd0 "$CONF_DIR/recovery" | cut -f1)"
+
+    qecho "This feature requires a $recovery_size partition"
+    read -p "Enter the device path to the recovery partition: " part_path
+    read -p "Please confirm that $part_path is the recovery partition [y/N]: " resp
+
+    if [[ "$resp" != "y" ]] && [[ "$resp" != "Y" ]]; then
+        exit 1
+    fi
+
+    sudo mkdir -p "$MOUNT_POINT"
+
+    qecho "Formatting $part_path..."
+    if mount | grep -q "$part_path"; then
+        qecho "$part_path is currently mounted. Unmounting..."
+        sudo umount "$part_path"
+    fi
+    sudo mkfs.vfat -F32 "$part_path"
+
+    qecho "Labelling $part_path RECOVERY..."
+    sudo fatlabel "$part_path" RECOVERY
+
+    qecho "Mounting $part_path at $MOUNT_POINT..."
+    sudo mount "$part_path" "$MOUNT_POINT"
+
+    if check_boot_space "$part_path"; then
+        qecho "Copying recovery mode files to $MOUNT_POINT"
+        sudo cp -rfT "$CONF_DIR/recovery" "$MOUNT_POINT"
     else
-        recovery_size="$(du -hd0 "$CONF_DIR/recovery" | cut -f1)"
         echo "There is not enough space to copy the recovery files"
         echo "You need at least $recovery_size to install $feature_name"
         exit 1
@@ -108,14 +140,6 @@ function install() {
     else
         qecho "Include command already in $REFIND_CONF"
     fi
-
-    qecho "Labelling root partition as 'BOOT'"
-    boot_path="$(cat /etc/fstab | \
-        grep -B1 -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+/boot[\t ]+" | \
-        head -n1 | \
-        sed 's/[# ]*//')"
-
-    sudo fatlabel "$boot_path" "BOOT"
 
     qecho "Done"
 }
@@ -144,6 +168,11 @@ function post_install() {
             fi
         done
     fi
+}
+
+function cleanup() {
+    qecho "Unmounting $MOUNT_POINT..."
+    sudo umount "$MOUNT_POINT"
 }
 
 function uninstall() {
