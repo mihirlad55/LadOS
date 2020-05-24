@@ -85,6 +85,10 @@ function install() {
 
     set_tpm_verbosity_flag
 
+    if sudo test -f "$SECRET_FILE"; then
+        sudo cp -f "$SECRET_FILE" "$TMP_SECRET_FILE"
+    fi
+
     qecho "Generating new secret for LUKS..."
     sudo dd if=/dev/random of="$SECRET_FILE" bs=32 count=1
 
@@ -95,11 +99,16 @@ function install() {
 
     root_dev="$(sudo cryptsetup status "$root_path" | grep device | tr -s ' ' | sed 's/^ *//' | cut -d' ' -f2)"
 
-    qecho "Removing old keys..."
-    sudo cryptsetup luksRemoveKey "$root_dev" "$SECRET_FILE" || true
-
     qecho "Adding new key to LUKS..."
-    sudo cryptsetup luksAddKey "$root_dev" "$SECRET_FILE"
+    if sudo test -f "$TMP_SECRET_FILE"; then
+        qecho "Using old key to authenticate..."
+        sudo cryptsetup luksAddKey --key-file "$TMP_SECRET_FILE" "$root_dev" "$SECRET_FILE"
+    else
+        sudo cryptsetup luksAddKey "$root_dev" "$SECRET_FILE"
+    fi
+
+    qecho "Removing old keys..."
+    sudo cryptsetup luksRemoveKey "$root_dev" "$TMP_SECRET_FILE" || true
 
     clear_tpm_handle "$TPM_HANDLE"
 
