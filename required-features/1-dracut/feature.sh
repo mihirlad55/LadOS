@@ -126,7 +126,7 @@ function prepare() {
 
     drivers=( $(get_gpu_drivers) )
     qecho "Adding ${drivers[*]} to main-dracut.conf..."
-    echo "add_drivers+=\"${drivers[*]}\"" >> /tmp/main-dracut.conf
+    echo "add_drivers+=\" ${drivers[*]}\" " >> /tmp/main-dracut.conf
 
     qecho "Generating cmdline..."
     cmdline="$(get_cmdline)"
