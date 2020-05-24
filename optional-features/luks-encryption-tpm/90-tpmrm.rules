@@ -1,0 +1,5 @@
+ACTION=="add" \
+, KERNEL=="tpmrm[0-9]" \
+, SUBSYSTEM=="tpmrm" \
+, DRIVERS=="tpm_tis" \
+, TAG+="systemd"

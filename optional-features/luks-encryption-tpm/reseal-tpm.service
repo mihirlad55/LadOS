@@ -1,0 +1,16 @@
+[Unit]
+Description=Reseal TPM with key if PCRs changed
+Requires=dev-tpmrm0.device
+After=dev-tpmrm0.device
+StartLimitInterval=30
+StartLimitBurst=5
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/reseal-tpm.sh
+
+RestartSec=5
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

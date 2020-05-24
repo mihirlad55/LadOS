@@ -9,7 +9,7 @@ LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 source "$LAD_OS_DIR/common/feature_header.sh"
 
 SECRET_FILE="/root/cryptroot.bin"
-TMP_SECRET_FILE="/root/temp-secret.bin"
+TMP_SECRET_FILE="/root/temp-cryptroot.bin"
 POLICY_DIGEST_FILE="/tmp/policy.digest"
 PRIMARY_CTX_FILE="/tmp/primary.context"
 OBJ_PUB_FILE="/tmp/obj.pub"
@@ -18,6 +18,10 @@ LOAD_CTX_FILE="/tmp/load.context"
 OBJ_ATTR="noda|adminwithpolicy|fixedparent|fixedtpm"
 TPM_HANDLE="0x81000000"
 PCR_POLICY="sha1:0,2,4,7"
+
+RESEAL_TPM_FILE="$BASE_DIR/reseal-tpm.sh"
+RESEAL_TPM_SERVICE="$BASE_DIR/reseal-tpm.service"
+TPMRM_RULES_FILE="$BASE_DIR/90-tpmrm.rules"
 
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
 LUKS_DRACUT_CONF="$BASE_DIR/luks-dracut.conf"
@@ -29,8 +33,16 @@ conflicts=()
 
 provides=()
 
-new_files=("$SECRET_FILE" "$DRACUT_CONF_DIR/luks-dracut.conf")
+new_files=( \
+    "$SECRET_FILE" \
+    "$DRACUT_CONF_DIR/luks-dracut.conf" \
+    "/usr/local/bin/reseal-tpm.sh" \
+    "/etc/systemd/system/reseal-tpm.service" \
+    "/etc/udev/rules.d/90-tpmrm.rules" \
+)
+
 modified_files=("$DRACUT_CONF_DIR/cmdline-dracut.conf")
+
 temp_files=( \
     "$POLICY_DIGEST_FILE" \
     "$PRIMARY_CTX_FILE" \
@@ -72,13 +84,23 @@ function check_install() {
     sudo tpm2_unseal ${TPM_VERBOSITY_FLAG} -c "$TPM_HANDLE" \
         -p "pcr:$PCR_POLICY" -o "$TMP_SECRET_FILE"
 
-    if sudo diff "$TMP_SECRET_FILE" "$SECRET_FILE"; then
-        qecho "$feature_name is installed correctly."
-        return 0
+    if ! sudo diff "$TMP_SECRET_FILE" "$SECRET_FILE"; then
+        sudo rm "$TMP_SECRET_FILE"
+        qecho "$feature_name is not installed correctly."
+        return 1
     fi
 
-    qecho "$feature_name is not installed correctly."
-    return 1
+    for f in ${new_files[@]}; do
+        if [[ ! -f "$f" ]]; then
+            echo "$f is missing" >&2
+            echo "$feature_name is not installed" >&2
+            return 1
+        fi
+    done
+
+    qecho "$feature_name is installed correctly."
+    sudo rm "$TMP_SECRET_FILE"
+    return 0
 }
 
 function install() {
@@ -145,6 +167,15 @@ function install() {
     else
         qecho "luks_tpm2 kernel cmdline options already present in $DRACUT_CONF_DIR/cmdline-dracut.conf"
     fi
+
+    sudo install -Dm 700 "$RESEAL_TPM_FILE" "/usr/local/bin/reseal-tpm.sh"
+    sudo install -Dm 644 "$RESEAL_TPM_SERVICE" "/etc/systemd/system/reseal-tpm.service"
+    sudo install -Dm 644 "$TPMRM_RULES_FILE" "/etc/udev/rules.d/90-tpmrm.rules"
+}
+
+function post_install() {
+    qecho "Enabling reseal-tpm.service..."
+    sudo systemctl $SYSTEMD_FLAGS enable reseal-tpm.service
 }
 
 function cleanup() {
