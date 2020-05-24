@@ -1,10 +1,13 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/gtk-greeter"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="gtk-greeter"
 feature_desc="Install lightdm-gtk-greeter with user avatar and background and maia-gtk-theme"
@@ -73,4 +76,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

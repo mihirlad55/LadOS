@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
@@ -7,6 +8,7 @@ LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 DESKTOP_FILES_DIR="$BASE_DIR/power-desktop-files/"
 INSTALL_DIR="/usr/share/applications"
 
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="power-desktop-files"
 feature_desc="Install lock, hibernate, logout, reboot, and poweroff desktop files"
@@ -58,4 +60,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
@@ -8,6 +9,7 @@ CONF_DIR="$LAD_OS_DIR/conf/openvpn-expressvpn"
 LOGIN_CONF_PATH="$CONF_DIR/client/login.conf"
 LOGIN_CONF_INSTALL_PATH="/etc/openvpn/client/login.conf"
 
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="openvpn-expressvpn"
 feature_desc="Install expressvpn configuration for openvpn"
@@ -94,4 +96,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

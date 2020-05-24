@@ -2,11 +2,39 @@
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+CONF_DIR="$LAD_OS_DIR/conf/install"
+CRYPTTAB="$CONF_DIR/crypttab"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
 WIFI_ENABLED=0
 
+
+function gencrypttab() {
+    local mountpoint path uuid mnt
+    mountpoint="$1"
+
+    while IFS=$' ' read path uuid mnt <&3; do
+        {
+            mnt="${mnt%$mountpoint}"
+            if [[ "$mnt" != "/" ]]; then
+                local name password crypt_info keysize cipher options
+
+                name="${path#/dev/mapper/}"
+                password="/root/${name}.bin"
+
+                crypt_info="$(cryptsetup status "$name" | tr -s ' ' | sed 's/ *//')"
+                keysize="$(echo "$crypt_info" | grep keysize |  cut -d' ' -f2)"
+                cipher="$(echo "$crypt_info" | grep cipher | cut -d' ' -f2)"
+
+                options="cipher=$cipher,size=$keysize"
+
+                printf "$name\tUUID=$uuid\t$password\t$options\n"
+            fi
+
+        } 3<&-
+    done 3< <(lsblk -n -o PATH,UUID,TYPE,MOUNTPOINT | sed -n 's/ *crypt//2p')
+}
 
 function check_efi_mode() {
     msg "Checking if system booted in EFI mode..."
@@ -113,6 +141,26 @@ function enable_localrepo() {
     fi
 }
 
+function create_swap_file() {
+    msg "Creating swap file..."
+    local total_mem, swap_path
+
+    total_mem="$(free -k | grep Mem | tr -s ' ' | cut -d' ' -f2)"
+    swap_path="/mnt/swapfile"
+
+    msg2 "Allocating ${total_mem}k file at $swap_path..."
+    fallocate -l "${total_mem}k" "$swap_path"
+
+    msg2 "Setting permissions on $swap_path"
+    chmod 600 "$swap_path"
+
+    msg2 "Making swap..."
+    mkswap "$swap_path"
+
+    msg2 "Turning on swap..."
+    swapon "$swap_path"
+}
+
 function pacstrap_install() {
     msg "Starting pacstrap install..."
 
@@ -127,6 +175,18 @@ function pacstrap_install() {
 function generate_fstab() {
     msg "Generating fstab..."
     genfstab -U /mnt > /mnt/etc/fstab
+}
+
+function generate_crypttab() {
+    msg "Generating crypttab..."
+
+    if ! lsblk | grep -q crypt; then
+        msg2 "No encrypted partitions detected, continuing..."
+        return
+    fi
+
+    gencrypttab /mnt > /mnt/etc/crypttab
+    chmod 600 /mnt/etc/crypttab
 }
 
 function start_root_install() {
@@ -160,8 +220,12 @@ rank_mirrors
 
 enable_localrepo
 
+create_swap_file
+
 pacstrap_install
 
 generate_fstab
+
+generate_crypttab
 
 start_root_install

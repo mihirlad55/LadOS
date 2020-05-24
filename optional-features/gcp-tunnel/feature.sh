@@ -1,10 +1,13 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/gcp-tunnel"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="gcp-tunnel"
 feature_desc="Install gcp-tunnel which remote forwards your computer's SSH port to a Google Cloud Platform instance allowing it to be accessible over the Internet"
@@ -52,11 +55,11 @@ function check_install() {
 }
 
 function prepare() {
-    cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
-
     port=$(egrep /etc/ssh/sshd_config -e "^#*Port [0-9]*$")
 
     if ! check_conf; then
+        cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
+
         echo -n "Enter a port to run sshd on (blank to leave default: $port): "
         read new_port
 
@@ -81,14 +84,18 @@ function prepare() {
 }
 
 function install() {
-    sudo sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
+    sudo sed -i /etc/ssh/sshd_config -e "s/^#*Port [0-9]*$/Port $port/"
 
     if ! sudo test -e "/root/.ssh/id_rsa"; then
         echo "Warning: Root's SSH keys are not setup" >&2
     fi
 
     sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
-    sudo install -Dm 600 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
+    if ! check_conf; then
+        sudo install -Dm 600 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
+    else
+        sudo install -Dm 600 "$CONF_DIR/gcp-tunnel.env" /etc/gcp-tunnel.env
+    fi
 }
 
 function post_install() {
@@ -117,6 +124,6 @@ function uninstall() {
     rm -f "${new_files[@]}"
 }
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"
 
 

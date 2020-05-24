@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
@@ -8,6 +9,8 @@ LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 INSTALL_PATH="$HOME/.local/share/systemd/user"
 TARGET_PATH="$HOME/.config/systemd/user/default.target.wants"
 SERVICE_PATH="$BASE_DIR/services"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="user-services"
 feature_desc="Install custom user-services for applications"
@@ -42,6 +45,8 @@ new_files=( \
     "$TARGET_PATH/xbindkeys.service" \
     "$INSTALL_PATH/startup.service" \
     "$TARGET_PATH/startup.service" \
+    "$INSTALL_PATH/suckless-notify.service" \
+    "$TARGET_PATH/suckless-notify.service" \
     "$TARGET_PATH/insync.service" \
     "$TARGET_PATH/spotify-listener.service")
 modified_files=()
@@ -87,6 +92,7 @@ function install() {
     command install -Dm 644 $SERVICE_PATH/xautolock.service $INSTALL_PATH/xautolock.service
     command install -Dm 644 $SERVICE_PATH/xbindkeys.service $INSTALL_PATH/xbindkeys.service
     command install -Dm 644 $SERVICE_PATH/startup.service $INSTALL_PATH/startup.service
+    command install -Dm 644 $SERVICE_PATH/suckless-notify.service $INSTALL_PATH/suckless-notify.service
 
     qecho "Editing logind.conf to kill user processes on logout..."
     sudo sed -i /etc/systemd/logind.conf -e "s/[# ]*KillUserProcesses=.*$/KillUserProcesses=yes/"
@@ -109,6 +115,7 @@ function post_install() {
     ln -sPf $INSTALL_PATH/xautolock.service $TARGET_PATH/xautolock.service
     ln -sPf $INSTALL_PATH/xbindkeys.service $TARGET_PATH/xbindkeys.service
     ln -sPf $INSTALL_PATH/startup.service $TARGET_PATH/startup.service
+    ln -sPf $INSTALL_PATH/suckless-notify.service $TARGET_PATH/suckless-notify.service
 
     ln -sPf /usr/lib/systemd/user/insync.service $TARGET_PATH/insync.service
     ln -sPf /usr/lib/systemd/user/spotify-listener.service $TARGET_PATH/spotify-listener.service
@@ -121,4 +128,4 @@ function uninstall() {
     rm -f "${new_files[@]}"
 }
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"

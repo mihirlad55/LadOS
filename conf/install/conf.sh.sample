@@ -58,4 +58,6 @@ CONF_EXCLUDE_FEATURES=( "corsair-headset" \
                             "huion" \
                             "hp-printer" \
                             "setup-gpu-passthrough" \
-                            "webkit2-greeter")
+                            "webkit2-greeter" \
+                            "systemd-boot" \
+                            "secure-boot-shim")

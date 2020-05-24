@@ -3,10 +3,16 @@
 /conf/gcp-tunnel/gcp-tunnel.env
 /conf/install/conf.sh
 /conf/install/network.conf
+/conf/install/crypttab
 /conf/restic-b2/constants.sh
+
+# Ignore recovery
+/recovery
 
 # Ignore localrepo
 /localrepo
 
 # Ignore todo
 /todo
+
+/build/LadOS*.iso

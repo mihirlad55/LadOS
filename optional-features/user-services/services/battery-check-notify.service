@@ -2,7 +2,7 @@
 Description=Battery checking notifications
 
 [Service]
-ExecStart=%h/.scripts/dunst/battery-check/battery-check
+ExecStart=%h/.scripts/dunst/battery-check/battery-check-notify
 
 Type=simple
 

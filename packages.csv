@@ -17,6 +17,7 @@ cronie,For scheduling tasks,system,required
 cups,Printing,system,optional
 dhcpcd,DHCP,system,required
 discord,It's discord,system,optional
+dracut,Generating initramfs,system,required
 dunst,Main notification agent,system,required
 elinks,If stuck in TTY,system,optional
 emacs,Experimenting with new editor,system,optional
@@ -107,6 +108,7 @@ vifm,Main file explorer,system,required
 vlc,Main video viewer,system,optional
 watchman,Watching commands,system,optional
 wpa_supplicant,WiFi,system,required
+wget,Downloading files,system,required
 x11vnc,For VNC control,system,optional
 xautolock,Auto screenlock,system,required
 xbindkeys,Main custom keybinds,aur,required

@@ -1,10 +1,12 @@
 #!/usr/bin/bash
 
+
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="physlock"
 feature_desc="Install physlock and custom service file"
@@ -44,4 +46,4 @@ function uninstall() {
 }
 
 
-source "$LAD_OS_DIR/common/feature_common.sh"
+source "$LAD_OS_DIR/common/feature_footer.sh"
