@@ -17,6 +17,7 @@ OBJ_KEY_FILE="/tmp/obj.key"
 LOAD_CTX_FILE="/tmp/load.context"
 OBJ_ATTR="noda|adminwithpolicy|fixedparent|fixedtpm"
 TPM_HANDLE="0x81000000"
+PCR_POLICY="sha1:0,2,4,7"
 
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
 LUKS_DRACUT_CONF="$BASE_DIR/luks-dracut.conf"
@@ -69,7 +70,7 @@ function check_install() {
     set_tpm_verbosity_flag
 
     sudo tpm2_unseal ${TPM_VERBOSITY_FLAG} -c "$TPM_HANDLE" \
-        -p pcr:sha1:0,2,4,7 -o "$TMP_SECRET_FILE"
+        -p "pcr:$PCR_POLICY" -o "$TMP_SECRET_FILE"
 
     if sudo diff "$TMP_SECRET_FILE" "$SECRET_FILE"; then
         qecho "$feature_name is installed correctly."
@@ -113,7 +114,7 @@ function install() {
     clear_tpm_handle "$TPM_HANDLE"
 
     qecho "Sealing secret in TPM..."
-    sudo tpm2_createpolicy ${TPM_VERBOSITY_FLAG} --policy-pcr -l sha1:0,2,4,7 \
+    sudo tpm2_createpolicy ${TPM_VERBOSITY_FLAG} --policy-pcr -l "$PCR_POLICY" \
         -L "$POLICY_DIGEST_FILE"
 
     sudo tpm2_createprimary ${TPM_VERBOSITY_FLAG} -C e -g sha1 -G rsa \
@@ -131,7 +132,7 @@ function install() {
 
     sudo install -Dm 644 "$LUKS_DRACUT_CONF" "$DRACUT_CONF_DIR/luks-dracut.conf"
 
-    kernel_cmdline_add="rd.luks_tpm2_handle=$TPM_HANDLE rd.luks_tpm2_auth=sha1:0,2,4,7"
+    kernel_cmdline_add="rd.luks_tpm2_handle=$TPM_HANDLE rd.luks_tpm2_auth=pcr:$PCR_POLICY"
 
     if ! grep -q -F "$kernel_cmdline_add" "$DRACUT_CONF_DIR/cmdline-dracut.conf"; then
         qecho "Adding kernel cmdline options to $DRACUT_CONF_DIR/cmdline-dracut.conf"
@@ -162,7 +163,7 @@ function uninstall() {
     qecho "Removing ${new_files[*]}..."
     sudo rm -f "${new_files[@]}"
 
-    kernel_cmdline_add=" rd\.luks_tpm2_handle=$TPM_HANDLE rd\.luks_tpm2_auth=sha1:0,2,4,7"
+    kernel_cmdline_add=" rd\.luks_tpm2_handle=$TPM_HANDLE rd\.luks_tpm2_auth=pcr:$PCR_POLICY"
     sudo sed -i "$DRACUT_CONF_DIR/cmdline-dracut.conf" -e "s/$kernel_cmdline//"
 }
 
