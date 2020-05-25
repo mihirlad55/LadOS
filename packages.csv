@@ -5,6 +5,7 @@ arc-gtk-theme,GTK theme,system,required
 aspell,Spell check,system,required
 audacity,Audio editing,system,optional
 base,Base packages,system,required
+base-devel,Packages for AUR,system,required
 bluez-utils,Bluetooth,system,required
 chromium,main browser,system,required
 clang,For C-code formatting,system,optional
