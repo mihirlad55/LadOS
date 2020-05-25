@@ -30,7 +30,7 @@ function pause() {
 function ask() {
     local mesg="$1"
     local resp
-    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}:"
+    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}: "
     read resp
 
     echo "$resp"
@@ -39,7 +39,7 @@ function ask() {
 function ask_words() {
     local mesg="$1"
     local resp
-    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}:"
+    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}: "
     read -a resp
 
     return "${resp[@]}"
@@ -49,7 +49,7 @@ function prompt() {
     local mesg="$1"
     local resp
     while true; do
-	printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR} [Y/n]:"
+	printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR} [Y/n]: "
 	read resp
 
         if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
@@ -81,23 +81,35 @@ function plain3() {
 function msg() {
     local mesg="$1"
     shift
-    printf "${GREEN}==>${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@"
+    printf "${GREEN}══>${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@"
 }
 
 function msg2() {
     local mesg="$1"
     shift
-    printf "${BLUE} '-->${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@"
+    printf "${BLUE} ╚══>${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@"
+}
+
+function msg3() {
+    local mesg="$1"
+    shift
+    printf "${BLUE}   ───>${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@"
+}
+
+function msg4() {
+    local mesg="$1"
+    shift
+    printf "${BLUE}     └-─>${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@"
 }
 
 function warn() {
     local mesg="$1"
     shift
-    printf "${YELLOW}==> WARNING:${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@" >&2
+    printf "${YELLOW}══> WARNING:${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@" >&2
 }
 
 function error() {
     local mesg="$1"
     shift
-    printf "${RED}==> ERROR:${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@" >&2
+    printf "${RED}══> ERROR:${CLEAR}${BOLD} ${mesg}${CLEAR}\n" "$@" >&2
 }
