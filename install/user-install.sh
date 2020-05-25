@@ -120,7 +120,8 @@ function get_excluded_features() {
         done
 
         local exclusions
-        exclusions="$(ask_words "Enter features to exclude (i.e. 1 2 3)")"
+        ask "Enter features to exclude (i.e. 1 2 3)"
+        read -a exclusions
         
         for i in "${exclusions[@]}"; do
             excluded_feature="${features[ $(( i-1 )) ]}"

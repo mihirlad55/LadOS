@@ -95,7 +95,8 @@ function setup_wifi() {
         local adapter="$CONF_WIFI_ADAPTER"
     else
         ip link
-        adapter="$(ask "Enter name of WiFI adapter")"
+        ask "Enter name of WiFI adapter"
+        read -r adapter
     fi
 
     wpa_supplicant $VERBOSITY_FLAG -B -i"${adapter}" -c "$conf_path"
@@ -116,7 +117,8 @@ function rank_mirrors() {
     if [[ "$CONF_COUNTRY_CODE" != "" ]]; then
         country="$CONF_COUNTRY_CODE"        
     else
-        country="$(ask "Enter your country code (i.e. US)")"
+        ask "Enter your country code (i.e. US)"
+        read -r country
     fi
 
     msg2 "Beginning mirror ranking..." "(This may take a minute)"

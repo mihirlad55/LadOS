@@ -29,20 +29,7 @@ function pause() {
 
 function ask() {
     local mesg="$1"
-    local resp
     printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}: "
-    read resp
-
-    echo "$resp"
-}
-
-function ask_words() {
-    local mesg="$1"
-    local resp
-    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}: "
-    read -a resp
-
-    return "${resp[@]}"
 }
 
 function prompt() {
