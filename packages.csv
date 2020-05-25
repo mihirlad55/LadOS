@@ -7,7 +7,6 @@ audacity,Audio editing,system,optional
 base,Base packages,system,required
 bluez-utils,Bluetooth,system,required
 chromium,main browser,system,required
-chromium-widevine,widevine patch for Netflix,aur,required
 clang,For C-code formatting,system,optional
 cmatrix,To be a hacker,system,required
 colorpicker,Color picker,aur,optional
