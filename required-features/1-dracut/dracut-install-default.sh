@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-args=('--force' '--uefi' '--hostonly' '--no-hostonly-cmdline')
+cmdline="$(cat /etc/cmdline.d/* | tr '\n' ' ')"
+
+args=('--force' '--uefi' '--hostonly' '--no-hostonly-cmdline' \
+    '--kernel-cmdline' "$cmdline")
 
 kver="$(uname -r)"
 read -r pkgbase < /usr/lib/modules/$kver/pkgbase

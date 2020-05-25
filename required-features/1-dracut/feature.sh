@@ -13,6 +13,8 @@ DRACUT_CONF_DIR="/etc/dracut.conf.d"
 PACMAN_HOOKS_DIR="/etc/pacman.d/hooks"
 BIN_INSTALL_DIR="/usr/local/bin"
 
+CMDLINE_DIR="/etc/cmdline.d"
+CMDLINE_FILE="$CMDLINE_DIR/main.conf"
 
 feature_name="Dracut"
 feature_desc="Framework for creating initramfs"
@@ -26,13 +28,13 @@ new_files=("$BIN_INSTALL_DIR/dracut-install.sh" \
     "$PACMAN_HOOKS_DIR/90-dracut-install.hook" \
     "$PACMAN_HOOKS_DIR/60-dracut-remove.hook" \
     "$DRACUT_CONF_DIR/main-dracut.conf" \
-    "$DRACUT_CONF_DIR/cmdline-dracut.conf")
+    "$CMDLINE_FILE")
 modified_files=()
 temp_files=("/tmp/main-dracut.conf" \
-    "/tmp/cmdline-dracut.conf")
+    "/tmp/main-cmdline.conf")
 
 depends_aur=()
-depends_pacman=("dracut" "binutils")
+#depends_pacman=("dracut" "binutils")
 depends_pip3=()
 
 
@@ -80,27 +82,30 @@ function enable_mkinitcpio() {
 }
 
 function get_cmdline() {
-    swap_uuid=$(cat /etc/fstab | \
-        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+none[\t ]+swap" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
+    swap_uuid="$(findmnt -no UUID -T /swapfile)"
+    swap_offset="$(sudo filefrag -v /swapfile | \
+        awk '{ if($1=="0:"){print $4} }' | \
+        sed 's/\.//g')"
 
-    root_uuid=$(cat /etc/fstab | \
-        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
-        grep -o -P 'UUID=[a-zA-Z0-9\-]*' | \
-        sed 's/UUID=//')
+    root_uuid=$(findmnt -no UUID --target /)
 
-    root_fstype=$(cat /etc/fstab | \
-        grep -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
-        sed 's/\t/ /g' | \
-        tr -s ' ' | \
-        cut -d' ' -f3)
+    root_fstype=$(findmnt -no FSTYPE --target /)
 
     root_flags="rw,relatime"
 
-    cmdline="add_efi_memmap splash quiet loglevel=3 rd.udev.log_priority=3 vt.global_cursor_default=0"
+    cmdline="root=UUID=$root_uuid rootfstype=$root_fstype rootflags=$root_flags add_efi_memmap resume=UUID=$swap_uuid swap_file_offset=$swap_offset"
 
-    cmdline="root=UUID=$root_uuid rootfstype=$root_fstype rootflags=$root_flags resume=UUID=$swap_uuid $cmdline"
+    root_source="$(findmnt -no SOURCE --target /)"
+
+    # encrypted partition
+    if sudo cryptsetup status "$root_source" | grep -q "LUKS"; then
+        mapper_name="${root_source#/dev/mapper/}"
+        luks_uuid="$(lsblk -sno UUID,TYPE "$root_source" | \
+            grep part | \
+            cut -d' ' -f1)"
+
+        cmdline="rd.luks.name=$luks_uuid=$mapper_name $cmdline"
+    fi
 
     echo "$cmdline"
 }
@@ -126,18 +131,20 @@ function prepare() {
 
     drivers=( $(get_gpu_drivers) )
     qecho "Adding ${drivers[*]} to main-dracut.conf..."
-    echo "add_drivers+=\" ${drivers[*]}\" " >> /tmp/main-dracut.conf
+    echo "add_drivers+=\" ${drivers[*]} \"" >> /tmp/main-dracut.conf
 
     qecho "Generating cmdline..."
     cmdline="$(get_cmdline)"
     vecho "cmdline=$cmdline"
-    echo "kernel_cmdline=\"$cmdline\"" > /tmp/cmdline-dracut.conf
+    echo "$cmdline" > /tmp/main-cmdline.conf
 }
 
 function install() {
-    qecho "Copying dracut confs to $DRACUT_CONF_DIR..."
+    qecho "Copying dracut conf to $DRACUT_CONF_DIR..."
     sudo install -Dm 644 "/tmp/main-dracut.conf" "$DRACUT_CONF_DIR/main-dracut.conf"
-    sudo install -Dm 644 "/tmp/cmdline-dracut.conf" "$DRACUT_CONF_DIR/cmdline-dracut.conf"
+
+    qecho "Copying cmdline to $CMDLINE_DIR..."
+    sudo install -Dm 644 "/tmp/main-cmdline.conf" "$CMDLINE_FILE"
 
     qecho "Copying dracut hooks to $PACMAN_HOOKS_DIR"
     sudo mkdir -p "/etc/pacman.d/hooks"

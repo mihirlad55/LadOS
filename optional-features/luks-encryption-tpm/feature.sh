@@ -28,6 +28,8 @@ TPMRM_RULES_FILE="$BASE_DIR/90-tpmrm.rules"
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
 LUKS_DRACUT_CONF="$BASE_DIR/luks-dracut.conf"
 
+CMDLINE_FILE="/etc/cmdline.d/luks-tpm2.conf"
+
 feature_name="LUKS Encryption (using TPM)"
 feature_desc="Encrypt hardrive using LUKS"
 
@@ -38,12 +40,13 @@ provides=()
 new_files=( \
     "$SECRET_FILE" \
     "$DRACUT_CONF_DIR/luks-dracut.conf" \
+    "$CMDLINE_FILE" \
     "/usr/local/bin/reseal-tpm.sh" \
     "/etc/systemd/system/reseal-tpm.service" \
     "/etc/udev/rules.d/90-tpmrm.rules" \
 )
 
-modified_files=("$DRACUT_CONF_DIR/cmdline-dracut.conf")
+modified_files=()
 
 temp_files=( \
     "$POLICY_DIGEST_FILE" \
@@ -52,9 +55,10 @@ temp_files=( \
     "$OBJ_KEY_FILE" \
     "$LOAD_CTX_FILE" \
     "$TMP_SECRET_FILE" \
+    "/tmp/luks-tpm2-cmdline.conf" \
 )
 
-depends_aur=() #dracut-luks-tpm2-module
+depends_aur=(dracut-luks-tpm2)
 depends_pacman=(tpm2-tools)
 depends_pip3=()
 
@@ -147,19 +151,10 @@ function install() {
 
     sudo install -Dm 644 "$LUKS_DRACUT_CONF" "$DRACUT_CONF_DIR/luks-dracut.conf"
 
-    kernel_cmdline_add="rd.luks_tpm2_handle=$TPM_HANDLE rd.luks_tpm2_auth=pcr:$PCR_POLICY"
+    cmdline="rd.luks_tpm2_handle=$TPM_HANDLE rd.luks_tpm2_auth=pcr:$PCR_POLICY rd.luks.key=$SECRET_FILE"
 
-    if ! grep -q -F "$kernel_cmdline_add" "$DRACUT_CONF_DIR/cmdline-dracut.conf"; then
-        qecho "Adding kernel cmdline options to $DRACUT_CONF_DIR/cmdline-dracut.conf"
-
-        source "$DRACUT_CONF_DIR/cmdline-dracut.conf"
-
-        kernel_cmdline="kernel_cmdline=\"$kernel_cmdline $kernel_cmdline_add\""
-
-        echo "$kernel_cmdline" | sudo tee "$DRACUT_CONF_DIR/cmdline-dracut.conf" >/dev/null
-    else
-        qecho "luks_tpm2 kernel cmdline options already present in $DRACUT_CONF_DIR/cmdline-dracut.conf"
-    fi
+    echo "$cmdline" > "/tmp/luks-tpm2-cmdline.conf"
+    sudo install -Dm 644 "/tmp/luks-tpm2-cmdline.conf" "$CMDLINE_FILE"
 
     sudo install -Dm 700 "$RESEAL_TPM_FILE" "/usr/local/bin/reseal-tpm.sh"
     sudo install -Dm 644 "$RESEAL_TPM_SERVICE" "/etc/systemd/system/reseal-tpm.service"
@@ -186,9 +181,6 @@ function uninstall() {
 
     qecho "Removing ${new_files[*]}..."
     sudo rm -f "${new_files[@]}"
-
-    kernel_cmdline_add=" rd\.luks_tpm2_handle=$TPM_HANDLE rd\.luks_tpm2_auth=pcr:$PCR_POLICY"
-    sudo sed -i "$DRACUT_CONF_DIR/cmdline-dracut.conf" -e "s/$kernel_cmdline//"
 }
 
 
