@@ -1,0 +1,16 @@
+[Unit]
+Description=Rank Pacman Mirrors
+Requires=network.target
+After=network.target
+StartLimitInterval=30
+StartLimitBurst=5
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/update-pacman-mirrors
+
+RestartSec=5
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
