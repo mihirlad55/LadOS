@@ -1,6 +1,7 @@
 [Unit]
 Description=OpenSSH
 Wants=sshd.service
+Requires=network.target
 After=sshd.service
 After=network.target
 
