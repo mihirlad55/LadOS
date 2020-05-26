@@ -578,9 +578,10 @@ function interactive() {
         echo "Since you are not using Arch Linux, the only way to create an ISO is to remaster an existing archiso. Please download an Arch Linux ISO from https://www.archlinux.org/download/"
         echo "Please also install squashfs-tools libisoburn dosfstools lynx syslinux"
 
-        if prompt "Would you like to continue to remaster the ISO?"; then
-            use_existing_iso
-        fi
+        show_menu "Make ISO" \
+            "Remaster ISO"          "remaster_iso" \
+            "Image USB"             "existing_image_to_usb" \
+            "Exit"                  "exit 0"
     fi
 }
 
@@ -672,7 +673,11 @@ case "$cmd" in
         interactive
         ;;
     build)
-        build_from_scratch
+        if is_arch_user; then
+            build_from_scratch
+        else
+            error "You must be running arch linux to do this."
+        fi
         ;;
     remaster)
         if [[ -n "$AUTO_DOWNLOAD_ISO" ]]; then
