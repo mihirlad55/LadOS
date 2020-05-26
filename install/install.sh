@@ -187,6 +187,23 @@ function generate_crypttab() {
         return
     fi
 
+    local names secret_file
+    mapfile -t names < <(lsblk -n -o PATH,TYPE | sed -n 's/ *crypt//2')
+
+    for n in "${names[@]}"; do
+        part_path="$(lsblk -sno PATH,TYPE "$n" | \
+            grep 'part' | \
+            tr -s ' ' | \
+            cut -d' ' -f1)"
+
+        secret_file="/root/${n}.bin"
+        msg3 "Generating password for $n at $secret_file..."
+        dd if=/dev/urandom of="$secret_file" bs=32 count=1
+
+        msg3 "Adding password using cryptsetup..."
+        cryptsetup luksAddKey "$part_path" "$secret_file"
+    done
+
     gencrypttab /mnt > /mnt/etc/crypttab
     chmod 600 /mnt/etc/crypttab
 }
