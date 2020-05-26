@@ -36,7 +36,7 @@ function prompt() {
     local mesg="$1"
     local resp
     while true; do
-	printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR} [Y/n]: "
+	printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR} ${BLUE}[Y/n]:${CLEAR} "
 	read resp
 
         if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
