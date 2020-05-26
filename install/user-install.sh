@@ -8,6 +8,14 @@ source "$LAD_OS_DIR/common/install_common.sh"
 OPTIONAL_FEATURES_SELECTED=()
 
 
+function err_proceed() {
+    error "$@"
+    if prompt "Would you like to proceed?"; then
+        return 0
+    fi
+    exit 1
+}
+
 function enable_community_repo() {
     msg "Enabling community repo..."
     
@@ -173,7 +181,9 @@ function install_optional_features() {
             OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
 
             msg2 "$progress Installing $feature..."
-            "$feature_path" "${VERBOSITY_FLAG}" --no-service-start full_no_check
+            if ! "$feature_path" "${VERBOSITY_FLAG}" --no-service-start full_no_check; then
+                err_proceed "$feature failed to install"
+            fi
 
             if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
                 pause
@@ -194,10 +204,7 @@ function check_required_features() {
 
         msg2 "$progress Checking $feature..."
 
-        "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
-        res="$?"
-
-        if [[ "$?" -gt 0 ]]; then
+        if ! "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install; then
             error "$feature is not installed."
             exit 1
         fi
@@ -220,12 +227,8 @@ function check_optional_features() {
 
         msg2 "$progress Checking $feature..."
 
-        "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install
-        res="$?"
-
-        if [[ "$?" -gt 0 ]]; then
-            error "$feature is not installed."
-            exit 1
+        if ! "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install; then
+            err_proceed "$feature does not seem to be installed correctly"
         fi
 
         if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
