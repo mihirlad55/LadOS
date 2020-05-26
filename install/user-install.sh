@@ -114,12 +114,32 @@ function install_required_features() {
     done
 }
 
+function is_feature_valid() {
+    local name
+    name="$1"
+
+    if [[ ! -d "$OPTIONAL_FEATURES_DIR/$name" ]] || \
+        [[ ! -d "$REQUIRED_FEATURES_DIR/$name" ]]; then
+        return 1
+    fi
+    return 0
+}
+
 function get_excluded_features() {
     local features
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
-        excluded=("${CONF_EXCLUDE_FEATURES[@]}")
+        conf_excluded=("${CONF_EXCLUDE_FEATURES[@]}")
+        excluded=()
+
+        for f in "${conf_excluded[@]}"; do
+            if ! is_feature_valid "$f"; then
+                warn "$f is not a valid feature. Not adding to exclusions."
+            else
+                excluded=("${excluded[@]}" "$f")
+            fi
+        done
     else
         local i=1
         for feature in "${features[@]}"; do
