@@ -1,11 +1,23 @@
 #!/usr/bin/bash
 
-# Duplicate this file and rename to constants.sh
+# Edit this file and rename to constants.sh
 
-B2_KEY_NAME=
-B2_BUCKET=
+if [[ -z "$RESTIC_B2_ENV_" ]]; then
+    RESTIC_B2_ENV_=1
 
-B2_ACCOUNT_ID=
-B2_ACCOUNT_KEY=
-RESTIC_PASSWORD=
+    NOTIFY_USER=
+    O_OPTIONS="-o b2.connections=5"
 
+    export B2_KEY_NAME=
+    export B2_BUCKET=
+
+    export B2_ACCOUNT_ID=
+    export B2_ACCOUNT_KEY=
+    export RESTIC_PASSWORD=
+
+    B2_DIR=""
+    export B2_PATH="b2:${B2_BUCKET}/${B2_DIR}"
+    export RESTIC_REPOSITORY="b2:${B2_BUCKET}"
+
+    export DISPLAY=:0
+fi

@@ -1,21 +1,37 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/restic-b2"
-TARGET_CONSTANTS_PATH="$HOME/.scripts/backup/constants.sh"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
+
+SYSTEMD_DIR="/etc/systemd/system"
+INSTALL_DIR="/root"
 
 feature_name="restic-b2"
 feature_desc="Install restic with B2 configuration"
 
 provides=()
-new_files=()
-modified_files=("$TARGET_CONSTANTS_PATH")
+new_files=( \
+    "$INSTALL_DIR" \
+    "$INSTALL_DIR/backup/b2.png" \
+    "$INSTALL_DIR/b2.png" \
+    "$INSTALL_DIR/backup.sh" \
+    "$INSTALL_DIR/excludes.txt" \
+    "$INSTALL_DIR/includes.txt" \
+    "$INSTALL_DIR/prune.sh" \
+    "$INSTALL_DIR/unset-constants.sh" \
+    "$INSTALL_DIR/utils.sh" \
+    "$SYSTEMD_DIR" \
+    "$SYSTEMD_DIR/b2-backup.service " \
+    "$SYSTEMD_DIR/b2-backup.timer " \
+    "$SYSTEMD_DIR/b2-prune.service " \
+    "$SYSTEMD_DIR/b2-prune.timer " \
+)
+modified_files=()
 temp_files=()
 
 depends_aur=()
@@ -27,7 +43,7 @@ function check_conf() (
     res="$?"
 
     if [[ "$?" -eq 0 ]]; then
-        qecho "Configuration is formatted correctly"
+        qecho "Configuration is set correctly"
         return 0
     else
         echo "Configuration is not set properly" >&2
@@ -43,7 +59,8 @@ function load_conf() {
 function check_install() {
     source "$TARGET_CONSTANTS_PATH"
 
-    if [[ "$B2_KEY_NAME" != "" ]] &&
+    if [[ "$NOTIFY_USER" != "" ]] &&
+        [[ "$B2_KEY_NAME" != "" ]] &&
         [[ "$B2_BUCKET" != "" ]] &&
         [[ "$B2_ACCOUNT_ID" != "" ]] &&
         [[ "$B2_ACCOUNT_KEY" != "" ]] &&
@@ -57,6 +74,12 @@ function check_install() {
 }
 
 function prepare() {
+    if [[ "$NOTIFY_USER" = "" ]]; then
+        echo "Notify user not defined"
+        echo -n "Enter the username of the user to send notifications to: "
+        read NOTIFY_USER
+    fi
+
     if [[ "$B2_KEY_NAME" = "" ]]; then
         echo "B2 key not defined"
         echo -n "Enter the B2 key name: "
@@ -86,29 +109,43 @@ function prepare() {
         echo -n "Enter the restic password: "
         read RESTIC_PASSWORD
     fi
-}
 
-function install() {
-    qecho "Copying configuration to $TARGET_CONSTANTS_PATH"
+    qecho "Copying constants.sh to /tmp and applying configuration..."
+    cp "$CONF_DIR/constants.sh" "/tmp/constants.sh"
 
-    sed -i "$TARGET_CONSTANTS_PATH" \
+    sed -i "/tmp/constants.sh" \
         -e "s/B2_KEY_NAME=.*$/B2_KEY_NAME='$B2_KEY_NAME'/" \
         -e "s/B2_BUCKET=.*$/B2_BUCKET='$B2_BUCKET'/" \
         -e "s/B2_ACCOUNT_ID=.*$/B2_ACCOUNT_ID='$B2_ACCOUNT_ID'/" \
         -e "s/B2_ACCOUNT_KEY=.*$/B2_ACCOUNT_KEY='$B2_ACCOUNT_KEY'/" \
         -e "s/RESTIC_PASSWORD=.*$/RESTIC_PASSWORD='$RESTIC_PASSWORD'/"
+}
+
+function install() {
+    qecho "Copying backup scripts to $INSTALL_DIR..."
+    sudo cp -rft "$INSTALL_DIR" "$BASE_DIR/backup"
+
+    qecho "Copying service and timer files to $SYSTEMD_DIR..."
+    sudo install -Dm 644 "$BASE_DIR/systemd/b2-backup.service" "$SYSTEMD_DIR/b2-backup.service"
+    sudo install -Dm 644 "$BASE_DIR/systemd/b2-prune.service" "$SYSTEMD_DIR/b2-prune.service"
+    sudo install -Dm 644 "$BASE_DIR/systemd/b2-backup.timer" "$SYSTEMD_DIR/b2-backup.timer"
+    sudo install -Dm 644 "$BASE_DIR/systemd/b2-prune.timer" "$SYSTEMD_DIR/b2-prune.timer"
+
+    qecho "Copying constants.sh to $INSTALL_DIR/backup"
+    sudo mv "/tmp/constants.sh" "$INSTALL_DIR/backup"
 
     qecho "Done copying configuration for restic"
 }
 
+function post_install() {
+    qecho "Enabling systemd timers..."
+    sudo systemctl enable $SYSTEMD_FLAGS b2-backup.timer
+    sudo systemctl enable $SYSTEMD_FLAGS b2-prune.timer
+}
+
 function uninstall() {
-    qecho "Resetting configuration at $TARGET_CONSTANTS_PATH..."
-    sed -i "$TARGET_CONSTANTS_PATH" \
-        -e "s/^B2_KEY_NAME=.*/B2_KEY_NAME=/" \
-        -e "s/^B2_BUCKET=.*/B2_BUCKET=/" \
-        -e "s/^B2_ACCOUNT_ID=.*/B2_ACCOUNT_ID=/" \
-        -e "s/^B2_ACCOUNT_KEY=.*/B2_ACCOUNT_KEY=/" \
-        -e "s/^RESTIC_PASSWORD=.*/RESTIC_PASSWORD="
+    qecho "Removing ${new_files[@]}..."
+    sudo rm -rf "${new_files[@]}"
 }
 
 
