@@ -2,5 +2,4 @@
 Name=Power Off
 Comment=Turn off the computer
 Exec=systemctl poweroff
-Terminal=true
 Type=Application

@@ -2,5 +2,4 @@
 Name=Hibernate
 Comment=Suspend to hard drive
 Exec=systemctl hibernate
-Terminal=false
 Type=Application
