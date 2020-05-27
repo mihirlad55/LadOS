@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly ID_PREVIEW="preview"
-readonly TMP_DIR="/tmp/ueberzug$PWD/"
+readonly TMP_DIR="/var/tmp/ueberzug$PWD/"
 
 function draw() {
     declare -p -A cmd=([action]=add [identifier]="$ID_PREVIEW" [x]="$2" \
