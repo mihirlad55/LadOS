@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -21,7 +21,7 @@ depends_pacman=(powertop)
 
 
 function check_install() {
-    if diff $BASE_DIR/powertop.service /etc/systemd/system/powertop.service; then
+    if diff "$BASE_DIR/powertop.service" /etc/systemd/system/powertop.service; then
         qecho "$feature_name is installed"
         return 0
     else
@@ -32,19 +32,19 @@ function check_install() {
 
 function install() {
     qecho "Copying powertop.service to /etc/systemd/system..."
-    sudo install -Dm 644 $BASE_DIR/powertop.service /etc/systemd/system/powertop.service
+    sudo install -Dm 644 "$BASE_DIR/powertop.service" /etc/systemd/system/powertop.service
 }
 
 function post_install() {
     qecho "Enabling powertop.service..."
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} powertop.service
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" powertop.service
 }
 
 function uninstall() {
     qecho "Disabling powertop.service..."
-    sudo systemctl disable -f ${SYSTEMD_FLAGS[*]} powertop.service
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" powertop.service
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 
