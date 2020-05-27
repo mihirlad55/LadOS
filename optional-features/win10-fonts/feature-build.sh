@@ -3,7 +3,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/win10-fonts"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -39,7 +39,7 @@ function check_install() {
 }
 
 function check_conf() {
-    if [[ -d "$CONF_DIR" ]] && [[ "$(ls $CONF_DIR)" != "" ]]; then
+    if [[ -d "$CONF_DIR" ]] && diff "$BASE_DIR/files.txt" <(ls "$CONF_DIR"); then
         qecho "Found win10-fonts"
         qecho "Configuration is set"
         return 0
@@ -53,7 +53,7 @@ function check_conf() {
 function load_conf() {
     qecho "Copying fonts to $REPO_PATH/ttf-ms-win10..."
     mkdir -p "$REPO_PATH/ttf-ms-win10"
-    cp -rf $CONF_DIR/* $REPO_PATH/ttf-ms-win10/
+    cp -rf "$CONF_DIR"/* "$REPO_PATH/ttf-ms-win10/"
 }
 
 function prepare() {
@@ -61,18 +61,18 @@ function prepare() {
 
     if [[ ! -d "$TEMP_PATH" ]]; then
         qecho "Cloning ttf-ms-win10 package..."
-        git clone --depth 1 $VERBOSITY_FLAG "$TTF_MS_WIN10_URL" "$TEMP_PATH"
+        git clone --depth 1 "${V_FLAGS[@]}" "$TTF_MS_WIN10_URL" "$TEMP_PATH"
     fi
 
-    (shopt -s dotglob && cp -rf $TEMP_PATH/* $REPO_PATH/ttf-ms-win10/)
+    (shopt -s dotglob && cp -rf "$TEMP_PATH"/* "$REPO_PATH"/ttf-ms-win10/)
 
     if ! check_conf; then
         echo "Enter url to windows 10 fonts zip file if available, otherwise leave blank"
-        read url
+        read -rp url
 
         if [[ "$url" != "" ]]; then
-            curl $SILENT_FLAG $url --output /tmp/win10-fonts.zip
-            unzip -o /tmp/win10-fonts.zip -d $REPO_PATH/ttf-ms-win10
+            curl "${S_FLAG[@]}" "$url" --output /tmp/win10-fonts.zip
+            unzip -o /tmp/win10-fonts.zip -d "$REPO_PATH/ttf-ms-win10"
         else
             echo "No url provided" >&2
             exit 1
@@ -80,17 +80,17 @@ function prepare() {
     fi
 
     qecho "Making package..."
-    (cd $REPO_PATH/ttf-ms-win10 && makepkg --skipinteg --noconfirm)
+    (cd "$REPO_PATH/ttf-ms-win10" && makepkg --skipinteg --noconfirm)
 }
 
 function install() {
     qecho "Installing package..."
-    (cd $REPO_PATH/ttf-ms-win10 && makepkg -si --noconfirm)
+    (cd "$REPO_PATH/ttf-ms-win10" && makepkg -si --noconfirm)
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
-    rm -rf ${temp_files[@]}
+    qecho "Removing ${temp_files[*]}..."
+    rm -rf "${temp_files[@]}"
 }
 
 function uninstall() {
