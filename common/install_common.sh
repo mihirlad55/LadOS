@@ -12,7 +12,7 @@ LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
 VERBOSITY=
-VERBOSITY_FLAG="-q"
+V_FLAG=("-q")
 
 
 source "$LAD_OS_DIR/common/message.sh"
@@ -21,10 +21,10 @@ else source "$CONF_DIR/conf.sh.sample"; fi
 
 if [[ "$1" = "-v" ]] || [[ "$CONF_VERBOSITY" -eq 1 ]]; then
     VERBOSITY=1
-    VERBOSITY_FLAG=""
+    V_FLAG=()
 elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
     VERBOSITY=2
-    VERBOSITY_FLAG="-v"
+    V_FLAG=("-v")
 fi
 
 

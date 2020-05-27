@@ -3,7 +3,6 @@
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 CONF_DIR="$LAD_OS_DIR/conf/install"
-CRYPTTAB="$CONF_DIR/crypttab"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
@@ -14,7 +13,7 @@ function gencrypttab() {
     local mountpoint path uuid mnt
     mountpoint="$1"
 
-    while IFS=$' ' read path uuid mnt <&3; do
+    while IFS=$' ' read -r path uuid mnt <&3; do
         {
             mnt="${mnt%$mountpoint}"
             if [[ "$mnt" != "/" ]]; then
@@ -29,7 +28,7 @@ function gencrypttab() {
 
                 options="cipher=$cipher,size=$keysize"
 
-                printf "$name\tUUID=$uuid\t$password\t$options\n"
+                printf "%s\tUUID=%s\t%s\t%s\n" "$name" "$uuid" "$password" "$options"
             fi
 
         } 3<&-
@@ -99,8 +98,8 @@ function setup_wifi() {
         read -r adapter
     fi
 
-    wpa_supplicant $VERBOSITY_FLAG -B -i"${adapter}" -c "$conf_path"
-    dhcpcd $VERBOSITY_FLAG
+    wpa_supplicant "${V_FLAG[@]}" -B -i"${adapter}" -c "$conf_path"
+    dhcpcd "${V_FLAG[@]}"
 
     WIFI_ENABLED=1
 }
@@ -222,7 +221,7 @@ function start_root_install() {
     fi
 
     msg2 "Arch-chrooting to system as root..."
-    arch-chroot /mnt /LadOS/install/root-install.sh "$VERBOSITY_FLAG"
+    arch-chroot /mnt /LadOS/install/root-install.sh "${V_FLAG[@]}"
 }
 
 

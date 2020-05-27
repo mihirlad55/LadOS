@@ -22,7 +22,7 @@ function enable_community_repo() {
     local path_to_feature
     path_to_feature=("$REQUIRED_FEATURES_DIR"/*enable-community-pacman/feature.sh)
 
-    "${path_to_feature[0]}" "${VERBOSITY_FLAG}" --no-service-start full
+    "${path_to_feature[0]}" "${V_FLAG[@]}" --no-service-start full
 }
 
 function install_yay() {
@@ -36,7 +36,7 @@ function install_yay() {
         local path_to_feature
         path_to_feature=("$REQUIRED_FEATURES_DIR"/*yay/feature.sh)
 
-        "${path_to_feature[0]}" "${VERBOSITY_FLAG}" --no-service-start full
+        "${path_to_feature[0]}" "${V_FLAG[@]}" --no-service-start full
     fi
 }
 
@@ -105,7 +105,7 @@ function install_required_features() {
         if ! (echo "$feature" | grep -e "yay" -e "sudoers" -e "dracut"); then
             msg2 "$progress Installing $feature..."
             
-            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" --no-service-start full_no_check
+            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${V_FLAG[@]}" --no-service-start full_no_check
 
             if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
                 pause
@@ -149,7 +149,7 @@ function get_excluded_features() {
 
         local exclusions
         ask "Enter features to exclude (i.e. 1 2 3)"
-        read -a exclusions
+        read -ar exclusions
         
         for i in "${exclusions[@]}"; do
             excluded_feature="${features[ $(( i-1 )) ]}"
@@ -167,7 +167,7 @@ function install_optional_features() {
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     i=0
-    excluded=($(get_excluded_features))
+    mapfile -t excluded < <(get_excluded_features)
 
     total=$(( ${#features[@]} - ${#excluded[@]} ))
 
@@ -179,7 +179,7 @@ function install_optional_features() {
             progress="($i/$total)"
 
             feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
-            mapfile -t conflicts < <("$feature_path" $VERBOSITY_FLAG conflicts)
+            mapfile -t conflicts < <("$feature_path" "${V_FLAG[@]}" conflicts)
 
             for c in "${conflicts[@]}"; do
                 if ! echo "${excluded[*]}" | grep -q "$c"; then
@@ -193,7 +193,7 @@ function install_optional_features() {
                 fi
             done
 
-            if [[ "$excluded_this" -eq 1 ]]; then
+            if [[ "$exclude_this" -eq 1 ]]; then
                 exclude_this=0
                 continue
             fi
@@ -201,7 +201,7 @@ function install_optional_features() {
             OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
 
             msg2 "$progress Installing $feature..."
-            if ! "$feature_path" "${VERBOSITY_FLAG}" --no-service-start full_no_check; then
+            if ! "$feature_path" "${V_FLAG[@]}" --no-service-start full_no_check; then
                 err_proceed "$feature failed to install"
             fi
 
@@ -224,7 +224,7 @@ function check_required_features() {
 
         msg2 "$progress Checking $feature..."
 
-        if ! "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install; then
+        if ! "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${V_FLAG[@]}" check_install; then
             error "$feature is not installed."
             exit 1
         fi
@@ -247,7 +247,7 @@ function check_optional_features() {
 
         msg2 "$progress Checking $feature..."
 
-        if ! "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${VERBOSITY_FLAG}" check_install; then
+        if ! "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${V_FLAG[@]}" check_install; then
             err_proceed "$feature does not seem to be installed correctly"
         fi
 
@@ -292,6 +292,9 @@ function review() {
     msg2 "fstab:"
     echo "$fstab"
 
+    msg2 "Timezone:"
+    echo "$timezone"
+
     msg2 "Dracut Configuration:"
     echo "$dracut_conf"
 
@@ -311,10 +314,10 @@ function review() {
     echo "$default_user"
 
     msg2 "Installed Required Features:"
-    echo $required_features
+    echo "$required_features" | tr '\n' ' '
 
     msg2 "Installed Optional Features:"
-    echo $optional_features
+    echo "$optional_features" | tr '\n' ' '
 
     pause
 }
