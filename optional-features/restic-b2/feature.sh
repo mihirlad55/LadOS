@@ -3,7 +3,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/restic-b2"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -11,21 +11,19 @@ source "$LAD_OS_DIR/common/feature_header.sh"
 SYSTEMD_DIR="/etc/systemd/system"
 INSTALL_DIR="/root"
 
-feature_name="restic-b2"
+feature_name="Restic B2 Backup Scripts"
 feature_desc="Install restic with B2 configuration"
 
 provides=()
 new_files=( \
-    "$INSTALL_DIR" \
+    "$INSTALL_DIR/backup" \
     "$INSTALL_DIR/backup/b2.png" \
-    "$INSTALL_DIR/b2.png" \
-    "$INSTALL_DIR/backup.sh" \
-    "$INSTALL_DIR/excludes.txt" \
-    "$INSTALL_DIR/includes.txt" \
-    "$INSTALL_DIR/prune.sh" \
-    "$INSTALL_DIR/unset-constants.sh" \
-    "$INSTALL_DIR/utils.sh" \
-    "$SYSTEMD_DIR" \
+    "$INSTALL_DIR/backup/backup.sh" \
+    "$INSTALL_DIR/backup/excludes.txt" \
+    "$INSTALL_DIR/backup/includes.txt" \
+    "$INSTALL_DIR/backup/prune.sh" \
+    "$INSTALL_DIR/backup/unset-constants.sh" \
+    "$INSTALL_DIR/backup/utils.sh" \
     "$SYSTEMD_DIR/b2-backup.service " \
     "$SYSTEMD_DIR/b2-backup.timer " \
     "$SYSTEMD_DIR/b2-prune.service " \
@@ -39,10 +37,9 @@ depends_pacman=(restic)
 
 
 function check_conf() (
-    [[ -f "$CONF_DIR/constants.sh" ]] && source "$CONF_DIR/constants.sh"
-    res="$?"
+    if [[ -f "$CONF_DIR/constants.sh" ]]; then
+        source "$CONF_DIR/constants.sh"
 
-    if [[ "$?" -eq 0 ]]; then
         qecho "Configuration is set correctly"
         return 0
     else
@@ -56,7 +53,7 @@ function load_conf() {
     source "$CONF_DIR/constants.sh"
 }
 
-function check_install() {
+function check_install() (
     source "$TARGET_CONSTANTS_PATH"
 
     if [[ "$NOTIFY_USER" != "" ]] &&
@@ -71,43 +68,37 @@ function check_install() {
         echo "$feature_name is not installed" >&2
         return 1
     fi
-}
+)
 
 function prepare() {
     if [[ "$NOTIFY_USER" = "" ]]; then
         echo "Notify user not defined"
-        echo -n "Enter the username of the user to send notifications to: "
-        read NOTIFY_USER
+        read -rp "Enter the username of the user to send notifications to: " NOTIFY_USER
     fi
 
     if [[ "$B2_KEY_NAME" = "" ]]; then
         echo "B2 key not defined"
-        echo -n "Enter the B2 key name: "
-        read B2_KEY_NAME
+        read -rp "Enter the B2 key name: " B2_KEY_NAME
     fi
 
     if [[ "$B2_BUCKET" = "" ]]; then
         echo "B2 bucket not defined"
-        echo -n "Enter the B2 bucket name: "
-        read B2_BUCKET
+        read -rp "Enter the B2 bucket name: " B2_BUCKET
     fi
 
     if [[ "$B2_ACCOUNT_ID" = "" ]]; then
         echo "B2 account ID not defined"
-        echo -n "Enter the B2 account ID: "
-        read B2_ACCOUNT_ID
+        read -rp "Enter the B2 account ID: " B2_ACCOUNT_ID
     fi
 
     if [[ "$B2_ACCOUNT_KEY" = "" ]]; then
         echo "B2 account key not defined"
-        echo -n "Enter the B2 account key: "
-        read B2_ACCOUNT_KEY
+        read -rp "Enter the B2 account key: " B2_ACCOUNT_KEY
     fi
 
     if [[ "$RESTIC_PASSWORD" = "" ]]; then
         echo "Restic password not defined"
-        echo -n "Enter the restic password: "
-        read RESTIC_PASSWORD
+        read -rp "Enter the restic password: " RESTIC_PASSWORD
     fi
 
     qecho "Copying constants.sh to /tmp and applying configuration..."
@@ -139,12 +130,12 @@ function install() {
 
 function post_install() {
     qecho "Enabling systemd timers..."
-    sudo systemctl enable $SYSTEMD_FLAGS b2-backup.timer
-    sudo systemctl enable $SYSTEMD_FLAGS b2-prune.timer
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" b2-backup.timer
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" b2-prune.timer
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -rf "${new_files[@]}"
 }
 
