@@ -4,12 +4,14 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="st"
 feature_desc="Install st (Simple Terminal)"
+
+ST_URL="https://github.com/mihirlad55/st"
 
 provides=()
 new_files=("/usr/local/bin/st" \
@@ -23,7 +25,7 @@ depends_pacman=()
 
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -f "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -38,7 +40,7 @@ function check_install() {
 function prepare() {
     if [[ ! -f "/tmp/st" ]]; then
         qecho "Cloning st..."
-        git clone --depth 1 $VERBOSITY_FLAG https://github.com/mihirlad55/st /tmp/st
+        git clone --depth 1 "${V_FLAG[@]}" "$ST_URL" /tmp/st
     fi
 }
 
@@ -53,7 +55,7 @@ function cleanup() {
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 

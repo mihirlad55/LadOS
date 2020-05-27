@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/secure-boot-custom"
 PACMAN_HOOKS_DIR="/etc/pacman.d/hooks"
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
@@ -36,12 +36,14 @@ DB_CRT="$DB_DIR/db.crt"
 DB_ESL="$DB_DIR/db.esl"
 DB_AUTH="$DB_DIR/db.auth"
 
-EFI_BINARIES=("/boot/vmlinuz-linux" \
+EFI_BINARIES=( \
+    "/boot/vmlinuz-linux" \
     "/boot/EFI/BOOT/BOOTX64.EFI" \
     "/boot/EFI/refind/refind_x64.efi" \
     "/boot/EFI/systemd/systemd-bootx64.efi" \
     "/boot/linux.efi" \
-    "/boot/linux-fallback.efi")
+    "/boot/linux-fallback.efi" \
+)
 
 
 feature_name="Secure Boot (Custom Keys)"
@@ -56,16 +58,19 @@ new_files=( \
     "$BOOT_KEYS_PATH/KEK.auth" \
     "$BOOT_KEYS_PATH/db.auth" \
     "$ROOT_KEYS_PATH/GUID.txt" \
+    "$ROOT_KEYS_PATH/PK/" \
     "$ROOT_KEYS_PATH/PK/PK.key" \
     "$ROOT_KEYS_PATH/PK/PK.crt" \
     "$ROOT_KEYS_PATH/PK/PK.cer" \
     "$ROOT_KEYS_PATH/PK/PK.esl" \
     "$ROOT_KEYS_PATH/PK/PK.auth" \
+    "$ROOT_KEYS_PATH/KEK/" \
     "$ROOT_KEYS_PATH/KEK/KEK.key" \
     "$ROOT_KEYS_PATH/KEK/KEK.crt" \
     "$ROOT_KEYS_PATH/KEK/KEK.cer" \
     "$ROOT_KEYS_PATH/KEK/KEK.esl" \
     "$ROOT_KEYS_PATH/KEK/KEK.auth" \
+    "$ROOT_KEYS_PATH/db/" \
     "$ROOT_KEYS_PATH/db/db.key" \
     "$ROOT_KEYS_PATH/db/db.crt" \
     "$ROOT_KEYS_PATH/db/db.cer" \
@@ -187,7 +192,7 @@ function load_conf() {
 }
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if ! sudo test -f "$f"; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -268,7 +273,7 @@ function post_install() {
 
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -rf "${new_files[@]}"
 
     qecho "Regenerating dracut image..."
@@ -276,7 +281,7 @@ function uninstall() {
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
+    qecho "Removing ${temp_files[*]}..."
     sudo rm -rf "${temp_files[@]}"
 }
 

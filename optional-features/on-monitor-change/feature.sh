@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -23,7 +23,7 @@ depends_pacman=(xorg-xrandr)
 
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -37,9 +37,9 @@ function check_install() {
 
 function install() {
     qecho "Installing configuration files..."
-    sudo install -Dm 755 $BASE_DIR/50-monitor.rules /etc/udev/rules.d/50-monitor.rules
-    sudo install -Dm 755 $BASE_DIR/fix-monitor-layout /usr/local/bin/fix-monitor-layout
-    sudo install -Dm 644 $BASE_DIR/on-monitor-change@.service /etc/systemd/user/on-monitor-change@.service
+    sudo install -Dm 755 "$BASE_DIR/50-monitor.rules" /etc/udev/rules.d/50-monitor.rules
+    sudo install -Dm 755 "$BASE_DIR/fix-monitor-layout" /usr/local/bin/fix-monitor-layout
+    sudo install -Dm 644 "$BASE_DIR/on-monitor-change@.service" /etc/systemd/user/on-monitor-change@.service
 }
 
 function post_install() {
@@ -48,7 +48,7 @@ function post_install() {
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 

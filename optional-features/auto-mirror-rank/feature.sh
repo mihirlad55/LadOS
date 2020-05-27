@@ -3,7 +3,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -27,7 +27,7 @@ depends_pip3=()
 
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -f "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -49,7 +49,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling auto-mirror-rank.service"
-    sudo systemctl enable $SYSTEMD_FLAGS "auto-mirror-rank.service"
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" "auto-mirror-rank.service"
 }
 
 function uninstall() {

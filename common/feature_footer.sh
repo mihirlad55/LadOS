@@ -75,8 +75,8 @@ case "$1" in
             echo "Uninstalling $feature_name..."
 
             if has_dependencies; then
-                echo -n "$feature_name depends on ${depends_pacman[@]} "
-                echo "${depends_aur[@]} ${depends_pip3[@]}"
+                echo -n "$feature_name depends on ${depends_pacman[*]} "
+                echo "${depends_aur[*]} ${depends_pip3[*]}"
                 if prompt "Would you like to uninstall these dependencies?"; then
                     uninstall_dependencies
                 fi

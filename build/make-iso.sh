@@ -186,16 +186,18 @@ function build_aur_packages() {
             fi
 
             if [[ "$epoch" = "" ]]; then
-                tar_path_prefix="$PKG_PATH/${pkgname}-${ver}"
+                tar_name_prefix="${pkgname}-${ver}"
             else
-                tar_path_prefix="$PKG_PATH/${pkgname}-${epoch}:${ver}"
+                tar_name_prefix="${pkgname}-${epoch}:${ver}"
             fi
 
-            if ! test -f "$tar_path_prefix"*.pkg.tar.xz; then
+            tar_path="$(find "$PKG_PATH" -iname "$tar_name_prefix*.pkg.tar.xz")"
+
+            if [[ "$tar_path" != "" ]]; then
                 msg4 "Building $pkg_name..."
                 cd "/var/tmp/$pkg_name"
                 makepkg -s --noconfirm --nocolor
-                sudo cp -f *.pkg.tar.xz "$PKG_PATH"
+                sudo cp -f ./*.pkg.tar.xz "$PKG_PATH"
             else
                 msg4 "$pkgname already exists"
             fi

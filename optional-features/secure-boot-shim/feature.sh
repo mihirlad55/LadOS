@@ -4,14 +4,12 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/secure-boot-shim"
 SHIM_SIGNED_PATH="/usr/share/shim-signed"
 PACMAN_HOOKS_DIR="/etc/pacman.d/hooks"
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
 ROOT_KEYS_PATH="/root/sb-keys"
-
-source "$LAD_OS_DIR/common/feature_header.sh"
 
 EFI_BINARIES=("/boot/vmlinuz-linux" \
     "/boot/EFI/BOOT/BOOTX64.EFI" \
@@ -23,6 +21,8 @@ EFI_BINARIES=("/boot/vmlinuz-linux" \
 MOK_DIR="/tmp/MOK"
 MOK_KEY="$MOK_DIR/MOK.key"
 MOK_CRT="$MOK_DIR/MOK.crt"
+
+source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="secure-boot-shim"
 feature_desc="Setup secure boot using shim"
@@ -81,7 +81,7 @@ function load_conf() {
 }
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if ! sudo test -f "$f"; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -145,7 +145,7 @@ function post_install() {
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -rf "${new_files[@]}"
 
     qecho "Regenerating dracut image..."
@@ -153,7 +153,7 @@ function uninstall() {
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
+    qecho "Removing ${temp_files[*]}..."
     sudo rm -rf "${temp_files[@]}"
 }
 

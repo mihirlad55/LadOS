@@ -2,5 +2,4 @@
 Name=Restart
 Comment=Restart the computer
 Exec=systemctl reboot %U
-Terminal=true
 Type=Application

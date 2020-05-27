@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/webkit2-greeter"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -43,19 +43,19 @@ function install() {
     sudo sed -i 's/#*greeter-session=.*$/greeter-session=lightdm-webkit2-greeter/' /etc/lightdm/lightdm.conf
 
     if [[ -f "$CONF_DIR/user.png" ]]; then
-        sudo install -Dm 644 "$CONF_DIR/user.png" /var/lib/AccountsService/icons/$USER.png
+        sudo install -Dm 644 "$CONF_DIR/user.png" "/var/lib/AccountsService/icons/$USER.png"
     else
         echo "To change greeter avatar, copy png to /var/lib/AccountsService/icons/$USER.png"
     fi
 
     qecho "Creating /var/lib/AccountsService/user/$USER ini"
-    echo "[User]" | sudo tee /var/lib/AccountsService/users/$USER > /dev/null
+    echo "[User]" | sudo tee "/var/lib/AccountsService/users/$USER" > /dev/null
     echo "Icon=/var/lib/AccountsService/icons/$USER.png" | 
-        sudo tee -a /var/lib/AccountsService/users/$USER > /dev/null
+        sudo tee -a "/var/lib/AccountsService/users/$USER" > /dev/null
 
     if [[ "$(ls "$CONF_DIR/backgrounds")" != "" ]]; then
         qecho "Copying backgrounds from $CONF_DIR/backgrounds to /usr/share/backgrounds/"
-        sudo install -m 644 $CONF_DIR/backgrounds/* /usr/share/backgrounds/
+        sudo install -m 644 "$CONF_DIR"/backgrounds/* /usr/share/backgrounds/
         qecho "You will have to set the background from the login screen"
     else
         echo "To add backgrounds, copy backgrounds to /usr/share/backgrounds"
@@ -68,7 +68,7 @@ function install() {
 function uninstall() {
     local backgrounds
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 
     qecho "Changing greeter session in /etc/lightdm/lightdm.conf"

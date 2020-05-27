@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -22,7 +22,7 @@ depends_pacman=()
 
 function check_install() {
     if [[ "$(awk '/^\[multilib\]/,/^Include/' /etc/pacman.conf)" != "" ]] &&
-        diff $BASE_DIR/steam.conf /etc/ld.so.conf.d/steam.conf; then
+        diff "$BASE_DIR/steam.conf" /etc/ld.so.conf.d/steam.conf; then
         qecho "$feature_name is installed"
         return 0
     else
@@ -44,7 +44,7 @@ function install() {
     sudo pacman -S steam --needed --noconfirm
 
     qecho "Configuring library paths for steam..."
-    sudo install -Dm 644 $BASE_DIR/steam.conf /etc/ld.so.conf.d/steam.conf
+    sudo install -Dm 644 "$BASE_DIR/steam.conf" /etc/ld.so.conf.d/steam.conf
     sudo ldconfig
 
     qecho "DONE!"
@@ -54,7 +54,7 @@ function uninstall() {
     qecho "Uninstalling steam..."
     sudo pacman -Rsu steam --noconfirm
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
     sudo ldconfig
 

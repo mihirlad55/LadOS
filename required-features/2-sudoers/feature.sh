@@ -2,7 +2,7 @@
 
 
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -29,7 +29,7 @@ function check_install() {
 }
 
 function install() {
-    sudo install -Dm 644 $BASE_DIR/10-sudoers-custom \
+    sudo install -Dm 644 "$BASE_DIR/10-sudoers-custom" \
         /etc/sudoers.d/10-sudoers-custom
 }
 

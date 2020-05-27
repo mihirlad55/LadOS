@@ -4,10 +4,9 @@ Description=Sends notification when mihirlad55's forked version of st or dwm are
 [Service]
 ExecStart=%h/.scripts/dunst/suckless/suckless-notify
 
-Type=simple
-
+Type=oneshot
 RestartSec=3
-Restart=always
+Restart=on-failure
 
 [Install]
 WantedBy=default.target

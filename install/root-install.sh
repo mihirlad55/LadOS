@@ -130,7 +130,7 @@ function setup_hosts() {
 function install_dracut() {
     msg "Installing dracut..."
 
-    "$REQUIRED_FEATURES_DIR"/*dracut/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
+    "$REQUIRED_FEATURES_DIR"/*dracut/feature.sh "${V_FLAG[@]}" --no-service-start full
 }
 
 function sync_pacman() {
@@ -140,7 +140,7 @@ function sync_pacman() {
 function install_sudo() {
     msg "Installing sudo..."
 
-    "$REQUIRED_FEATURES_DIR"/*sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
+    "$REQUIRED_FEATURES_DIR"/*sudoers/feature.sh "${V_FLAG[@]}" --no-service-start full
 }
 
 function set_root_passwd() {
@@ -165,7 +165,7 @@ function create_user_account() {
         read -r username
     fi
 
-    mapfile -t users < <(cat /etc/passwd | cut -d':' -f1)
+    mapfile -t users < <(cut -d':' -f1 /etc/passwd)
 
     if echo "${users[*]}" | grep -q "$username"; then
         msg2 "$username already exists"
@@ -193,7 +193,7 @@ function start_user_install() {
     msg "Preparing for user install..."
 
     msg2 "Switching user to $username..."
-    su -P -c "/LadOS/install/user-install.sh $VERBOSITY_FLAG" - "$username"
+    su -P -c "/LadOS/install/user-install.sh ${V_FLAG[@]}" - "$username"
 }
 
 

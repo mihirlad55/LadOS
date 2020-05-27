@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -45,7 +45,6 @@ function check_refind_conf() {
 }
 
 function check_install() {
-    HEAD="$(cat /boot/EFI/refind/themes/rEFInd-minimal-black/.git/HEAD)"
     if check_refind_conf &&
         [[ -f "/boot/EFI/refind/refind-options.conf" ]] &&
         [[ -f "/boot/EFI/refind/refind-manual.conf" ]] &&
@@ -61,8 +60,8 @@ function check_install() {
 
 function prepare() {
     qecho "Copying configuration files to /tmp..."
-    cp -f $BASE_DIR/refind-options.conf /tmp/refind-options.conf
-    cp -f $BASE_DIR/refind-manual.conf /tmp/refind-manual.conf
+    cp -f "$BASE_DIR/refind-options.conf" /tmp/refind-options.conf
+    cp -f "$BASE_DIR/refind-manual.conf" /tmp/refind-manual.conf
 }
 
 function install() {
@@ -74,14 +73,14 @@ function install() {
     sudo rm -rf "$REFIND_THEME_PATH"
 
     if [[ ! -d "/tmp/rEFInd-minimal-black" ]]; then
-        git clone --depth 1 $VERBOSITY_FLAG "$REFIND_THEME_URL" /tmp/rEFInd-minimal-black
+        git clone --depth 1 "${V_FLAG[@]}" "$REFIND_THEME_URL" /tmp/rEFInd-minimal-black
     fi
 
     sudo mkdir -p "$REFIND_THEME_PATH"
     (shopt -s dotglob; sudo cp -rf /tmp/rEFInd-minimal-black/* "$REFIND_THEME_PATH")
 
     echo "Opening configuration files for any changes. Default commandline options are set in dracut's configuration"
-    read -p "Press enter to continue..."
+    read -rp "Press enter to continue..."
 
     if [[ "$EDITOR" != "" ]]; then
         $EDITOR /tmp/refind-options.conf
@@ -97,7 +96,7 @@ function install() {
     sudo install -Dm 755 /usr/share/refind/refind.conf-sample $REFIND_PATH/refind.conf
 
     echo | sudo tee -a "$REFIND_CONF" > /dev/null
-    cat "$REFIND_CONF_ADD" | sudo tee -a "$REFIND_CONF" > /dev/null
+    < "$REFIND_CONF_ADD" sudo tee -a "$REFIND_CONF" > /dev/null
 
     qecho "Copying refind-install hook to $PACMAN_HOOKS_DIR..."
     sudo install -Dm 644 "$REFIND_INSTALL_HOOK" "$PACMAN_HOOKS_DIR/50-refind-install.hook"
@@ -106,12 +105,12 @@ function install() {
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
+    qecho "Removing ${temp_files[*]}..."
     rm -rf "${temp_files[@]}"
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -rf "${new_files[@]}"
 
 }

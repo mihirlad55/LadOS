@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -34,18 +34,17 @@ function check_install() {
 }
 
 function install() {
-    # Normal output goes to stderr
     sudo bootctl install
 
     qecho "Installing boot entry>.."
     sudo mkdir -p /boot/loader/entries
-    sudo install -Dm 755 $BASE_DIR/arch.conf /boot/loader/entries/arch.conf
+    sudo install -Dm 755 "$BASE_DIR/arch.conf" /boot/loader/entries/arch.conf
 }
 
 function uninstall() {
     sudo bootctl uninstall
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -f "${new_files[@]}"
 }
 

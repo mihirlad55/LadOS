@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/gcp-tunnel"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -23,7 +23,10 @@ depends_pacman=(openssh)
 
 
 function check_conf() (
-    [[ -f "$CONF_DIR/gcp-tunnel.env" ]] && source "$CONF_DIR/gcp-tunnel.env"
+    if [[ -f "$CONF_DIR/gcp-tunnel.env" ]]; then
+        source "$CONF_DIR/gcp-tunnel.env"
+    fi
+
     if [[ "$HOSTNAME" =  "" ]] ||
         [[ "$REMOTE_USERNAME" = "" ]] ||
         [[ "$LOCAL_PORT" = "" ]] ||
@@ -42,7 +45,7 @@ function load_conf() {
 }
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -55,13 +58,13 @@ function check_install() {
 }
 
 function prepare() {
-    port=$(egrep /etc/ssh/sshd_config -e "^#*Port [0-9]*$")
+    port=$(grep /etc/ssh/sshd_config -P "^#*Port [0-9]*$")
 
     if ! check_conf; then
-        cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
+        cp "$BASE_DIR/gcp-tunnel.env" /tmp/gcp-tunnel.env
 
         echo -n "Enter a port to run sshd on (blank to leave default: $port): "
-        read new_port
+        read -r new_port
 
         if [[ "$new_port" != "" ]]; then
             port="$new_port"
@@ -71,10 +74,10 @@ function prepare() {
             -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
 
         echo "Opening environment file for updates..."
-        read -p "Press enter to continue..."
+        read -rp "Press enter to continue..."
 
         if [[ "$EDITOR" != "" ]]; then
-            $EDITOR /tmp/gcp-tunnel.env
+            "$EDITOR" /tmp/gcp-tunnel.env
         else
             vim /tmp/gcp-tunnel.env
         fi
@@ -90,7 +93,8 @@ function install() {
         echo "Warning: Root's SSH keys are not setup" >&2
     fi
 
-    sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
+    sudo install -Dm 644 "$BASE_DIR/gcp-tunnel.service" /etc/systemd/system/gcp-tunnel.service
+
     if ! check_conf; then
         sudo install -Dm 600 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
     else
@@ -100,10 +104,10 @@ function install() {
 
 function post_install() {
     qecho "Enabling gcp-tunnel.service..."
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} gcp-tunnel
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" gcp-tunnel
 
     qecho "Enabling sshd.service"
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} sshd
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" sshd
 
     qecho "Done enabling services"
 }
@@ -115,12 +119,12 @@ function cleanup() {
 
 function uninstall() {
     qecho "Disabling gcp-tunnel.service..."
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} gcp-tunnel
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" gcp-tunnel
 
     qecho "Disabling sshd.service"
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} sshd
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" sshd
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 

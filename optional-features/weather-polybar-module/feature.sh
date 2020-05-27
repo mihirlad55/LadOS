@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/weather-polybar-module"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -48,7 +48,7 @@ function check_conf() {
 function install() {
     if ! check_conf; then
         echo "No key file found in $CONF_DIR"
-        read -p "Please enter the openweathermap key: " key
+        read -rp "Please enter the openweathermap key: " key
 
         KEY_PATH="/tmp/openweathermap.key"
 
@@ -63,12 +63,12 @@ function install() {
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
-    rm -f ${temp_files[@]}
+    qecho "Removing ${temp_files[*]}..."
+    rm -f "${temp_files[@]}"
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 

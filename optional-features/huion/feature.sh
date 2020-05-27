@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -25,7 +25,7 @@ depends_pacman=(linux-headers at xf86-input-wacom)
 
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -42,19 +42,19 @@ function install() {
     sudo rmmod hid-uclogic
     sudo rmmod hid-huion
 
-    sudo install -Dm 644 $BASE_DIR/52-tablet.conf /etc/X11/xorg.conf.d/52-tablet.conf
-    sudo install -Dm 644 $BASE_DIR/80-huion.rules /etc/udev/rules.d/80-huion.rules
-    sudo install -Dm 644 $BASE_DIR/adjust-huion /usr/local/bin/adjust-huion
-    sudo install -Dm 644 $BASE_DIR/setup-huion-post-X11.sh /usr/local/bin/setup-huion-post-X11.sh
+    sudo install -Dm 644 "$BASE_DIR/52-tablet.conf" /etc/X11/xorg.conf.d/52-tablet.conf
+    sudo install -Dm 644 "$BASE_DIR/80-huion.rules" /etc/udev/rules.d/80-huion.rules
+    sudo install -Dm 644 "$BASE_DIR/adjust-huion" /usr/local/bin/adjust-huion
+    sudo install -Dm 644 "$BASE_DIR/setup-huion-post-X11.sh" /usr/local/bin/setup-huion-post-X11.sh
 }
 
 function post_install() {
     qecho "Enabling std..."
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} atd
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" atd
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 
