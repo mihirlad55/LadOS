@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/recovery-mode"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -79,7 +79,7 @@ function check_install() {
 
     sudo mount "LABEL=RECOVERY" "$MOUNT_POINT"
 
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -99,8 +99,8 @@ function install() {
     recovery_size="$(du -hd0 "$CONF_DIR/recovery" | cut -f1)"
 
     qecho "This feature requires a $recovery_size partition"
-    read -p "Enter the device path to the recovery partition: " part_path
-    read -p "Please confirm that $part_path is the recovery partition [y/N]: " resp
+    read -rp "Enter the device path to the recovery partition: " part_path
+    read -rp "Please confirm that $part_path is the recovery partition [y/N]: " resp
 
     if [[ "$resp" != "y" ]] && [[ "$resp" != "Y" ]]; then
         exit 1
@@ -131,7 +131,7 @@ function install() {
     fi
 
     qecho "Copying configuration files to $REFIND_DIR..."
-    sudo install -Dm 755 "$REFIND_RECOVERY_CONF" $REFIND_DIR/refind-recovery.conf
+    sudo install -Dm 755 "$REFIND_RECOVERY_CONF" "$REFIND_DIR/refind-recovery.conf"
 
     if ! grep -q "$REFIND_CONF" -e "^include refind-recovery.conf$"; then
         qecho "Adding include to $REFIND_CONF..."
@@ -176,7 +176,7 @@ function cleanup() {
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -rf "${new_files[@]}"
 
     qecho "Removing include command from $REFIND_CONF..."
