@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 GEOCLUE_CONF_PATH="/etc/geoclue/geoclue.conf"
 GEOCLUE_CONF_ADD_PATH="$BASE_DIR/geoclue.conf.add"
 
@@ -31,7 +31,6 @@ function check_geoclue_conf() {
 }
 
 function check_install() {
-
     if check_geoclue_conf; then
         qecho "$feature_name is installed"
         return 0
@@ -47,7 +46,7 @@ function install() {
         qecho "Adding redshift directive to $GEOCLUE_CONF_PATH"
 
         echo | sudo tee -a "$GEOCLUE_CONF_PATH" > /dev/null
-        cat "$GEOCLUE_CONF_ADD_PATH" | sudo tee -a "$GEOCLUE_CONF_PATH" > /dev/null
+        < "$GEOCLUE_CONF_ADD_PATH" sudo tee -a "$GEOCLUE_CONF_PATH" > /dev/null
     else
         qecho "Redshift directive already in $GEOCLUE_CONF_PATH"
     fi
@@ -62,7 +61,7 @@ function uninstall() {
         -D --GTYPE-group-format='' \
         redshift/geoclue.conf.add /etc/geoclue/geoclue.conf)"
     
-    text | sudo tee "$GEOCLUE_CONF_PATH" > /dev/null
+    echo "$text" | sudo tee "$GEOCLUE_CONF_PATH" > /dev/null
 }
 
 
