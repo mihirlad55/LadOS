@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -21,7 +21,7 @@ depends_pacman=(xorg-server)
 
 
 function check_install() {
-    if diff $BASE_DIR/30-touchpad.conf \
+    if diff "$BASE_DIR/30-touchpad.conf" \
         /etc/X11/xorg.conf.d/30-touchpad.conf > /dev/null; then
         qecho "$feature_name is installed"
         return 0
@@ -33,11 +33,12 @@ function check_install() {
 
 function install() {
     qecho "Installing custom touchpad configuration for X11..."
-    sudo install -Dm 644 $BASE_DIR/30-touchpad.conf /etc/X11/xorg.conf.d/30-touchpad.conf
+    sudo install -Dm 644 "$BASE_DIR/30-touchpad.conf" \
+        /etc/X11/xorg.conf.d/30-touchpad.conf
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 
