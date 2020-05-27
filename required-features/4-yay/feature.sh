@@ -4,12 +4,12 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="Yay AUR Helper"
-feature_desc="Install yay AUR helper"
+feature_name="YAY AUR Helper"
+feature_desc="Install YAY AUR helper"
 
 provides=("yay")
 new_files=()
@@ -33,20 +33,19 @@ function check_install() {
 function prepare() {
     if [[ ! -d "/tmp/yay" ]]; then
         qecho "Cloning yay..."
-        git clone --depth 1 $VERBOSITY_FLAG https://aur.archlinux.org/yay.git /tmp/yay
+        git clone --depth 1 "${V_FLAG[@]}" https://aur.archlinux.org/yay.git /tmp/yay
     fi
 }
 
 function install() {
     # Make package
     qecho "Making yay..."
-    # Some non-error output goes to stderr
-    (cd /tmp/yay && makepkg -si --noconfirm --noprogressbar)
+    (cd /tmp/yay && makepkg -si --noconfirm --noprogressbar --nocolor)
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
-    rm -dRf ${temp_files[@]}
+    qecho "Removing ${temp_files[*]}..."
+    rm -rf "${temp_files[@]}"
 }
 
 function uninstall() {
