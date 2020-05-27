@@ -4,12 +4,14 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
 feature_name="DWM"
 feature_desc="Install DWM (Dynamic Window Manager)"
+
+DWM_URL="https://github.com/mihirlad55/dwm"
 
 provides=()
 new_files=("/usr/local/bin/dwm" \
@@ -24,7 +26,7 @@ depends_pacman=(lightdm lightdm-gtk-greeter xorg-server xorg-server-common)
 
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -f "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -39,7 +41,7 @@ function check_install() {
 function prepare() {
     if [[ ! -d "/tmp/dwm" ]]; then
         qecho "Cloning dwm..."
-        git clone --depth 1 $VERBOSITY_FLAG https://github.com/mihirlad55/dwm /tmp/dwm
+        git clone --depth 1 "${V_FLAG[@]}" "$DWM_URL" /tmp/dwm
     fi
 }
 
@@ -50,9 +52,9 @@ function install() {
 
 function post_install() {
     qecho "Enabling lightdm..."
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} lightdm
+    sudo systemctl enable -f "${SYSTEMD_FLAGS[@]}" lightdm
 
-    sudo systemctl set-default ${SYSTEMD_FLAGS[*]} graphical.target
+    sudo systemctl set-default "${SYSTEMD_FLAGS[@]}" graphical.target
 }
 
 function cleanup() {
@@ -61,7 +63,7 @@ function cleanup() {
 }
 
 function uninstall() {
-    qecho "Removing dwm..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -f "${new_files[@]}"
 }
 
