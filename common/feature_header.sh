@@ -22,7 +22,7 @@ VERBOSE=
 QUIET=
 V_FLAG=()     # Verbosity flag and also use arrays to avoid SC2086
 S_FLAG=()     # Silent flag
-SYSTEMD_FLAGS=()
+SYSTEMD_FLAGS=("-f")
 
 ## Set in file that sources this file ##
 feature_name=
