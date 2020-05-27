@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -65,10 +65,9 @@ depends_pip3=()
 
 function set_tpm_verbosity_flag() {
     if [[ -n "$QUIET" ]]; then
-        echo "QUIET"
-        TPM_VERBOSITY_FLAG="--quiet"
+        TPM_FLAGS=("--quiet")
     else
-        TPM_VEBOSITY_FLAG="--verbose"
+        TPM_FLAGS=("--verbose")
     fi
 }
 
@@ -77,17 +76,17 @@ function clear_tpm_handle() {
     local handle
     handle="$1"
 
-    if sudo tpm2_readpublic ${TPM_VERBOSITY_FLAG} -c "$handle"; then
+    if sudo tpm2_readpublic "${TPM_FLAGS[@]}" -c "$handle"; then
         qecho "TPM object found at handle $handle"
         qecho "Evicting object at $handle..."
-        sudo tpm2_evictcontrol -C o -c $handle
+        sudo tpm2_evictcontrol -C o -c "$handle"
     fi
 }
 
 function check_install() {
     set_tpm_verbosity_flag
 
-    sudo tpm2_unseal ${TPM_VERBOSITY_FLAG} -c "$TPM_HANDLE" \
+    sudo tpm2_unseal "${TPM_FLAGS[@]}" -c "$TPM_HANDLE" \
         -p "pcr:$PCR_POLICY" -o "$TMP_SECRET_FILE"
 
     if ! sudo diff "$TMP_SECRET_FILE" "$SECRET_FILE"; then
@@ -96,7 +95,7 @@ function check_install() {
         return 1
     fi
 
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -f "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -117,12 +116,8 @@ function install() {
     qecho "Generating new secret for LUKS..."
     sudo dd if=/dev/random of="$SECRET_FILE" bs=32 count=1
 
-    root_path=$(cat /etc/fstab | \
-        grep -B 1 -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+/[\t ]+" | \
-        head -n1 | \
-        sed 's/[# ]*//')
-
-    root_dev="$(sudo cryptsetup status "$root_path" | grep device | tr -s ' ' | sed 's/^ *//' | cut -d' ' -f2)"
+    root_path=$(findmnt -no SOURCE --target /)
+    root_dev="$(lsblk -sno PATH,TYPE "$root_path" | grep part | cut -d' ' -f1)"
 
     qecho "Clearing key slot 10..."
     sudo cryptsetup luksKillSlot "$root_dev" "$KEY_SLOT" || true
@@ -133,20 +128,20 @@ function install() {
     clear_tpm_handle "$TPM_HANDLE"
 
     qecho "Sealing secret in TPM..."
-    sudo tpm2_createpolicy ${TPM_VERBOSITY_FLAG} --policy-pcr -l "$PCR_POLICY" \
+    sudo tpm2_createpolicy "${TPM_FLAGS[@]}" --policy-pcr -l "$PCR_POLICY" \
         -L "$POLICY_DIGEST_FILE"
 
-    sudo tpm2_createprimary ${TPM_VERBOSITY_FLAG} -C e -g sha1 -G rsa \
+    sudo tpm2_createprimary "${TPM_FLAGS[@]}" -C e -g sha1 -G rsa \
         -c "$PRIMARY_CTX_FILE"
 
-    sudo tpm2_create ${TPM_VERBOSITY_FLAG} -g sha256 -u "$OBJ_PUB_FILE" \
+    sudo tpm2_create "${TPM_FLAGS[@]}" -g sha256 -u "$OBJ_PUB_FILE" \
         -r "$OBJ_KEY_FILE" -C "$PRIMARY_CTX_FILE" -L "$POLICY_DIGEST_FILE" \
         -a "$OBJ_ATTR" -i "$SECRET_FILE"
 
-    sudo tpm2_load ${TPM_VERBOSITY_FLAG} -C "$PRIMARY_CTX_FILE" \
+    sudo tpm2_load "${TPM_FLAGS[@]}" -C "$PRIMARY_CTX_FILE" \
         -u "$OBJ_PUB_FILE" -r "$OBJ_KEY_FILE" -c "$LOAD_CTX_FILE"
 
-    sudo tpm2_evictcontrol ${TPM_VERBOSITY_FLAG} -C o -c "$LOAD_CTX_FILE" \
+    sudo tpm2_evictcontrol "${TPM_FLAGS[@]}" -C o -c "$LOAD_CTX_FILE" \
         "$TPM_HANDLE"
 
     sudo install -Dm 644 "$LUKS_DRACUT_CONF" "$DRACUT_CONF_DIR/luks-dracut.conf"
@@ -163,7 +158,7 @@ function install() {
 
 function post_install() {
     qecho "Enabling reseal-tpm.service..."
-    sudo systemctl $SYSTEMD_FLAGS enable reseal-tpm.service
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" reseal-tpm.service
 }
 
 function cleanup() {
