@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 INSTALL_CONF_DIR="$LAD_OS_DIR/conf/install"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -48,8 +48,7 @@ function check_conf() {
 function prepare() {
     ip link
     echo "Note that the name of this card may change when you boot into the system"
-    echo -n "Enter name of network card: "
-    read card
+    read -rp "Enter name of network card: " card
 
     echo "ctrl_interface=/run/wpa_supplicant" > /tmp/wpa_supplicant.conf
     echo "update_config=1" >> /tmp/wpa_supplicant.conf
@@ -59,9 +58,9 @@ function prepare() {
     fi
 
     echo "Opening wpa_supplicant file..."
-    read -p "Press enter to continue..."
+    read -rp "Press enter to continue..."
     if [[ "$EDITOR" != "" ]]; then
-        $EDITOR /tmp/wpa_supplicant.conf
+        "$EDITOR" /tmp/wpa_supplicant.conf
     else
         vim /tmp/wpa_supplicant.conf
     fi
@@ -69,29 +68,28 @@ function prepare() {
 
 function install() {
     qecho "Copying /tmp/wpa_supplicant.conf to /etc/wpa_supplciant/wpa_supplicant-${card}.conf..."
-    sudo install -Dm 600 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant-${card}.conf
+    sudo install -Dm 600 /tmp/wpa_supplicant.conf "/etc/wpa_supplicant/wpa_supplicant-${card}.conf"
 }
 
 function post_install() {
     qecho "Enabling wpa_supplicant@${card}.service and dhcpcd.service..."
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} wpa_supplicant@${card}.service
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} dhcpcd.service
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" "wpa_supplicant@${card}.service"
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" dhcpcd.service
     qecho "Enabled wpa_supplicant@${card}.service and dhcpcd.service"
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
-    rm -rf ${temp_files[@]}
+    qecho "Removing ${temp_files[*]}..."
+    rm -rf "${temp_files[@]}"
 }
 
 function uninstall() {
     ip link
-    echo -n "Enter name of network card: "
-    read card
+    read -rp "Enter name of network card: " card
 
     qecho "Disabling wpa_supplicant@${card}.service and dhcpcd.service..."
-    sudo systemctl -f disable ${SYSTEMD_FLAGS[*]} wpa_supplicant@${card}.service
-    sudo systemctl -f disable ${SYSTEMD_FLAGS[*]} dhcpcd.service
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" "wpa_supplicant@${card}.service"
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" dhcpcd.service
 
     qecho "Removing /etc/wpa_supplicant/wpa_supplicant-${card}.conf..." 
     sudo rm -rf "/etc/wpa_supplicant/wpa_supplicant-${card}.conf"
