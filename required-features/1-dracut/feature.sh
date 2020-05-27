@@ -4,11 +4,10 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-DRACUT_MAIN_CONF_PATH="$BASE_DIR/main-dracut.conf"
 DRACUT_CONF_DIR="/etc/dracut.conf.d"
 PACMAN_HOOKS_DIR="/etc/pacman.d/hooks"
 BIN_INSTALL_DIR="/usr/local/bin"
@@ -34,7 +33,7 @@ temp_files=("/tmp/main-dracut.conf" \
     "/tmp/main-cmdline.conf")
 
 depends_aur=()
-#depends_pacman=("dracut" "binutils")
+depends_pacman=("dracut" "binutils")
 depends_pip3=()
 
 
@@ -111,7 +110,7 @@ function get_cmdline() {
 }
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    for f in "${new_files[@]}"; do
         if [[ ! -f "$f" ]]; then
             echo "$f is missing" >&2
             echo "$feature_name is not installed" >&2
@@ -126,10 +125,10 @@ function check_install() {
 function prepare() {
     local drivers cmdline
 
-    vecho "Copying $DRACUT_MAIN_CONF_PATH to /tmp/main-dracut.conf..."
-    cp -f "$DRACUT_MAIN_CONF_PATH" /tmp/main-dracut.conf
+    vecho "Copying $BASE_DIR/main-dracut.conf to /tmp/main-dracut.conf..."
+    cp -f "$BASE_DIR/main-dracut.conf" /tmp/main-dracut.conf
 
-    drivers=( $(get_gpu_drivers) )
+    mapfile -t drivers < <(get_gpu_drivers)
     qecho "Adding ${drivers[*]} to main-dracut.conf..."
     echo "add_drivers+=\" ${drivers[*]} \"" >> /tmp/main-dracut.conf
 
@@ -162,7 +161,7 @@ function post_install() {
     install_ucode
 
     qecho "Generating image..."
-    sudo $BIN_INSTALL_DIR/dracut-install-default.sh
+    sudo "$BIN_INSTALL_DIR/dracut-install-default.sh"
 
     qecho "Disabling mkinitcpio pacman hooks..."
     disable_mkinitcpio
