@@ -1,0 +1,11 @@
+[Unit]
+Description=Notify user if new DWM or st commits are available to rebase from suckless every hour
+
+[Timer]
+OnStartupSec=10
+OnUnitActiveSec=3600
+
+Unit=suckless-notify.service
+
+[Install]
+WantedBy=default.target

@@ -1,9 +1,12 @@
 [Unit]
 Description=Restore desktop wallpaper using nitrogen on startup again after delay to fix visual glitch with compton
 Requires=nitrogen.service
+Requires=compton.service
+After=nitrogen.service
+After=compton.service
 
 [Service]
-ExecStartPre=-sleep 5s
+ExecStartPre=-sleep 1s
 ExecStart=nitrogen --restore
 Type=oneshot
 
