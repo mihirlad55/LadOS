@@ -61,10 +61,65 @@ function prompt() {
 }
 
 function print_usage() {
-    echo -n "usage: feature.sh [ -q | -v ] [ --no-service-start ] [ full | "
-    echo -n "full_no_check | name | desc | conflicts | check_conf | load_conf "
-    echo -n "| check_install | prepare | install | uninstall | post_install | "
-    echo "cleanup | install_dependencies | check_conflicts | help ]"
+    echo "usage: $0 [ -q | -v ] [ --no-service-start ] <action>"
+    echo
+    echo "  Actions:"
+    echo "    full                  Do a full install of the feature including"
+    echo "                          the following actions in the specified"
+    echo "                          order: check_conflicts, check_conf,"
+    echo "                          load_conf, install_dependencies, prepare,"
+    echo "                          install, post_install, check_install"
+    echo
+    echo "    full_no_check         Do a full install as specified above, but"
+    echo "                          without a install check"
+    echo
+    echo "    name                  Print name of feature"
+    echo
+    echo "    desc                  Print description of feature"
+    echo
+    echo "    conflicts             Print names of features this feature"
+    echo "                          conflicts with"
+    echo
+    echo "    check_conf            Check if feature's configuration is set"
+    echo "                          correctly"
+    echo
+    echo "    load_conf             Load the feature's configuration. Note:"
+    echo "                          if this feature's configuration is loaded"
+    echo "                          into memory and not as files, the"
+    echo "                          configuration will not persist for any"
+    echo "                          actions that follow"
+    echo
+    echo "    check_install         Check if the feature is installed correctly"
+    echo
+    echo "    prepare               Prepare the feature for installation. This"
+    echo "                          step involves no permenant changes to your"
+    echo "                          system"
+    echo
+    echo "    install               Install the feature"
+    echo
+    echo "    uninstall             Uninstall the feature"
+    echo
+    echo "    post_install          Perform post-installation actions such as"
+    echo "                          enabling services"
+    echo
+    echo "    cleanup               Remove temporary files and any artifacts"
+    echo "                          produced by any other feature actions that"
+    echo "                          were only required by the installation"
+    echo
+    echo "    install_dependencies  Install pacman, AUR, or python packages"
+    echo "                          that this feature depends on"
+    echo
+    echo "    check_conflicts       Check if any conflicting features are"
+    echo "                          installed"
+    echo
+    echo "    help                  Display this message"
+    echo
+    echo
+    echo "  Options:"
+    echo "   --no-service-start     Don't start systemd services"
+    echo "   -q                     Hide normal output"
+    echo "   -v                     Show verbose output"
+    echo
 }
 
 function check_conflicts() {
