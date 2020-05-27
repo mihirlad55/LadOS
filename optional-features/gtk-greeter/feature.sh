@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 CONF_DIR="$LAD_OS_DIR/conf/gtk-greeter"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -47,18 +47,19 @@ function install() {
     qecho "Changing greeter session in /etc/lightdm/lightdm.conf"
     sudo sed -i 's/#*greeter-session=.*$/greeter-session=lightdm-gtk-greeter/' /etc/lightdm/lightdm.conf
 
-    if [[ -f "$CONF_DIR/user.png" ]]; then
-        sudo install -Dm 644 "$CONF_DIR/user.png" /var/lib/AccountsService/icons/$USER.png
-    fi
-
     qecho "Creating /var/lib/AccountsService/user/$USER ini"
-    echo "[User]" | sudo tee /var/lib/AccountsService/users/$USER > /dev/null
+    echo "[User]" | sudo tee "/var/lib/AccountsService/users/$USER" > /dev/null
     echo "Icon=/var/lib/AccountsService/icons/$USER.png" | 
-        sudo tee -a /var/lib/AccountsService/users/$USER > /dev/null
+        sudo tee -a "/var/lib/AccountsService/users/$USER" > /dev/null
 
     if [[ -f "$CONF_DIR/login.png" ]]; then
         qecho "Copying login.png from $CONF_DIR to /usr/share/backgrounds/"
-        sudo install -Dm 644 $CONF_DIR/login.png /usr/share/backgrounds/login.png
+        sudo install -Dm 644 "$CONF_DIR/login.png" /usr/share/backgrounds/login.png
+    fi
+
+    if [[ -f "$CONF_DIR/user.png" ]]; then
+        qecho "Copying user.png from $CONF_DIR to /var/lib/AccountsService/icons..."
+        sudo install -Dm 644 "$CONF_DIR/user.png" "/var/lib/AccountsService/icons/$USER.png"
     fi
 
     echo "To change greeter avatar, copy png to /var/lib/AccountsService/icons/$USER.png"
@@ -71,7 +72,7 @@ function install() {
 function uninstall() {
     sudo sed -i 's/^greeter-session=lightdm-gtk-greeter$/#greeter-session=/' /etc/lightdm/lightdm.conf
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     rm -f "${new_files[@]}"
 }
 
