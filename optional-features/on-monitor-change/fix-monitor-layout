@@ -7,15 +7,15 @@ monitors=$(xrandr | grep -P -e "\bconnected\b" | cut -d' ' -f1)
 IFS=$'\n'
 
 for mon in $monitors; do
-    if [ $mon = $default_mon ]; then
+    if [ "$mon" = "$default_mon" ]; then
         continue
     fi
 
-    echo Trying to fix output $mon...
-    xrandr --output $mon --mode 1920x1080 --above eDP1 --primary -v -d :0
-    res=$?
+    echo "Trying to fix output $mon..."
+    xrandr --output "$mon" --mode 1920x1080 --above eDP1 --primary -v -d :0
+    res="$?"
 
-    if [ $res -eq 0 ]; then
+    if [ "$res" -eq 0 ]; then
         echo "Succesfully fixed output $mon"
         echo "Restarting polybar.service"
         systemctl --user restart polybar.service
