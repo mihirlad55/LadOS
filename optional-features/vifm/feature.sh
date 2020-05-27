@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 EPUB_THUMBNAILER_URL="https://github.com/marianosimone/epub-thumbnailer"
 
@@ -40,7 +40,7 @@ function check_install() {
 function install() {
     if [[ ! -d "/tmp/epub-thumbnailer" ]]; then
         qecho "Cloning epub-thumbnailer..."
-        git clone --depth 1 $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+        git clone --depth 1 "${V_FLAGS[@]}" "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
     fi
 
     qecho "Installing epub-thumbnailer..."
@@ -48,8 +48,8 @@ function install() {
     sudo python /tmp/epub-thumbnailer/install.py install || true
 
     qecho "Installing vifmimg and vifmrun..."
-    sudo install -Dm 755 $BASE_DIR/vifmrun /usr/local/bin/vifmrun
-    command install -Dm 755 $BASE_DIR/vifmimg $HOME/.vifm/scripts/vifmimg
+    sudo install -Dm 755 "$BASE_DIR/vifmrun" /usr/local/bin/vifmrun
+    command install -Dm 755 "$BASE_DIR/vifmimg" "$HOME/.vifm/scripts/vifmimg"
 
     qecho "Updating vifm.desktop..."
     sudo sed -i 's/Exec=vifm\b/Exec=vifmrun/' /usr/share/applications/vifm.desktop
@@ -63,14 +63,14 @@ function cleanup() {
 function uninstall() {
     if [[ ! -d "/tmp/epub-thumbnailer" ]]; then
         qecho "Cloning epub-thumbnailer..."
-        git clone --depth 1 $VERBOSITY_FLAG "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+        git clone --depth 1 "${V_FLAGS[@]}" "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
     fi
 
     qecho "Uninstalling epub-thumbnailer..."
     sudo python /tmp/epub-thumbnailer/install.py uninstall
     sudo rm -rf /tmp/epub-thumbnailer
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -f "${new_files[@]}"
 
     qecho "Reverting vifm.desktop..."
