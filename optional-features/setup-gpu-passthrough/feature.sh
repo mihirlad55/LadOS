@@ -4,7 +4,7 @@
 # Get absolute path to directory of script
 BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -23,7 +23,7 @@ depends_pacman=()
 
 
 function check_install() {
-    for mod in ${NEW_MODULES[@]}; do
+    for mod in "${NEW_MODULES[@]}"; do
         if ! grep -q /etc/mkinitcpio.conf -e "$mod"; then
             echo "$mod is missing from mkinitcpio.conf" >&2
             echo "$feature_name is not installed" >&2
@@ -42,11 +42,11 @@ function check_install() {
 }
 
 function install() {
-    qecho "Adding ${NEW_MODULES[@]} to /etc/mkinitcpio.conf, if not present"
+    qecho "Adding ${NEW_MODULES[*]} to /etc/mkinitcpio.conf, if not present"
     source /etc/mkinitcpio.conf
-    for module in ${NEW_MODULES[@]}; do
-        if ! echo ${MODULES[@]} | grep -q -e "$module"; then
-            vecho $MODULES
+    for module in "${NEW_MODULES[@]}"; do
+        if ! echo "${MODULES[*]}" | grep -q -e "$module"; then
+            vecho "$MODULES"
             vecho "$module not found in mkinitcpio.conf"
 
             vecho "Adding $module to mkinitcpio.conf"
@@ -57,14 +57,14 @@ function install() {
     done
 
     qecho "Updating /etc/mkinitcpio.conf..."
-    MODULES_LINE="MODULES=(${MODULES[@]})"
+    MODULES_LINE="MODULES=(${MODULES[*]})"
     sudo sed -i '/etc/mkinitcpio.conf' -e "s/^MODULES=([a-z0-9 ]*)$/$MODULES_LINE/"
 
     qecho "Rebuilding initframfs..."
     sudo mkinitcpio --nocolor -P linux
 
     qecho "Copying nothunderbolt.conf to /etc/modprobe.d..."
-    sudo install -Dm 644 $BASE_DIR/nothunderbolt.conf /etc/modprobe.d/nothunderbolt.conf
+    sudo install -Dm 644 "$BASE_DIR/nothunderbolt.conf" /etc/modprobe.d/nothunderbolt.conf
 
     qecho "Done"
     echo "Make sure you have virtualization enabled in your BIOS"
@@ -76,7 +76,7 @@ function uninstall() {
         sudo sed -i /etc/mkinitcpio.conf -e "s/$mod //"
     done
 
-    qecho "Removing ${new_files[@]}..."
+    qecho "Removing ${new_files[*]}..."
     sudo rm -f "${new_files[@]}"
 }
 
