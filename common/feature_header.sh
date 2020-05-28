@@ -11,12 +11,12 @@ set -o pipefail
 trap error_trap ERR
 
 
-# Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-# Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
-REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
-OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
+# Absolute path to directory of script defined in file that sources this
+readonly BASE_DIR
+# Absolute path to root of repo defined in file that sources this
+readonly LAD_OS_DIR
+readonly REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
+readonly OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 
 VERBOSE=
 QUIET=
@@ -24,18 +24,42 @@ V_FLAG=()     # Verbosity flag and also use arrays to avoid SC2086
 S_FLAG=()     # Silent flag
 SYSTEMD_FLAGS=("-f")
 
+if [[ "$1" = "-v" ]]; then
+    VERBOSE=1
+    V_FLAG=()
+    S_FLAG=()
+    shift
+elif [[ "$1" = "-q" ]]; then
+    QUIET=1
+    V_FLAG=("-q")
+    S_FLAG=("-s")
+    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "-q")
+    shift
+fi
+
+if [[ "$1" = "--no-service-start" ]]; then
+    shift
+else
+    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "--now")
+fi
+
+readonly VERBOSE QUIET V_FLAG S_FLAG SYSTEMD_FLAGS
+
+
 ## Set in file that sources this file ##
-feature_name=
-feature_desc=
-conflicts=()
-provides=()
-new_files=()
-modified_files=()
-temp_files=()
-depends_aur=()
-depends_pacman=()
-depends_pip3=()
+#FEATURE_NAME=
+#FEATURE_DESC=
+#CONFLICTS=()
+#PROVIDES=()
+#NEW_FILES=()
+#MODIFIED_FILES=()
+#TEMP_FILES=()
+#DEPENDS_AUR=()
+#DEPENDS_PACMAN=()
+#DEPENDS_PIP3=()
 ########################################
+
+
 
 # If user is root or sudo does not exist, don't use sudo
 shopt -s expand_aliases
@@ -137,7 +161,7 @@ function check_conflicts() {
             "$REQUIRED_FEATURES_DIR"/"$c"/feature.sh -q check_install &> /dev/null ||
             [[ -d "$OPTIONAL_FEATURES_DIR/$c" ]] &&
             "$OPTIONAL_FEATURES_DIR"/"$c"/feature.sh -q check_install &> /dev/null; then
-            qecho "Cannot install $feature_name. It conflicts with $c"
+            qecho "Cannot install $FEATURE_NAME. It conflicts with $c"
             return 1
         fi
     done
@@ -146,7 +170,7 @@ function check_conflicts() {
 }
 
 function has_dependencies() {
-    if [[ "${depends_pacman[*]}${depends_aur[*]}${depends_pip3[*]}" = "" ]]; then
+    if [[ "${DEPENDS_PACMAN[*]}${DEPENDS_AUR[*]}${DEPENDS_PIP3[*]}" = "" ]]; then
         return 1
     else
         return 0
@@ -154,64 +178,45 @@ function has_dependencies() {
 }
 
 function install_dependencies() {
-    if [[ "${depends_pacman[*]}" != "" ]]; then
-        qecho "Installing ${depends_pacman[*]}..."
+    if [[ "${DEPENDS_PACMAN[*]}" != "" ]]; then
+        qecho "Installing ${DEPENDS_PACMAN[*]}..."
         # Reinstall warnings go to stderr
-        sudo pacman -S "${depends_pacman[@]}" --noconfirm --needed
+        sudo pacman -S "${DEPENDS_PACMAN[@]}" --noconfirm --needed
     fi
 
-    if [[ "${depends_aur[*]}" != "" ]]; then
-        qecho "Installing ${depends_aur[*]}..."
-        yay -S "${depends_aur[@]}" --noconfirm --needed
+    if [[ "${DEPENDS_AUR[*]}" != "" ]]; then
+        qecho "Installing ${DEPENDS_AUR[*]}..."
+        yay -S "${DEPENDS_AUR[@]}" --noconfirm --needed
     fi
 
-    if [[ "${depends_pip3[*]}" != "" ]]; then
+    if [[ "${DEPENDS_PIP3[*]}" != "" ]]; then
         if ! command -v pip3 > /dev/null; then
             sudo pacman -S python-pip --noconfirm --needed
         fi
 
-        qecho "Installing ${depends_pip3[*]}..."
-        sudo pip3 install "${depends_pip3[@]}"
+        qecho "Installing ${DEPENDS_PIP3[*]}..."
+        sudo pip3 install "${DEPENDS_PIP3[@]}"
     fi
 }
 
 function uninstall_dependencies() {
-    if [[ "${depends_pacman[*]}" != "" ]]; then
-        qecho "Uninstalling ${depends_pacman[*]}..."
-        sudo pacman -Rsu "${depends_pacman[@]}" --noconfirm
+    if [[ "${DEPENDS_PACMAN[*]}" != "" ]]; then
+        qecho "Uninstalling ${DEPENDS_PACMAN[*]}..."
+        sudo pacman -Rsu "${DEPENDS_PACMAN[@]}" --noconfirm
     fi
 
-    if [[ "${depends_aur[*]}" != "" ]]; then
-        qecho "Installing ${depends_aur[*]}..."
+    if [[ "${DEPENDS_AUR[*]}" != "" ]]; then
+        qecho "Installing ${DEPENDS_AUR[*]}..."
         # Some normal output goes to stderr
-        yay -Rsu "${depends_aur[@]}" --noconfirm
+        yay -Rsu "${DEPENDS_AUR[@]}" --noconfirm
     fi
 
-    if [[ "${depends_pip3[*]}" != "" ]]; then
-        qecho "Installing ${depends_pip3[*]}..."
-        sudo pip3 uninstall "${depends_pip3[@]}"
+    if [[ "${DEPENDS_PIP3[*]}" != "" ]]; then
+        qecho "Installing ${DEPENDS_PIP3[*]}..."
+        sudo pip3 uninstall "${DEPENDS_PIP3[@]}"
     fi
 }
 
-
-if [[ "$1" = "-v" ]]; then
-    VERBOSE=1
-    V_FLAG=()
-    S_FLAG=()
-    shift
-elif [[ "$1" = "-q" ]]; then
-    QUIET=1
-    V_FLAG=("-q")
-    S_FLAG=("-s")
-    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "-q")
-    shift
-fi
-
-if [[ "$1" = "--no-service-start" ]]; then
-    shift
-else
-    SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "--now")
-fi
 
 if [[ "$#" -ne 1 ]]; then
     print_usage
