@@ -23,6 +23,7 @@ QUIET=
 V_FLAG=()     # Verbosity flag and also use arrays to avoid SC2086
 S_FLAG=()     # Silent flag
 SYSTEMD_FLAGS=("-f")
+GIT_FLAGS=("--depth 1")
 
 if [[ "$1" = "-v" ]]; then
     VERBOSE=1
@@ -34,6 +35,7 @@ elif [[ "$1" = "-q" ]]; then
     V_FLAG=("-q")
     S_FLAG=("-s")
     SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "-q")
+    GIT_FLAGS=("${GIT_FLAGS[@]}" "${V_FLAG[@]}")
     shift
 fi
 
@@ -43,7 +45,7 @@ else
     SYSTEMD_FLAGS=("${SYSTEMD_FLAGS[@]}" "--now")
 fi
 
-readonly VERBOSE QUIET V_FLAG S_FLAG SYSTEMD_FLAGS
+readonly VERBOSE QUIET V_FLAG S_FLAG SYSTEMD_FLAGS GIT_FLAGS
 
 
 ## Set in file that sources this file ##
