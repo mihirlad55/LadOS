@@ -1,66 +1,76 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
-CONF_DIR="$LAD_OS_DIR/conf/webkit2-greeter"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly CONF_DIR="$LAD_OS_DIR/conf/webkit2-greeter"
+readonly CONF_BG_DIR="$CONF_DIR/backgrounds"
+readonly CONF_USER_PNG="$CONF_DIR/user.png"
+readonly NEW_USER_PNG="/var/lib/AccountsService/icons/$USER.png"
+readonly NEW_LOGIN_PNG="/usr/share/backgrounds/login.png"
+readonly NEW_USER_INI="/var/lib/AccountsService/users/$USER"
+readonly MOD_LIGHTDM_CONF="/etc/lightdm/lightdm.conf"
+readonly MOD_BG_DIR="/usr/share/backgrounds"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="webkit2-greeter"
-feature_desc="Install lightdm-webkit2-greeter with user avatar and background"
+readonly FEATURE_NAME="LightDM Webkit2 Greeter"
+readonly FEATURE_DESC="Install lightdm-webkit2-greeter with user avatar and \
+background"
+readonly CONFLICTS=(gtk-greeter)
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$NEW_USER_INI" \
+    "$NEW_USER_PNG" \
+    "$NEW_LOGIN_PNG" \
+)
+readonly MODIFIED_FILES=( \
+    "$MOD_LIGHTDM_CONF" \
+    "$MOD_BG_DIR" \
+)
+readonly TEMP_FILES=()
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(lightdm-webkit2-greeter accountsservice)
+readonly DEPENDS_PIP3=()
 
-conflicts=(gtk-greeter)
-
-provides=()
-new_files=("/var/lib/AccountsService/users/$USER" \
-    "/var/lib/AccountsService/icons/$USER.png")
-modified_files=("/etc/lightdm/lightdm.conf" \
-    "/usr/share/backgrounds")
-temp_files=()
-
-depends_aur=()
-depends_pacman=(lightdm-webkit2-greeter accountsservice)
-depends_pip3=()
 
 
 function check_install() {
-    if grep -q /etc/lightdm/lightdm.conf -e "^greeter-session=lightdm-webkit2-greeter$" &&
+    if grep -q "$MOD_LIGHTDM_CONF" -e "^greeter-session=lightdm-webkit2-greeter$" &&
         pacman -Q lightdm-webkit2-greeter > /dev/null; then
-        qecho "$feature_name is installed"
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
-
 }
 
 function install() {
-    qecho "Changing greeter session in /etc/lightdm/lightdm.conf"
-    sudo sed -i 's/#*greeter-session=.*$/greeter-session=lightdm-webkit2-greeter/' /etc/lightdm/lightdm.conf
+    qecho "Changing greeter session in $MOD_LIGHTDM_CONF"
+    sudo sed \ 
+        -i 's/#*greeter-session=.*$/greeter-session=lightdm-webkit2-greeter/' \
+        "$MOD_LIGHTDM_CONF"
 
-    if [[ -f "$CONF_DIR/user.png" ]]; then
-        sudo install -Dm 644 "$CONF_DIR/user.png" "/var/lib/AccountsService/icons/$USER.png"
-    else
-        echo "To change greeter avatar, copy png to /var/lib/AccountsService/icons/$USER.png"
+    if [[ -f "$CONF_USER_PNG" ]]; then
+        qecho "Copying user.png from $CONF_DIR to $NEW_USER_PNG..."
+        sudo install -Dm 644 "$CONF_DIR/user.png" "$NEW_USER_PNG"
     fi
 
-    qecho "Creating /var/lib/AccountsService/user/$USER ini"
-    echo "[User]" | sudo tee "/var/lib/AccountsService/users/$USER" > /dev/null
-    echo "Icon=/var/lib/AccountsService/icons/$USER.png" | 
-        sudo tee -a "/var/lib/AccountsService/users/$USER" > /dev/null
+    qecho "Creating $NEW_USER_INI ini"
+    echo "[User]" | sudo tee "$NEW_USER_INI" > /dev/null
+    echo "Icon=$NEW_LOGIN_PNG" | sudo tee -a "$NEW_USER_INI" > /dev/null
 
-    if [[ "$(ls "$CONF_DIR/backgrounds")" != "" ]]; then
-        qecho "Copying backgrounds from $CONF_DIR/backgrounds to /usr/share/backgrounds/"
-        sudo install -m 644 "$CONF_DIR"/backgrounds/* /usr/share/backgrounds/
+    if [[ "$(ls "$CONF_BG_DIR")" != "" ]]; then
+        qecho "Copying backgrounds from $CONF_BG_DIR to $MOD_BG_DIR..."
+        sudo install -m 644 "$CONF_BG_DIR"/* "$MOD_BG_DIR"
         qecho "You will have to set the background from the login screen"
-    else
-        echo "To add backgrounds, copy backgrounds to /usr/share/backgrounds"
-        echo "Make sure the avatar and background are readable by everyone"
     fi
+
+    echo "To change greeter avatar, copy png to $NEW_USER_PNG"
+    echo "To add backgrounds, copy backgrounds to $MOD_BG_DIR..."
+    echo "Make sure the avatar and avatar are readable by everyone"
 
     qecho "Done installing lightdm-webkit2-greeter"
 }
@@ -68,15 +78,19 @@ function install() {
 function uninstall() {
     local backgrounds
 
-    qecho "Removing ${new_files[*]}..."
-    rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    rm -f "${NEW_FILES[@]}"
 
     qecho "Changing greeter session in /etc/lightdm/lightdm.conf"
-    sudo sed -i 's/greeter-session=lightdm-webkit2-greeter$/#greeter-session=/' /etc/lightdm/lightdm.conf
+    sudo sed \
+        -i 's/greeter-session=lightdm-webkit2-greeter$/#greeter-session=/' \
+        "$MOD_LIGHTDM_CONF"
 
     qecho "Removing backgrounds from /usr/share/backgrounds..."
-    mapfile -t backgrounds < <(cd "$CONF_DIR/backgrounds" && find . -not -path '*/\.*' -type f)
-    (cd /usr/share/backgrounds && rm -rf "${backgrounds[@]}")
+    mapfile -t backgrounds < <(cd "$CONF_BG_DIR" && find . -not -path '*/\.*' \
+        -type f)
+
+    (cd "$MOD_BG_DIR" && rm -rf "${backgrounds[@]}")
 }
 
 
