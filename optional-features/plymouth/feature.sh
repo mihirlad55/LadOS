@@ -1,61 +1,67 @@
 #!/usr/bin/bash
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
-DRACUT_CONF_DIR="/etc/dracut.conf.d"
-CMDLINE_DIR="/etc/cmdline.d"
-CMDLINE_FILE="$CMDLINE_DIR/plymouth.conf"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly BASE_DEUS_EX_DIR="$BASE_DIR/deus_ex"
+readonly BASE_PLYMOUTHD_CONF="$BASE_DIR/plymouthd.conf"
+readonly BASE_CMDLINE_CONF="$BASE_DIR/plymouth-cmdline.conf"
+readonly BASE_DRACUT_CONF="$BASE_DIR/plymouth-dracut.conf"
+readonly NEW_CMDLINE_CONF="/etc/cmdline.d/plymouth.conf"
+readonly NEW_DRACUT_CONF="/etc/dracut.conf.d/plymouth-dracut.conf"
+readonly NEW_DEUS_EX_DIR="/usr/share/plymouth/themes/deus_ex"
+readonly MOD_PLYMOUTHD_CONF="/etc/plymouth/plymouthd.conf"
+readonly DRACUT_INSTALL_SH="/usr/local/bin/dracut-install-default.sh"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="plymouth"
-feature_desc="Install plymouth with deus_ex theme"
+readonly FEATURE_NAME="Plymouth"
+readonly FEATURE_DESC="Install plymouth with deus_ex theme"
 
-provides=()
-new_files=(
-    "/usr/share/plymouth/themes/deus_ex" \
-    "$DRACUT_CONF_DIR/plymouth-dracut.conf" \
-    "$CMDLINE_FILE" \
+readonly PROVIDES=()
+readonly NEW_FILES=(
+    "$NEW_DEUS_EX_DIR" \
+    "$NEW_DRACUT_CONF" \
+    "$NEW_CMDLINE_CONF" \
 )
-modified_files=("/etc/plymouth/plymouthd.conf")
+readonly MODIFIED_FILES=("$MOD_PLYMOUTHD_CONF")
     
-temp_files=()
+readonly TEMP_FILES=()
 
-depends_aur=(plymouth)
-depends_pacman=()
+readonly DEPENDS_AUR=(plymouth)
+readonly DEPENDS_PACMAN=()
 
 
 
 function check_install() {
-    if diff "$BASE_DIR/deus_ex" /usr/share/plymouth/themes/deus_ex &&
-        diff "$BASE_DIR/plymouthd.conf" /etc/plymouth/plymouthd.conf &&
-        diff "$BASE_DIR/plymouth-dracut.conf" "$DRACUT_CONF_DIR/plymouth-dracut.conf" &&
-        diff "$BASE_DIR/plymouth-cmdline.conf" "$CMDLINE_FILE"; then
-        qecho "$feature_name is installed"
+    if diff "$BASE_DEUS_EX_DIR" "$NEW_DEUS_EX_DIR" &&
+        diff "$BASE_PLYMOUTHD_CONF" "$MOD_PLYMOUTHD_CONF" &&
+        diff "$BASE_DRACUT_CONF" "$NEW_DRACUT_CONF" &&
+        diff "$BASE_CMDLINE_CONF" "$NEW_CMDLINE_CONF"; then
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
 }
 
 function install() {
     qecho "Copying theme..."
-    sudo cp -rft /usr/share/plymouth/themes "$BASE_DIR/deus_ex"
+    sudo cp -rfT "$BASE_DEUS_EX_DIR" "$NEW_DEUS_EX_DIR"
 
-    qecho "Copying plymouth.d..."
-    sudo install -Dm 644 "$BASE_DIR/plymouthd.conf" /etc/plymouth/plymouthd.conf
+    qecho "Copying $BASE_PLYMOUTHD_CONF to $MOD_PLYMOUTHD_CONF..."
+    sudo install -Dm 644 "$BASE_PLYMOUTHD_CONF" "$MOD_PLYMOUTHD_CONF"
 
-    qecho "Copying plymouth-dracut.conf to $DRACUT_CONF_DIR..."
-    sudo install -Dm 644 "$BASE_DIR/plymouth-dracut.conf" "$DRACUT_CONF_DIR/plymouth-dracut.conf"    
+    qecho "Copying $BASE_DRACUT_CONF to $NEW_DRACUT_CONF..."
+    sudo install -Dm 644 "$BASE_DRACUT_CONF" "$NEW_DRACUT_CONF"    
 
-    qecho "Copying plymouth-cmdline.conf to $CMDLINE_DIR..."
-    sudo install -Dm 644 "$BASE_DIR/plymouth-cmdline.conf" "$CMDLINE_FILE"
+    qecho "Copying $BASE_CMDLINE_CONF to $NEW_CMDLINE_CONF..."
+    sudo install -Dm 644 "$BASE_CMDLINE_CONF" "$NEW_CMDLINE_CONF"
 
     qecho "Updating image..."
-    sudo /usr/local/bin/dracut-install-default.sh
+    sudo "$DRACUT_INSTALL_SH"
 }
 
 function post_install() {
@@ -72,14 +78,14 @@ function uninstall() {
     qecho "Enabling lightdm.service..."
     sudo systemctl enable "${SYSTEMD_FLAGS[@]}" lightdm
 
-    qecho "Removing ${new_files[*]}..."
-    rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    rm -f "${NEW_FILES[@]}"
 
-    qecho "Removing /etc/plymouth/plymouthd.conf..."
-    rm -f "/etc/plymouth/plymouthd.conf"
+    qecho "Removing $MOD_PLYMOUTHD_CONF..."
+    rm -f "$MOD_PLYMOUTHD_CONF"
 
     qecho "Updating image..."
-    sudo /usr/local/bin/dracut-install-default.sh
+    sudo "$DRACUT_INSTALL_SH"
 }
 
 
