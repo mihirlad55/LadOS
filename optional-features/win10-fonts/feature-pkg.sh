@@ -1,43 +1,43 @@
 #!/usr/bin/bash
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="win10-fonts"
-feature_desc="Install windows 10 fonts (using localrepo)"
+FEATURE_NAME="Windows 10 TTF Fonts (pkg)"
+FEATURE_DESC="Install windows 10 fonts (using localrepo)"
+PROVIDES=(ttf-ms-win10)
+NEW_FILES=()
+MODIFIED_FILES=()
+TEMP_FILES=()
+DEPENDS_AUR=()
+DEPENDS_PACMAN=()
+DEPENDS_PIP3=()
 
-provides=(ttf-ms-win10)
-new_files=()
-modified_files=()
-temp_files=()
-
-depends_aur=()
-depends_pacman=()
-depends_pip3=()
 
 
 function check_install() {
     if pacman -Q ttf-ms-win10 > /dev/null; then
-        qecho "$feature_name is installed"
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed"
+        echo "$FEATURE_NAME is not installed"
         return 1
     fi
 
 }
 
 function install() {
-    sudo pacman -S "${provides[@]}" --noconfirm --needed
+    qecho "Installing ttf-ms-win10..."
+    sudo pacman -S "${PROVIDES[@]}" --noconfirm --needed
 }
 
 function uninstall() {
     qecho "Uninstalling ttf-ms-win10..."
-    sudo pacman -Rsu --noconfirm "${provides[@]}"
+    sudo pacman -Rsu --noconfirm "${PROVIDES[@]}"
 }
 
 
