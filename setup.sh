@@ -1,33 +1,47 @@
 #!/usr/bin/bash
 
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-FIXES_DIR="$BASE_DIR/fixes"
-REQUIRED_FEATURES_DIR="$BASE_DIR/required-features"
-OPTIONAL_FEATURES_DIR="$BASE_DIR/optional-features"
-SCRIPTS_DIR="$BASE_DIR/scripts"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly FIXES_DIR="$BASE_DIR/fixes"
+readonly REQUIRED_FEATURES_DIR="$BASE_DIR/required-features"
+readonly OPTIONAL_FEATURES_DIR="$BASE_DIR/optional-features"
+readonly SCRIPTS_DIR="$BASE_DIR/scripts"
 
 
 function show_menu() {
-    local option=0
+    local option num_of_options i name name_idx func_idx
 
     title="-----$1-----"
     shift
 
-    local num_of_options=$(($#/2))
+    option=0
+    num_of_options=$(( $# / 2 ))
 
     while true; do
-        local i=1
-        echo $title
-        while [[ "$i" -le $num_of_options ]]; do
-            local name=$(($i*2-1))
-            echo "$i. ${!name}"
-            i=$(($i+1))
-        done
-        echo -n "Option: "
-        read option
+        i=1
 
-        func_num=$(($option*2))
-        eval ${!func_num}
+        echo "$title"
+
+        while (( i <= num_of_options )); do
+            name_idx="$(( i * 2 - 1 ))"
+            name="${!name_idx}"
+
+            echo "$i. $name"
+
+            i=$(( i + 1 ))
+        done
+
+        read -rp "Option: " option
+
+        if echo "$option" | grep -q -P "^[0-9]+$"; then
+            if (( option > num_of_options )); then
+                continue
+            fi
+        else
+            continue
+        fi
+
+        func_idx=$(( option * 2 ))
+        "${!func_idx}"
     done
 }
 
@@ -38,7 +52,7 @@ function main_menu() {
         "Install Optional Features" "optional_features_menu" \
         "Fixes" "fixes_menu" \
         "Scripts" "scripts_menu" \
-        "Exit" "exit 0"
+        "Exit" "exit"
 }
 
 function install_arch() {
@@ -63,46 +77,44 @@ function scripts_menu() {
 }
 
 function required_features_menu() {
-    features=$(ls $REQUIRED_FEATURES_DIR)
-    
-    IFS=$'\n'
+    local features menu_cmd feature feature_path name desc
 
-    menu_cmd=""
+    mapfile -t features < <(ls "$REQUIRED_FEATURES_DIR")
 
-    for feature in $features; do
-        name="$($REQUIRED_FEATURES_DIR/$feature/feature.sh name)"
-        desc="$($REQUIRED_FEATURES_DIR/$feature/feature.sh desc)"
-        menu_option="$name,$REQUIRED_FEATURES_DIR/$feature/feature.sh full" 
-        menu_cmd="${menu_cmd}${menu_option},"
+    menu_cmd=()
+
+    for feature in "${features[@]}"; do
+        feature_path="$REQUIRED_FEATURES_DIR/$feature/feature.sh"
+
+        name="$("$feature_path" name)"
+        desc="$("$feature_path" desc)"
+        menu_cmd=("${menu_cmd[@]}" "$name" "$feature_path full")
     done
 
-    IFS=$','
-
     show_menu "Install Required Features" \
-        $menu_cmd \
+        "${menu_cmd[@]}" \
         "Go Back" "return"
 }
 
 function optional_features_menu() {
-    features=$(ls $OPTIONAL_FEATURES_DIR)
-    
-    IFS=$'\n'
+    local features menu_cmd feature feature_path name desc
 
-    menu_cmd=""
+    mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
-    for feature in $features; do
-        name="$($OPTIONAL_FEATURES_DIR/$feature/feature.sh name)"
-        desc="$($OPTIONAL_FEATURES_DIR/$feature/feature.sh desc)"
-        menu_option="$name,$OPTIONAL_FEATURES_DIR/$feature/feature.sh full" 
-        menu_cmd="${menu_cmd}${menu_option},"
+    menu_cmd=()
+
+    for feature in "${features[@]}"; do
+        feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
+
+        name="$("$feature_path" name)"
+        desc="$("$feature_path" desc)"
+        menu_cmd=("${menu_cmd[@]}" "$name" "$feature_path full")
     done
 
-    IFS=$','
-
     show_menu "Install Optional Features" \
-        $menu_cmd \
+        "${menu_cmd[@]}" \
         "Go Back" "return"
 }
 
-main_menu
 
+main_menu
