@@ -12,18 +12,19 @@ function error_trap() {
 
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 
-ISO_NAME="LadOS"
-ISO_PUBLISHER="Mihir Lad <https://mihirlad.com"
-ISO_APPLICATION="LadOS Linux Live CD"
-ISO_OUT_DIR="$BASE_DIR"
+readonly ISO_NAME="LadOS"
+readonly ISO_PUBLISHER="Mihir Lad <https://mihirlad.com"
+readonly ISO_APPLICATION="LadOS Linux Live CD"
+readonly ISO_OUT_DIR="$BASE_DIR"
 
 VERBOSE=
-V_FLAG=
-Q_FLAG="-q"
+GIT_FLAGS=("--depth 1")
+V_FLAG=()
+Q_FLAG=("-q")
 
 source "$LAD_OS_DIR/common/message.sh"
 
@@ -83,26 +84,40 @@ function vecho() {
 }
 
 function show_menu() {
-    local option=0
+    local option num_of_options i name name_idx func_idx
 
     title="-----$1-----"
     shift
 
-    local num_of_options=$(($#/2))
+    option=0
+    num_of_options=$(( $# / 2 ))
 
     while true; do
-        local i=1
-        echo $title
-        while [[ "$i" -le $num_of_options ]]; do
-            local name=$(($i*2-1))
-            echo "$i. ${!name}"
-            i=$(($i+1))
-        done
-        echo -n "Option: "
-        read option
+        i=1
 
-        func_num=$(($option*2))
-        eval ${!func_num}
+        echo "$title"
+
+        while (( i <= num_of_options )); do
+            name_idx="$(( i * 2 - 1 ))"
+            name="${!name_idx}"
+
+            echo "$i. $name"
+
+            i=$(( i + 1 ))
+        done
+
+        read -rp "Option: " option
+
+        if echo "$option" | grep -q -P "^[0-9]+$"; then
+            if (( option > num_of_options )); then
+                continue
+            fi
+        else
+            continue
+        fi
+
+        func_idx=$(( option * 2 ))
+        "${!func_idx}"
     done
 }
 
@@ -111,16 +126,20 @@ function is_arch_user() {
 }
 
 function make_recovery() {
-    local RECOVERY_DIR="/var/tmp/recovery"
-    local AIROOTFS_DIR="$RECOVERY_DIR/airootfs"
+    local -r RECOVERY_DIR AIROOTFS_DIR
     local install_dir
 
+    RECOVERY_DIR="/var/tmp/recovery"
+    AIROOTFS_DIR="$RECOVERY_DIR/airootfs"
+
     install_dir="$1"
+
     msg "Making recovery..."
 
     if [[ -d "$RECOVERY_DIR" ]]; then
         msg2 "Cleaning up old mounts from $RECOVERY_DIR..."
-        sudo find "$RECOVERY_DIR" -type d -exec mountpoint -q {} \; -exec umount {} \;
+        sudo find "$RECOVERY_DIR" -type d -exec mountpoint -q {} \; \
+            -exec umount {} \;
     fi
 
     msg2 "Copying recovery config to $RECOVERY_DIR..."
@@ -138,92 +157,116 @@ function make_recovery() {
 }
 
 function image_dev() {
-    local iso_path="$1"
-    local dev="$2"
+    local iso_path dev
+
+    iso_path="$1"
+    dev="$2"
 
     sudo dd bs=4M if="$iso_path" of="$dev" status=progress oflag=sync
 }
 
 function build_win10_fonts() {
-    local PKG_PATH="$1"
+    local -r TMP_DIR FONTS_DIR BUILD_SH
+    local PKG_DIR
 
-    if ! find "$PKG_PATH" -name "*ttf-ms-win10*" | grep -q '.'; then
-        msg3 "ttf-ms-win10 not found in $PKG_PATH"
+    TMP_DIR="/var/tmp"
+    FONTS_DIR="$TMP_DIR/win10-fonts"
+    BUILD_SH="$BASE_DIR/misc/build-ttf-ms-win10.sh"
+    readonly PKG_DIR="$1"
+
+    if ! find "$PKG_DIR" -name "*ttf-ms-win10*" | grep -q '.'; then
+        msg3 "ttf-ms-win10 not found in $PKG_DIR"
 
         msg3 "Building ttf-ms-win10..."
-        mkdir -p /var/tmp/win10-fonts
-        $BASE_DIR/misc/build-ttf-ms-win10.sh $Q_FLAG $V_FLAG "/var/tmp/win10-fonts"
+        mkdir -p "$FONTS_DIR"
+        "$BUILD_SH" "${Q_FLAG[@]}" "${V_FLAG[@]}" "$FONTS_DIR"
 
-        msg3 "Moving files to $PKG_PATH..."
-        sudo mv -f /var/tmp/win10-fonts/* "$PKG_PATH"
+        msg3 "Moving files to $PKG_DIR..."
+        sudo mv -f "$FONTS_DIR"/* "$PKG_DIR"
 
         msg3 "Removing temp files..."
-        rm -rf /var/tmp/win10-fonts
+        rm -rf "$FONTS_DIR"
     else
-        msg3 "ttf-ms-win10 package already found in $PKG_PATH"
+        msg3 "ttf-ms-win10 package already found in $PKG_DIR"
         msg3 "Not going to rebuild tff-ms-win10"
     fi
 }
 
 function build_aur_packages() {
-    local AUR_URL="https://aur.archlinux.org"
-    local PKG_PATH="$1"
+    local -r AUR_URL PKG_DIR TMP_DIR
+    local aur_packages pkg_name pkg_dir pkg_url
 
-    IFS=$'\n'
-    aur_packages=($(cat "$LAD_OS_DIR/packages.csv" | grep "^.*,.*,aur,"))
+    AUR_URL="https://aur.archlinux.org"
+    TMP_DIR="/var/tmp"
+    PKG_DIR="$1"
+
+    mapfile -t aur_packages < <(grep "^.*,.*,aur," "$LAD_OS_DIR/packages.csv")
+
     for pkg in "${aur_packages[@]}"; do
         pkg_name="$( echo "$pkg" | cut -d',' -f1 )"
+        pkg_dir="$TMP_DIR/$pkg_name"
+        pkg_url="$AUR_URL/$pkg_name.git"
 
         msg3 "$pkg_name"
-        if [[ ! -d "/var/tmp/$pkg_name" ]]; then
-            git clone $Q_FLAG --depth 1 "$AUR_URL/$pkg_name.git" "/var/tmp/$pkg_name"
+
+        if [[ ! -d "$pkg_dir" ]]; then
+            git clone "${GIT_FLAGS[@]}" "$pkg_url" "$pkg_dir"
         fi
+
         (
-            source /var/tmp/$pkg_name/PKGBUILD
+            source "/var/tmp/$pkg_name/PKGBUILD"
+
+            if [[ "$epoch" != "" ]]; then
+                tar_name_prefix="$pkg_name-$epoch:"
+            else
+                tar_name_prefix="$pkg_name-"
+            fi
+
             if ! type pkgver &> /dev/null; then
                 # pkgver is variable
-                ver=$pkgver
+                tar_name_prefix="${tar_name_prefix}${pkgver}"
             fi
 
-            if [[ "$epoch" = "" ]]; then
-                tar_name_prefix="${pkgname}-${ver}"
-            else
-                tar_name_prefix="${pkgname}-${epoch}:${ver}"
-            fi
-
-            tar_path="$(find "$PKG_PATH" -iname "$tar_name_prefix*.pkg.tar.xz")"
+            tar_path="$(find "$PKG_DIR" -iname "$tar_name_prefix*.pkg.tar.xz")"
 
             if [[ "$tar_path" != "" ]]; then
                 msg4 "Building $pkg_name..."
-                cd "/var/tmp/$pkg_name"
+
+                cd "$pkg_dir"
                 makepkg -s --noconfirm --nocolor
-                sudo cp -f ./*.pkg.tar.xz "$PKG_PATH"
+                sudo cp -f ./*.pkg.tar.xz "$PKG_DIR"
             else
-                msg4 "$pkgname already exists"
+                msg4 "$pkg_name already exists"
             fi
         )
 
-        rm -rf "/var/tmp/$pkg_name"
+        rm -rf "$pkg_dir"
     done
 }
 
 function copy_pacman_packages() {
-    local PKG_PATH="$1"
-    local ARCH_ISO_PATH="$2"
-    local PACMAN_CONF_PATH="$3"
-    local TEMP_DB_PATH="/tmp"
+    local PKG_DIR ARCH_ISO_DIR PACMAN_CONF TMP_DB_DIR pacman_packages
+    local ARCH_ISO_PACKAGE_LIST
+    local pkg target_paths target_path target
 
-
-    sudo pacman -Syu --noconfirm
-    sudo pacman -S pacman-contrib --needed --noconfirm
-
+    PKG_DIR="$1"
+    ARCH_ISO_DIR="$2"
+    PACMAN_CONF="$3"
+    TMP_DB_DIR="/tmp"
+    ARCH_ISO_PACKAGE_LIST="$ARCH_ISO_DIR/packages.x86_64"
+    
     mapfile -t pacman_packages < <(cat "$LAD_OS_DIR/packages.csv" | \
         grep "^.*,.*,system," | \
         cut -d ',' -f1)
 
-    if [[ -f "$ARCH_ISO_PATH/packages.x86_64" ]]; then
-        msg3 "Found package list at $ARCH_ISO_PATH/packages.x86_64..."
-        arch_iso_packages=("$(cat "$ARCH_ISO_PATH/packages.x86_64")")
+    readonly PKG_DIR ARCH_ISO_DIR PACMAN_CONF TMP_DB_DIR ARCH_ISO_PACKAGE_LIST
+
+    sudo pacman -Syu --noconfirm
+    sudo pacman -S pacman-contrib --needed --noconfirm
+
+    if [[ -f "$ARCH_ISO_PACKAGE_LIST" ]]; then
+        msg3 "Found package list at $ARCH_ISO_PACKAGE_LIST..."
+        mapfile -t arch_iso_packages < "$ARCH_ISO_PACKAGE_LIST"
 
         # Add packages from archiso
         pacman_packages=("${pacman_packages[@]}" "${arch_iso_packages[@]}")
@@ -231,16 +274,18 @@ function copy_pacman_packages() {
 
     for pkg in ${pacman_packages[@]}; do
         msg3 "$pkg"
+
         mapfile -t target_paths < <(pacman -Spdd $pkg)
 
         for target_path in "${target_paths[@]}"; do 
             if [[ "$target_path" =~ file://** ]]; then
                 target="${target_path##file://**/}"
                 target_path="${target_path#file://}"
-                if [[ ! -f "$PKG_PATH/$target" ]]; then
+
+                if [[ ! -f "$PKG_DIR/$target" ]]; then
                     msg4 "Copying $target from cache to the archiso"
-                    vecho "Copying from $target_path to $PKG_PATH..."
-                    sudo cp -f "$target_path" "$PKG_PATH"
+                    vecho "Copying from $target_path to $PKG_DIR..."
+                    sudo cp -f "$target_path" "$PKG_DIR"
                 else
                     msg4 "$target is already in localrepo"
                 fi
@@ -252,23 +297,28 @@ function copy_pacman_packages() {
     done
 
 
-    sudo pacman -Sy --noconfirm --dbpath "$TEMP_DB_PATH"
+    sudo pacman -Sy --noconfirm --dbpath "$TMP_DB_DIR"
 
     msg3 "Downloading missing packages..."
     sudo pacman -S ${pacman_packages[@]} \
-        -w --cachedir "$PKG_PATH" \
-        --dbpath "$TEMP_DB_PATH" \
+        -w --cachedir "$PKG_DIR" \
+        --dbpath "$TMP_DB_DIR" \
         --noconfirm --needed
 
-	if ! grep -q "$PACMAN_CONF_PATH" -e "LadOS"; then
+	if ! grep -q "$PACMAN_CONF" -e "LadOS"; then
         msg3 "Adding localrepo to pacman.conf"
-	    sudo sed -i "$PACMAN_CONF_PATH" -e '1 i\Include = /LadOS/install/localrepo.conf'
+	    sudo sed -i "$PACMAN_CONF" \
+            -e '1 i\Include = /LadOS/install/localrepo.conf'
     fi
 }
 
 function increase_tty_scrollback() {
-    local ENTRIES_DIR="$1"
-    local OPTION="fbcon=scrollback:1024k"
+    local ENTRIES_DIR OPTION
+
+    ENTRIES_DIR="$1"
+    OPTION="fbcon=scrollback:1024k"
+
+    readonly ENTRIES_DIR OPTION
 
     if ! grep -q -F "$OPTION" $ENTRIES_DIR/*; then
         msg2 "Adding $OPTION kernel parameter"
@@ -277,44 +327,56 @@ function increase_tty_scrollback() {
 }
 
 function create_localrepo() {
-    AIROOTFS_DIR="$1"
-    PACMAN_CONF_PATH="$2"
-    LOCAL_REPO_PATH="$AIROOTFS_DIR/LadOS/localrepo"
-    PKG_PATH="$LOCAL_REPO_PATH/pkg"
+    local AIROOTFS_DIR PACMAN_CONF LOCAL_REPO_DIR PKG_DIR
 
-    sudo mkdir -p "$PKG_PATH"
+    AIROOTFS_DIR="$1"
+    PACMAN_CONF="$2"
+    LOCAL_REPO_DIR="$AIROOTFS_DIR/LadOS/localrepo"
+    PKG_DIR="$LOCAL_REPO_DIR/pkg"
+
+    readonly AIROOTFS_DIR PACMAN_CONF LOCAL_REPO_DIR PKG_DIR
+
+    sudo mkdir -p "$PKG_DIR"
 
     msg2 "Building AUR packages..."
-    build_aur_packages "$PKG_PATH"
+    build_aur_packages "$PKG_DIR"
 
     if [[ -n "$BUILD_TTF_MS_WIN_10" ]] || iprompt "Build ttf-ms-win10?"; then
         msg2 "Building windows 10 fonts..."
-        build_win10_fonts "$PKG_PATH"
+        build_win10_fonts "$PKG_DIR"
     fi
 
     msg2 "Copying pacman packages..."
-    copy_pacman_packages "$PKG_PATH" "$ARCH_ISO_DIR" "$PACMAN_CONF_PATH"
+    copy_pacman_packages "$PKG_DIR" "$ARCH_ISO_DIR" "$PACMAN_CONF"
 
     msg2 "Removing older packages..."
-    sudo paccache --nocolor -rk1 -c "$PKG_PATH"
+    sudo paccache --nocolor -rk1 -c "$PKG_DIR"
 
     msg2 "Adding all packages to localrepo database..."
     # If all packages are already present, repo-add returns 1
-    (cd "$LOCAL_REPO_PATH" && sudo repo-add $Q_FLAG -n -R -p --nocolor localrepo.db.tar.gz pkg/*) || true
+    (cd "$LOCAL_REPO_DIR" && sudo repo-add "${Q_FLAG[@]}" -n -R -p --nocolor \
+        localrepo.db.tar.gz pkg/*) || true
 }
 
 function build_from_scratch() {
-    local ARCH_ISO_DIR="/var/tmp/archiso"
-    local AIRROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
-    local BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/loader/entries/"
-    local sb_key_path sb_crt_path
+    local ARCH_ISO_DIR AIROOTFS_DIR RECOVERY_DIR BOOT_ENTRIES_DIR PACMAN_CONF
+    local sb_key_path sb_crt_path res out dev
+
+    ARCH_ISO_DIR="/var/tmp/archiso"
+    AIROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
+    RECOVERY_DIR="$AIROOTFS_DIR/LadOS/conf/recovery-mode/"
+    BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/loader/entries/"
+    PACMAN_CONF="$ARCH_ISO_DIR/pacman.conf"
+
+    readonly ARCH_ISO_DIR AIROOTFS_DIR RECOVERY_DIR BOOT_ENTRIES_DIR PACMAN_CONF
 
     msg "Removing old ISOs..."
     rm -f $BASE_DIR/*.iso
     
     if [[ -d "$ARCH_ISO_DIR" ]]; then
         msg "Cleaning up old mounts from $ARCH_ISO_DIR..."
-        sudo find "$ARCH_ISO_DIR" -type d -exec mountpoint -q {} \; -exec umount {} \;
+        sudo find "$ARCH_ISO_DIR" -type d -exec mountpoint -q {} \; \
+            -exec umount {} \;
         
         msg "Cleaning up work directory..."
         sudo rm -rf "$ARCH_ISO_DIR/work"
@@ -329,23 +391,26 @@ function build_from_scratch() {
     msg "Copying archiso config to $ARCH_ISO_DIR..."
     sudo cp -afT "$BASE_DIR/archiso" "$ARCH_ISO_DIR"
 
-    msg "Copying LadOS to $AIRROOTFS_DIR..."
-    sudo cp -rft "$AIRROOTFS_DIR" "$LAD_OS_DIR"
+    msg "Copying LadOS to $AIROOTFS_DIR..."
+    sudo cp -rft "$AIROOTFS_DIR" "$LAD_OS_DIR"
 
-    if [[ -n "$CREATE_LOCAL_REPO" ]] || iprompt "Pre-compile and download packages?"; then
+    if [[ -n "$CREATE_LOCAL_REPO" ]] || iprompt "Create local package repo?"; then
         msg "Creating localrepo..."
-        create_localrepo "$AIRROOTFS_DIR" "$ARCH_ISO_DIR/pacman.conf"
+        create_localrepo "$AIROOTFS_DIR" "$PACMAN_CONF"
     fi
 
-    if iprompt "Would you like to sign the archiso bootloader and binaries with custom secure boot keys?"; then
+    if iprompt "Sign the EFI binaries with keys for secure boot?"; then
         ask "Enter path to the private key"
-        read -r SB_KEY_PATH
+        read -r sb_key_path
         ask "Enter path to the crt"
-        read -r SB_CRT_PATH
+        read -r sb_crt_path
+    elif [[ -n "$SB_KEY_PATH" ]] && [[ -n "$SB_CRT_PATH" ]]; then
+        sb_key_path="$SB_KEY_PATH"
+        sb_crt_path="$SB_CRT_PATH"
     fi
 
     msg "Making recovery files..."
-    make_recovery "$AIRROOTFS_DIR/LadOS/conf/recovery-mode/"
+    make_recovery "$RECOVERY_DIR"
 
     # Avoid permission errors
     msg "Setting root as owner of $ARCH_ISO_DIR..."
@@ -362,9 +427,9 @@ function build_from_scratch() {
             -P "$ISO_PUBLISHER" \
             -A "$ISO_APPLICATION" \
             -o "$BASE_DIR" \
-            -k "$SB_KEY_PATH" \
-            -c "$SB_CRT_PATH" \
-            $V_FLAG
+            -k "$sb_key_path" \
+            -c "$sb_crt_path" \
+            "${V_FLAG[@]}"
     )
     res="$?"
 
@@ -374,7 +439,7 @@ function build_from_scratch() {
 
         if [[ -n "$DEV" ]]; then
             image_dev "$out" "$DEV"
-        elif iprompt "Would you like to write this image to a device? Note this will wipe your device."; then
+        elif iprompt "Would you like to write this image to a device?"; then
             ls /dev
             ask "Please enter the path to your device (i.e. /dev/sdX)"
             read -r dev
@@ -388,41 +453,66 @@ function build_from_scratch() {
     fi
 }
 
-
 function download_iso() {
-    ARCH_ISO_PATH="/tmp/archiso.iso"
-    local top_mirror="$(cat /etc/pacman.d/mirrorlist | \
-        grep "^Server = " | \
-        head -n1 | \
-        cut -d'=' -f2 | \
-        awk '{$1=$1; print}')"
+    local ARCH_ISO
+    local top_mirror url_root iso_name url_iso
 
-    local url_root="$(echo "$top_mirror" | \
-        sed -e "s;\$repo/os/\$arch;iso/latest;")"
+    ARCH_ISO="/tmp/archiso.iso"
 
-    local iso_name="$(curl -Ls $url_root | \
-        grep -o -P -e "archlinux-[0-9]{4}\.[0-9]{2}\.[0-9]{2}-x86_64\.iso" | \
-        head -n1)"
+    readonly ARCH_ISO
 
-    local url_iso="$url_root/$iso_name"
+    top_mirror="$(cat /etc/pacman.d/mirrorlist \
+        | grep "^Server = " \
+        | head -n1 \
+        | cut -d'=' -f2 \
+        | awk '{$1=$1; print}')"
+
+    url_root="$(echo "$top_mirror" \
+        | sed -e "s;\$repo/os/\$arch;iso/latest;")"
+
+    iso_name="$(curl -Ls "$url_root" \
+        | grep -o -P -e "archlinux-[0-9]{4}\.[0-9]{2}\.[0-9]{2}-x86_64\.iso" \
+        | head -n1)"
+
+    url_iso="$url_root/$iso_name"
 
     msg "Downloading archiso..."
-    curl $url_iso --output "$ARCH_ISO_PATH"
+    curl "$url_iso" --output "$ARCH_ISO"
+
+    remaster "$ARCH_ISO"
 }
 
 function use_existing_iso() {
+    local arch_iso
+
     ask "Enter path to iso"
-    read -r ARCH_ISO_PATH
+    read -r arch_iso
+
+    remaster "$arch_iso"
 }
 
 function remaster() {
-    MOUNT_PATH="/mnt/archiso"
-    EFI_BOOT_MOUNT_PATH="/mnt/efiboot"
-    CUSTOM_ISO_PATH="/var/tmp/customiso"
-    AIROOTFS_PATH="$CUSTOM_ISO_PATH/arch/x86_64/airootfs.sfs"
-    SHA512_AIROOTFS_PATH="$CUSTOM_ISO_PATH/arch/x86_64/airootfs.sha512"
-    SQUASHFS_ROOT_PATH="$CUSTOM_ISO_PATH/arch/x86_64/squashfs-root"
-    BOOT_ENTRIES_DIR="$CUSTOM_ISO_PATH/loader/entries"
+    local ARCH_ISO ARCH_ISO_DIR EFI_BOOT_DIR CUSTOM_ISO_DIR AIROOTFS_SFS
+    local SHA512_AIROOTFS_SFS SQUASHFS_ROOT_DIR BOOT_ENTRIES_DIR RECOVERY_DIR
+    local PACMAN_CONF EFI_BOOT_IMG ARCH_ISO_BOOT_CONF
+    local sb_key_path sb_crt_path label out dev
+
+    ARCH_ISO="$1"
+    ARCH_ISO_DIR="/mnt/archiso"
+    EFI_BOOT_DIR="/mnt/efiboot"
+    CUSTOM_ISO_DIR="/var/tmp/customiso"
+    AIROOTFS_SFS="$CUSTOM_ISO_DIR/arch/x86_64/airootfs.sfs"
+    SHA512_AIROOTFS_SFS="$CUSTOM_ISO_DIR/arch/x86_64/airootfs.sha512"
+    SQUASHFS_ROOT_DIR="$CUSTOM_ISO_DIR/arch/x86_64/squashfs-root"
+    BOOT_ENTRIES_DIR="$CUSTOM_ISO_DIR/loader/entries"
+    RECOVERY_DIR="$AIROOTFS_DIR/LadOS/conf/recovery-mode/"
+    PACMAN_CONF="$SQUASHFS_ROOT_DIR/etc/pacman.conf"
+    EFI_BOOT_IMG="$CUSTOM_ISO_DIR/EFI/archiso/efiboot.img"
+    ARCH_ISO_BOOT_CONF="$ARCH_ISO_DIR/loader/entries/archiso-x86_64.conf"
+
+    readonly ARCH_ISO ARCH_ISO_DIR EFI_BOOT_DIR CUSTOM_ISO_DIR AIROOTFS_SFS
+    readonly SHA512_AIROOTFS_SFS SQUASHFS_ROOT_DIR BOOT_ENTRIES_DIR RECOVERY_DIR
+    readonly PACMAN_CONF EFI_BOOT_IMG ARCH_ISO_BOOT_CONF
 
     if is_arch_user; then
         msg "Installing archiso cdrtools..."
@@ -435,108 +525,114 @@ function remaster() {
     msg "Removing ISOs from LadOS..."
     rm -rf "$BASE_DIR"/*.iso
 
-    if [[ -d "$CUSTOM_ISO_PATH" ]]; then
-        msg "Cleaning up old mounts from $CUSTOM_ISO_PATH..."
-        sudo find "$CUSTOM_ISO_PATH" -type d -exec mountpoint -q {} \; -exec umount {} \;
+    if [[ -d "$CUSTOM_ISO_DIR" ]]; then
+        msg "Cleaning up old mounts from $CUSTOM_ISO_DIR..."
+        sudo find "$CUSTOM_ISO_DIR" -type d -exec mountpoint -q {} \; \
+            -exec umount {} \;
     fi
 
-    if findmnt --target "$MOUNT_PATH" &> /dev/null; then
-        msg "Cleaning up old mount $MOUNT_PATH..."
-        sudo umount "$MOUNT_PATH"
+    if findmnt --target "$ARCH_ISO_DIR" &> /dev/null; then
+        msg "Cleaning up old mount $ARCH_ISO_DIR..."
+        sudo umount "$ARCH_ISO_DIR"
     fi
     
-    msg "Mounting archiso to $MOUNT_PATH..."
-    sudo mkdir -p "$MOUNT_PATH"
-    sudo mount -t iso9660 -o loop "$ARCH_ISO_PATH" "$MOUNT_PATH"
+    msg "Mounting archiso to $ARCH_ISO_DIR..."
+    sudo mkdir -p "$ARCH_ISO_DIR"
+    sudo mount -t iso9660 -o loop "$ARCH_ISO" "$ARCH_ISO_DIR"
 
-    msg  "Copying archiso to $CUSTOM_ISO_PATH..."
-    sudo mkdir -p "$CUSTOM_ISO_PATH"
-    sudo cp -a $MOUNT_PATH/* "$CUSTOM_ISO_PATH"
+    msg  "Copying archiso to $CUSTOM_ISO_DIR..."
+    sudo mkdir -p "$CUSTOM_ISO_DIR"
+    sudo cp -a $ARCH_ISO_DIR/* "$CUSTOM_ISO_DIR"
 
     msg "Unsquashing airootfs.sfs..."
-    sudo unsquashfs -f -d "$SQUASHFS_ROOT_PATH" "$AIROOTFS_PATH" 
+    sudo unsquashfs -f -d "$SQUASHFS_ROOT_DIR" "$AIROOTFS_SFS" 
 
     msg "Copying over LadOS to the squashfs-root..."
-    sudo cp -rf "$LAD_OS_DIR" "$SQUASHFS_ROOT_PATH"
+    sudo cp -rf "$LAD_OS_DIR" "$SQUASHFS_ROOT_DIR"
 
-    if [[ -n "$CREATE_LOCAL_REPO" ]] || prompt "Pre-compile and download packages?"; then
+    if [[ -n "$CREATE_LOCAL_REPO" ]] || iprompt "Pre-compile and download packages?"; then
         msg "Creating localrepo..."
-        create_localrepo "$SQUASHFS_ROOT_PATH" "$SQUASHFS_ROOT_PATH/etc/pacman.conf"
+        create_localrepo "$SQUASHFS_ROOT_DIR" "$PACMAN_CONF"
     fi
     
     msg "Making recovery files..."
-    make_recovery "$AIRROOTFS_DIR/LadOS/conf/recovery-mode/"
+    make_recovery "$RECOVERY_DIR"
 
     # Avoid permission errors
-    msg "Setting root as owner of $CUSTOM_ISO_PATH..."
-    sudo chown -R root:root "$CUSTOM_ISO_PATH"
+    msg "Setting root as owner of $CUSTOM_ISO_DIR..."
+    sudo chown -R root:root "$CUSTOM_ISO_DIR"
 
     msg "Increasing TTY scrollback..."
     increase_tty_scrollback "$BOOT_ENTRIES_DIR"
 
     msg "Removing the old airootfs.sfs..."
-    sudo rm "$AIROOTFS_PATH"
+    sudo rm "$AIROOTFS_SFS"
 
     msg "Resquashing into airootfs.sfs..."
-    sudo mksquashfs "$SQUASHFS_ROOT_PATH" "$AIROOTFS_PATH" -comp xz 
+    sudo mksquashfs "$SQUASHFS_ROOT_DIR" "$AIROOTFS_SFS" -comp xz 
 
     msg "Removing squashfs-root"
-    sudo rm -rf "$SQUASHFS_ROOT_PATH"
+    sudo rm -rf "$SQUASHFS_ROOT_DIR"
 
     msg "Updating SHA512 checksum..."
-    sudo sha512sum "$AIROOTFS_PATH" | sudo tee "$SHA512_AIROOTFS_PATH"
+    sudo sha512sum "$AIROOTFS_SFS" | sudo tee "$SHA512_AIROOTFS_SFS"
 
-    if iprompt "Would you like to sign the archiso bootloader and binaries with custom secure boot keys?"; then
+    if iprompt "Sign the EFI binaries with keys for secure boot?"; then
         msg "Signing EFIs..."
         ask "Enter path to the private key"
-        read -r SB_KEY_PATH
+        read -r sb_key_path
         ask "Enter path to the crt"
-        read -r SB_CRT_PATH
+        read -r sb_crt_path
+    elif [[ -n "$SB_KEY_PATH" ]] && [[ -n "$SB_CRT_PATH" ]]; then
+        sb_key_path="$SB_KEY_PATH"
+        sb_crt_path="$SB_CRT_PATH"
     fi
 
-    if [[ -n "$SB_KEY_PATH" ]] && [[ -n "$SB_CRT_PATH" ]]; then
-        msg2 "Signing EFI and vmlinuz binaries in $CUSTOM_ISO_PATH..."
-        sudo find "$CUSTOM_ISO_PATH" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
-            -exec sbsign --key "$SB_KEY_PATH" --cert "$SB_CRT_PATH" --output {} {} \;
+    if [[ -n "$sb_key_path" ]] && [[ -n "$sb_crt_path" ]]; then
+        msg2 "Signing EFI and vmlinuz binaries in $CUSTOM_ISO_DIR..."
+        sudo find "$CUSTOM_ISO_DIR" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" \
+            --output {} {} \;
 
-        msg2 "Mounting efiboot.img on $EFI_BOOT_MOUNT_PATH..."
-        sudo mkdir -p "$EFI_BOOT_MOUNT_PATH"
-        sudo mount -t vfat -o loop "$CUSTOM_ISO_PATH/EFI/archiso/efiboot.img" "$EFI_BOOT_MOUNT_PATH"
+        msg2 "Mounting efiboot.img on $EFI_BOOT_DIR..."
+        sudo mkdir -p "$EFI_BOOT_DIR"
+        sudo mount -t vfat -o loop "$EFI_BOOT_IMG" "$EFI_BOOT_DIR"
 
-        msg2 "Signing EFI and vmlinuz binaries in $EFI_BOOT_MOUNT_PATH..."
-        sudo find "$EFI_BOOT_MOUNT_PATH" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
-            -exec sbsign --key "$SB_KEY_PATH" --cert "$SB_CRT_PATH" --output {} {} \;
+        msg2 "Signing EFI and vmlinuz binaries in $EFI_BOOT_DIR..."
+        sudo find "$EFI_BOOT_DIR" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
+            -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" \
+            --output {} {} \;
         
         msg2 "Unmounting efiboot.img..."
-        sudo umount "$EFI_BOOT_MOUNT_PATH"
+        sudo umount "$EFI_BOOT_DIR"
     fi
 
     msg "Creating new iso..."
-    local LABEL="$(cat /mnt/archiso/loader/entries/archiso-x86_64.conf | \
-        tail -n1 | \
-        grep -o "archisolabel=.*$" | \
-        cut -d'=' -f2)"
+    label="$(cat "$ARCH_ISO_BOOT_CONF" \
+        | tail -n1 \
+        | grep -o "archisolabel=.*$" \
+        | cut -d'=' -f2)"
 
-    local out="$ISO_OUT_DIR/$(date +$ISO_NAME-%Y.%m.%d-x86_64.iso)"
+    out="$ISO_OUT_DIR/$(date +$ISO_NAME-%Y.%m.%d-x86_64.iso)"
 
     sudo rm -f "$out"
 
     sudo xorriso -as mkisofs \
         -full-iso9660-filenames \
-        -volid "$LABEL" \
+        -volid "$label" \
         -eltorito-boot isolinux/isolinux.bin \
         -eltorito-catalog isolinux/boot.cat \
         -no-emul-boot -boot-load-size 4 -boot-info-table \
-        -isohybrid-mbr "$CUSTOM_ISO_PATH"/isolinux/isohdpfx.bin \
+        -isohybrid-mbr "$CUSTOM_ISO_DIR"/isolinux/isohdpfx.bin \
         -eltorito-alt-boot \
         -e EFI/archiso/efiboot.img \
         -no-emul-boot -isohybrid-gpt-basdat \
         -output "$out" \
-        "$CUSTOM_ISO_PATH"
+        "$CUSTOM_ISO_DIR"
 
     if [[ -n "$DEV" ]]; then
         image_dev "$out" "$DEV"
-    elif iprompt "Would you like to write this image to a device? Note this will wipe your device."; then
+    elif iprompt "Would you like to write this image to a device? "; then
         ls /dev
         ask "Please enter the path to your device (i.e. /dev/sdX)"
         read -r dev
@@ -550,8 +646,8 @@ function remaster() {
 
 function remaster_iso() {
     show_menu "Remaster ISO" \
-        "Download ISO"      "download_iso; remaster" \
-        "Use existing ISO"  "use_existing_iso; remaster" \
+        "Download ISO"      "download_iso" \
+        "Use existing ISO"  "use_existing_iso" \
         "Go Back"           "return 0"
 }
 
@@ -577,8 +673,11 @@ function interactive() {
             "Image USB"             "existing_image_to_usb" \
             "Exit"                  "exit 0"
     else
-        echo "Since you are not using Arch Linux, the only way to create an ISO is to remaster an existing archiso. Please download an Arch Linux ISO from https://www.archlinux.org/download/"
-        echo "Please also install squashfs-tools libisoburn dosfstools lynx syslinux"
+        echo "Since you are not using Arch Linux, the only way to create an ISO"
+        echo "is to remaster an existing archiso. Please download an Arch Linux"
+        echo "ISO from https://www.archlinux.org/download/"
+        echo "Please also install squashfs-tools libisoburn dosfstools lynx"
+        echo "syslinux"
 
         show_menu "Make ISO" \
             "Remaster ISO"          "remaster_iso" \
@@ -591,11 +690,11 @@ function interactive() {
 
 case "$1" in
     interactive | build | remaster)
-        cmd="$1"
+        CMD="$1"
         shift
         ;;
     image)
-        cmd="$1"
+        CMD="$1"
         shift
         DEV="$1"
         shift
@@ -646,20 +745,20 @@ while [[ "$#" -gt 0 ]]; do
             ;;
         -v)
             VERBOSITY=1
-            V_FLAG=""
-            Q_FLAG="-q"
+            V_FLAG=("")
+            Q_FLAG=("-q")
             shift
             ;;
         -vv)
             VERBOSITY=2
-            V_FLAG=""
-            Q_FLAG=""
+            V_FLAG=("")
+            Q_FLAG=("")
             shift
             ;;
         -vvv)
             VERBOSITY=3
-            V_FLAG="-v"
-            Q_FLAG=""
+            V_FLAG=("-v")
+            Q_FLAG=("")
             shift
             ;;
         *)
@@ -670,7 +769,13 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-case "$cmd" in
+GIT_FLAGS=("${GIT_FLAGS[@]}" "${V_FLAG[@]}" "${Q_FLAG[@]}")
+
+readonly CMD AUTO_DOWNLOAD_ISO SB_CRT_PATH DEV SB_KEY_PATH CREATE_LOCAL_REPO 
+readonly BUILD_TTF_MS_WIN_10 VERBOSITY Q_FLAG V_FLAG GIT_FLAGS
+
+
+case "$CMD" in
     interactive)
         interactive
         ;;
