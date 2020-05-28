@@ -1,66 +1,63 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly TMP_SECRET_BIN="/root/temp-cryptroot.bin"
+readonly TMP_POLICY_DIGEST="/tmp/policy.digest"
+readonly TMP_PRIMARY_CTX="/tmp/primary.context"
+readonly TMP_OBJ_PUB="/tmp/obj.pub"
+readonly TMP_OBJ_KEY="/tmp/obj.key"
+readonly TMP_LOAD_CTX="/tmp/load.context"
+readonly TMP_CMDLINE_CONF="/tmp/luks-tpm2-cmdline.conf"
+readonly BASE_RESEAL_SH="$BASE_DIR/reseal-tpm.sh"
+readonly BASE_RESEAL_SVC="$BASE_DIR/reseal-tpm.service"
+readonly BASE_TPMRM_RULES="$BASE_DIR/90-tpmrm.rules"
+readonly BASE_DRACUT_CONF="$BASE_DIR/luks-dracut.conf"
+readonly NEW_CMDLINE_CONF="/etc/cmdline.d/luks-tpm2.conf"
+readonly NEW_SECRET_BIN="/root/cryptroot.bin"
+readonly NEW_DRACUT_CONF="/etc/dracut.conf.d/luks-dracut.conf"
+readonly NEW_RESEAL_SH="/usr/local/bin/reseal-tpm.sh"
+readonly NEW_RESEAL_SVC="/etc/systemd/system/reseal-tpm.service"
+readonly NEW_TPMRM_RULES="/etc/udev/rules.d/90-tpmrm.rules"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-SECRET_FILE="/root/cryptroot.bin"
-TMP_SECRET_FILE="/root/temp-cryptroot.bin"
-POLICY_DIGEST_FILE="/tmp/policy.digest"
-PRIMARY_CTX_FILE="/tmp/primary.context"
-OBJ_PUB_FILE="/tmp/obj.pub"
-OBJ_KEY_FILE="/tmp/obj.key"
-LOAD_CTX_FILE="/tmp/load.context"
-OBJ_ATTR="noda|adminwithpolicy|fixedparent|fixedtpm"
-TPM_HANDLE="0x81000000"
-PCR_POLICY="sha1:0,2,4,7"
-
-KEY_SLOT=10
-
-RESEAL_TPM_FILE="$BASE_DIR/reseal-tpm.sh"
-RESEAL_TPM_SERVICE="$BASE_DIR/reseal-tpm.service"
-TPMRM_RULES_FILE="$BASE_DIR/90-tpmrm.rules"
-
-DRACUT_CONF_DIR="/etc/dracut.conf.d"
-LUKS_DRACUT_CONF="$BASE_DIR/luks-dracut.conf"
-
-CMDLINE_FILE="/etc/cmdline.d/luks-tpm2.conf"
-
-feature_name="LUKS Encryption (using TPM)"
-feature_desc="Encrypt hardrive using LUKS"
-
-conflicts=()
-
-provides=()
-
-new_files=( \
-    "$SECRET_FILE" \
-    "$DRACUT_CONF_DIR/luks-dracut.conf" \
-    "$CMDLINE_FILE" \
-    "/usr/local/bin/reseal-tpm.sh" \
-    "/etc/systemd/system/reseal-tpm.service" \
-    "/etc/udev/rules.d/90-tpmrm.rules" \
+readonly FEATURE_NAME="LUKS Encryption (using TPM)"
+readonly FEATURE_DESC="Encrypt hardrive using LUKS"
+readonly CONFLICTS=()
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$NEW_SECRET_BIN" \
+    "$NEW_DRACUT_CONF" \
+    "$NEW_CMDLINE_CONF" \
+    "$NEW_RESEAL_SH" \
+    "$NEW_RESEAL_SVC" \
+    "$NEW_TPMRM_RULES" \
 )
-
-modified_files=()
-
-temp_files=( \
-    "$POLICY_DIGEST_FILE" \
-    "$PRIMARY_CTX_FILE" \
-    "$OBJ_PUB_FILE" \
-    "$OBJ_KEY_FILE" \
-    "$LOAD_CTX_FILE" \
-    "$TMP_SECRET_FILE" \
-    "/tmp/luks-tpm2-cmdline.conf" \
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=( \
+    "$TMP_POLICY_DIGEST" \
+    "$TMP_PRIMARY_CTX" \
+    "$TMP_OBJ_PUB" \
+    "$TMP_OBJ_KEY" \
+    "$TMP_LOAD_CTX" \
+    "$TMP_SECRET_BIN" \
+    "$TMP_CMDLINE_CONF" \
 )
+readonly DEPENDS_AUR=(dracut-luks-tpm2)
+readonly DEPENDS_PACMAN=(tpm2-tools)
+readonly DEPENDS_PIP3=()
 
-depends_aur=(dracut-luks-tpm2)
-depends_pacman=(tpm2-tools)
-depends_pip3=()
+readonly OBJ_ATTR="noda|adminwithpolicy|fixedparent|fixedtpm"
+readonly TPM_HANDLE="0x81000000"
+readonly PCR_POLICY="sha1:0,2,4,7"
+readonly KEY_SLOT=10
+
+# Readonly after set
+TPM_FLAGS=
+
 
 
 function set_tpm_verbosity_flag() {
@@ -69,6 +66,7 @@ function set_tpm_verbosity_flag() {
     else
         TPM_FLAGS=("--verbose")
     fi
+    readonly TPM_FLAGS
 }
 
 
@@ -84,37 +82,39 @@ function clear_tpm_handle() {
 }
 
 function check_install() {
+    local f
+
     set_tpm_verbosity_flag
 
-    sudo tpm2_unseal "${TPM_FLAGS[@]}" -c "$TPM_HANDLE" \
-        -p "pcr:$PCR_POLICY" -o "$TMP_SECRET_FILE"
+    sudo tpm2_unseal "${TPM_FLAGS[@]}" -c "$TPM_HANDLE" -p "pcr:$PCR_POLICY" \
+        -o "$TMP_SECRET_BIN"
 
-    if ! sudo diff "$TMP_SECRET_FILE" "$SECRET_FILE"; then
-        sudo rm "$TMP_SECRET_FILE"
-        qecho "$feature_name is not installed correctly."
+    if ! sudo diff "$TMP_SECRET_BIN" "$NEW_SECRET_BIN"; then
+        sudo rm "$TMP_SECRET_BIN"
+        qecho "$FEATURE_NAME is not installed correctly."
         return 1
     fi
 
-    for f in "${new_files[@]}"; do
+    for f in "${NEW_FILES[@]}"; do
         if [[ ! -f "$f" ]]; then
             echo "$f is missing" >&2
-            echo "$feature_name is not installed" >&2
+            echo "$FEATURE_NAME is not installed" >&2
             return 1
         fi
     done
 
-    qecho "$feature_name is installed correctly."
-    sudo rm "$TMP_SECRET_FILE"
+    qecho "$FEATURE_NAME is installed correctly."
+    sudo rm "$TMP_SECRET_BIN"
     return 0
 }
 
 function install() {
-    local root_path
+    local root_path root_dev cmdline
 
     set_tpm_verbosity_flag
 
     qecho "Generating new secret for LUKS..."
-    sudo dd if=/dev/random of="$SECRET_FILE" bs=32 count=1
+    sudo dd if=/dev/random of="$NEW_SECRET_BIN" bs=32 count=1
 
     root_path=$(findmnt -no SOURCE --target /)
     root_dev="$(lsblk -sno PATH,TYPE "$root_path" | grep part | cut -d' ' -f1)"
@@ -123,37 +123,39 @@ function install() {
     sudo cryptsetup luksKillSlot "$root_dev" "$KEY_SLOT" || true
 
     qecho "Adding new key to LUKS..."
-    sudo cryptsetup luksAddKey --key-slot "$KEY_SLOT" "$root_dev" "$SECRET_FILE"
+    sudo cryptsetup luksAddKey --key-slot "$KEY_SLOT" "$root_dev" \
+        "$NEW_SECRET_BIN"
 
     clear_tpm_handle "$TPM_HANDLE"
 
     qecho "Sealing secret in TPM..."
     sudo tpm2_createpolicy "${TPM_FLAGS[@]}" --policy-pcr -l "$PCR_POLICY" \
-        -L "$POLICY_DIGEST_FILE"
+        -L "$TMP_POLICY_DIGEST"
 
     sudo tpm2_createprimary "${TPM_FLAGS[@]}" -C e -g sha1 -G rsa \
-        -c "$PRIMARY_CTX_FILE"
+        -c "$TMP_PRIMARY_CTX"
 
-    sudo tpm2_create "${TPM_FLAGS[@]}" -g sha256 -u "$OBJ_PUB_FILE" \
-        -r "$OBJ_KEY_FILE" -C "$PRIMARY_CTX_FILE" -L "$POLICY_DIGEST_FILE" \
-        -a "$OBJ_ATTR" -i "$SECRET_FILE"
+    sudo tpm2_create "${TPM_FLAGS[@]}" -g sha256 -u "$TMP_OBJ_PUB" \
+        -r "$TMP_OBJ_KEY" -C "$TMP_PRIMARY_CTX" -L "$TMP_POLICY_DIGEST" \
+        -a "$OBJ_ATTR" -i "$NEW_SECRET_BIN"
 
-    sudo tpm2_load "${TPM_FLAGS[@]}" -C "$PRIMARY_CTX_FILE" \
-        -u "$OBJ_PUB_FILE" -r "$OBJ_KEY_FILE" -c "$LOAD_CTX_FILE"
+    sudo tpm2_load "${TPM_FLAGS[@]}" -C "$TMP_PRIMARY_CTX" -u "$TMP_OBJ_PUB" \
+        -r "$TMP_OBJ_KEY" -c "$TMP_LOAD_CTX"
 
-    sudo tpm2_evictcontrol "${TPM_FLAGS[@]}" -C o -c "$LOAD_CTX_FILE" \
+    sudo tpm2_evictcontrol "${TPM_FLAGS[@]}" -C o -c "$TMP_LOAD_CTX" \
         "$TPM_HANDLE"
 
-    sudo install -Dm 644 "$LUKS_DRACUT_CONF" "$DRACUT_CONF_DIR/luks-dracut.conf"
+    sudo install -Dm 644 "$BASE_DRACUT_CONF" "$NEW_DRACUT_CONF"
 
-    cmdline="rd.luks_tpm2_handle=$TPM_HANDLE rd.luks_tpm2_auth=pcr:$PCR_POLICY rd.luks.key=$SECRET_FILE"
+    cmdline="rd.luks_tpm2_handle=$TPM_HANDLE rd.luks_tpm2_auth=pcr:$PCR_POLICY"
+    cmdline="$cmdline rd.luks.key=$NEW_SECRET_BIN"
 
-    echo "$cmdline" > "/tmp/luks-tpm2-cmdline.conf"
-    sudo install -Dm 644 "/tmp/luks-tpm2-cmdline.conf" "$CMDLINE_FILE"
+    echo "$cmdline" > "$TMP_CMDLINE_CONF"
+    sudo install -Dm 644 "$TMP_CMDLINE_CONF" "$NEW_CMDLINE_CONF"
 
-    sudo install -Dm 700 "$RESEAL_TPM_FILE" "/usr/local/bin/reseal-tpm.sh"
-    sudo install -Dm 644 "$RESEAL_TPM_SERVICE" "/etc/systemd/system/reseal-tpm.service"
-    sudo install -Dm 644 "$TPMRM_RULES_FILE" "/etc/udev/rules.d/90-tpmrm.rules"
+    sudo install -Dm 700 "$BASE_RESEAL_SH" "$NEW_RESEAL_SH"
+    sudo install -Dm 644 "$BASE_RESEAL_SVC" "$NEW_RESEAL_SVC"
+    sudo install -Dm 644 "$BASE_TPMRM_RULES" "$NEW_TPMRM_RULES"
 }
 
 function post_install() {
@@ -164,8 +166,8 @@ function post_install() {
 function cleanup() {
     set_tpm_verbosity_flag
 
-    qecho "Removing ${temp_files[*]}..."
-    sudo rm -f "${temp_files[@]}"
+    qecho "Removing ${TEMP_FILES[*]}..."
+    sudo rm -f "${TEMP_FILES[@]}"
 }
 
 function uninstall() {
@@ -174,8 +176,8 @@ function uninstall() {
     qecho "Clearing $TPM_HANDLE..."
     clear_tpm_object "$TPM_HANDLE"
 
-    qecho "Removing ${new_files[*]}..."
-    sudo rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    sudo rm -f "${NEW_FILES[@]}"
 }
 
 
