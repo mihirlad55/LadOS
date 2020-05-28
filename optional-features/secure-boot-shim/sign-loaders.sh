@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-KEY_DIR="/root/sb-keys"
-MOK_KEY="$KEY_DIR/MOK/MOK.key"
-MOK_CRT="$KEY_DIR/MOK/MOK.crt"
+readonly KEY_DIR="/root/sb-keys"
+readonly MOK_KEY="$KEY_DIR/MOK/MOK.key"
+readonly MOK_CRT="$KEY_DIR/MOK/MOK.crt"
 
-BACKUP_LOADER="/boot/EFI/BOOT/BOOTX64.EFI"
-REFIND_LOADER="/boot/EFI/refind/refind_x64.efi"
-SYSTEMD_LOADER="/boot/EFI/systemd/systemd-bootx64.efi"
+readonly BACKUP_LOADER="/boot/EFI/BOOT/BOOTX64.EFI"
+readonly REFIND_LOADER="/boot/EFI/refind/refind_x64.efi"
+readonly SYSTEMD_LOADER="/boot/EFI/systemd/systemd-bootx64.efi"
 
-LOADERS=("$BACKUP_LOADER" "$REFIND_LOADER" "$SYSTEMD_LOADER")
+readonly LOADERS=("$BACKUP_LOADER" "$REFIND_LOADER" "$SYSTEMD_LOADER")
 
 for loader in "${LOADERS[@]}"; do
     if ! sbverify --cert "$MOK_CRT" "$loader"; then
