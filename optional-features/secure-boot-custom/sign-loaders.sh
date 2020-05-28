@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 
-KEY_DIR="/root/sb-keys"
-DB_KEY="$KEY_DIR/db/db.key"
-DB_CRT="$KEY_DIR/db/db.crt"
+readonly KEY_DIR="/root/sb-keys"
+readonly DB_KEY="$KEY_DIR/db/db.key"
+readonly DB_CRT="$KEY_DIR/db/db.crt"
+readonly BACKUP_LOADER="/boot/EFI/BOOT/BOOTX64.EFI"
+readonly REFIND_LOADER="/boot/EFI/refind/refind_x64.efi"
+readonly SYSTEMD_LOADER="/boot/EFI/systemd/systemd-bootx64.efi"
 
-BACKUP_LOADER="/boot/EFI/BOOT/BOOTX64.EFI"
-REFIND_LOADER="/boot/EFI/refind/refind_x64.efi"
-SYSTEMD_LOADER="/boot/EFI/systemd/systemd-bootx64.efi"
-
-LOADERS=("$BACKUP_LOADER" "$REFIND_LOADER" "$SYSTEMD_LOADER")
+readonly LOADERS=("$BACKUP_LOADER" "$REFIND_LOADER" "$SYSTEMD_LOADER")
 
 for loader in "${LOADERS[@]}"; do
     if ! sbverify --cert "$DB_CRT" "$loader"; then
