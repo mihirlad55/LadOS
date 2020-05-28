@@ -1,31 +1,34 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$( readlink -f "$LAD_OS_DIR/conf/dotfiles")"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly CONF_DIR="$( readlink -f "$LAD_OS_DIR/conf/dotfiles")"
+readonly CONF_SH="$CONF_DIR/conf.sh"
+readonly MOD_DOOM_CONFIG="$HOME/.doom.d/config.el"
+readonly MOD_GIT_CONFIG="$HOME/.gitconfig"
+readonly TMP_DOTFILES_DIR="/tmp/dotfiles"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-DOTFILES_URL="https://github.com/mihirlad55/dotfiles"
+readonly FEATURE_NAME="Mihirlad55's Dotfiles"
+readonly FEATURE_DESC="Install mihirlad55's dotfiles with some additional \
+configuration"
+readonly PROVIDES=()
+readonly NEW_FILES=()
+readonly MODIFIED_FILES=("/home/$USER")
+readonly TEMP_FILES=("$TMP_DOTFILES_DIR")
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(git zsh xorg-xrdb)
 
-feature_name="Dotfiles"
-feature_desc="Install mihirlad55's dotfiles with some additional configuration"
-
-provides=()
-new_files=()
-modified_files=("/home/$USER")
-temp_files=("/tmp/dotfiles")
-
-depends_aur=()
-depends_pacman=(git zsh xorg-xrdb)
+readonly DOTFILES_URL="https://github.com/mihirlad55/dotfiles"
 
 
 
 function update_git_doom_config() {
     local name email editor
+
     name="$1"
     email="$2"
     editor="$3"
@@ -43,8 +46,8 @@ function update_git_doom_config() {
 }
 
 function check_conf() {
-    if [[ -f "$CONF_DIR/conf.sh" ]]; then
-        source "$CONF_DIR/conf.sh"
+    if [[ -f "$CONF_SH" ]]; then
+        source "$CONF_SH"
     fi
 
     if [[ "$CONF_FULL_NAME" != "" ]] &&
@@ -61,61 +64,62 @@ function check_conf() {
 }
 
 function load_conf() {
-    source "$CONF_DIR/conf.sh"
+    source "$CONF_SH"
 }
 
 function check_install() {
-    HEAD="$(cat "$HOME/.git/HEAD")"
-    DEFAULT_SHELL="$(grep "^$USER" /etc/passwd | cut -d":" -f7)"
+    head="$(cat "$HOME/.git/HEAD")"
+    default_shell="$(grep "^$USER" /etc/passwd | cut -d":" -f7)"
 
-    GIT_CONFIG_NAME="$(grep name "$HOME/.gitconfig" | \
-        cut -d'=' -f2 | \
-        awk '{$1=$1;print}')"
-    GIT_CONFIG_EMAIL="$(grep email "$HOME/.gitconfig" | \
-        cut -d'=' -f2 | \
-        awk '{$1=$1;print}')"
-    GIT_CONFIG_EDITOR="$(grep editor "$HOME/.gitconfig" | \
-        cut -d'=' -f2 | \
-        awk '{$1=$1;print}')"
+    git_config_name="$(grep name "$MOD_GIT_CONFIG" \
+        | cut -d'=' -f2 \
+        | awk '{$1=$1;print}')"
+    git_config_email="$(grep email "$MOD_GIT_CONFIG" \
+        | cut -d'=' -f2 \
+        | awk '{$1=$1;print}')"
+    git_config_editor="$(grep editor "$MOD_GIT_CONFIG" \
+        | cut -d'=' -f2 \
+        | awk '{$1=$1;print}')"
 
-    DOOM_CONFIG_NAME="$(grep -e 'user-full-name' "$HOME/.doom.d/config.el" | \
-        grep -o '".*"' | \
-        sed 's/"//g')"
-    DOOM_CONFIG_EMAIL="$(grep -e 'user-mail-address' "$HOME/.doom.d/config.el" | \
-        grep -o '".*"' | \
-        sed 's/"//g')"
+    doom_config_name="$(grep -e 'user-full-name' "$MOD_DOOM_CONFIG" \
+        | grep -o '".*"' \
+        | sed 's/"//g')"
+    doom_config_email="$(grep -e 'user-mail-address' "$MOD_DOOM_CONFIG" \
+        | grep -o '".*"' \
+        | sed 's/"//g')"
 
-    if [[ "$HEAD" = "ref: refs/heads/arch-dwm" ]] &&
-        [[ "$DEFAULT_SHELL" = "/usr/bin/zsh" ]] &&
-        [[ "$GIT_CONFIG_NAME" != "" ]] &&
-        [[ "$GIT_CONFIG_EMAIL" != "" ]] &&
-        [[ "$GIT_CONFIG_EDITOR" != "" ]] &&
-        [[ "$DOOM_CONFIG_NAME" != "" ]] &&
-        [[ "$DOOM_CONFIG_EMAIL" != "" ]]; then
-        qecho "$feature_name is installed"
+    if [[ "$head" = "ref: refs/heads/arch-dwm" ]] &&
+        [[ "$default_shell" = "/usr/bin/zsh" ]] &&
+        [[ "$git_config_name" != "" ]] &&
+        [[ "$git_config_email" != "" ]] &&
+        [[ "$git_config_editor" != "" ]] &&
+        [[ "$doom_config_name" != "" ]] &&
+        [[ "$doom_config_email" != "" ]]; then
+        qecho "$FEATURE_NAME is installed"
         return 0
     fi
 
-    echo "$feature_name is not installed" >&2
+    echo "$FEATURE_NAME is not installed" >&2
     return 1
 }
 
 function prepare() {
-    if [[ ! -d "/tmp/dotfiles" ]]; then
+    if [[ ! -d "$TMP_DOTFILES_DIR" ]]; then
         qecho "Cloning dotfiles..."
-        git clone --depth 1 "${V_FLAG[@]}" "$DOTFILES_URL" /tmp/dotfiles
+        git clone "${GIT_FLAGS[@]}" "$DOTFILES_URL" "$TMP_DOTFILES_DIR"
     fi
+
     qecho "Updating submodules..."
     (
-        cd /tmp/dotfiles
+        cd "$TMP_DOTFILES_DIR"
         git submodule "${V_FLAG[@]}" init
         git submodule update "${V_FLAG[@]}" --init
     )
 }
 
 function install() {
-    qecho "Copying /tmp/dotfiles to $HOME/"
-    cp -rf /tmp/dotfiles/. "$HOME"
+    qecho "Copying $TMP_DOTFILES_DIR to $HOME/"
+    cp -rf "$TMP_DOTFILES_DIR"/. "$HOME"
 
     qecho "Installing neovim plugins..."
     nvim -c "PlugInstall | qa"
@@ -127,10 +131,10 @@ function install() {
 }
 
 function post_install() {
+    local name email editor
+
     qecho "Changing shell to zsh..."
     sudo chsh -s /usr/bin/zsh "$USER"
-
-    local name email editor
 
     qecho "Setting up git and doom emacs..."
     if [[ "$CONF_FULL_NAME" != "" ]]; then
@@ -157,8 +161,8 @@ function post_install() {
 }
 
 function cleanup() {
-    qecho "Removing /tmp/dotfiles"
-    rm -rf /tmp/dotfiles
+    qecho "Removing $TMP_DOTFILES_DIR..."
+    rm -rf "$TMP_DOTFILES_DIR"
 }
 
 function uninstall() (
@@ -174,6 +178,3 @@ function uninstall() (
 
 
 source "$LAD_OS_DIR/common/feature_footer.sh"
-
-
-
