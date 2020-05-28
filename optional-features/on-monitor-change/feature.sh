@@ -1,45 +1,54 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly BASE_RULES="$BASE_DIR/50-monitor.rules"
+readonly BASE_SH="$BASE_DIR/fix-monitor-layout"
+readonly BASE_SVC="$BASE_DIR/on-monitor-change@.service"
+readonly NEW_RULES="/etc/udev/rules.d/50-monitor.rules"
+readonly NEW_SH="/usr/local/bin/fix-monitor-layout"
+readonly NEW_SVC="/etc/systemd/user/on-monitor-change@.service"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="on-monitor-change"
-feature_desc="Install on-monitor-change udev rule and service that automatically outputs to newly connected monitors and restarts polybar"
+readonly FEATURE_NAME="On Monitor Change Service"
+readonly FEATURE_DESC="Install on-monitor-change udev rule and service that \
+automatically outputs to newly connected monitors and restarts polybar"
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$NEW_RULES" \
+    "$NEW_SH" \
+    "$NEW_SVC" \
+)
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=()
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(xorg-xrandr)
 
-provides=()
-new_files=("/etc/udev/rules.d/50-monitor.rules" \
-    "/usr/local/bin/fix-monitor-layout" \
-    "/etc/systemd/user/on-monitor-change@.service")
-modified_files=()
-temp_files=()
-
-depends_aur=()
-depends_pacman=(xorg-xrandr)
 
 
 function check_install() {
-    for f in "${new_files[@]}"; do
+    local f
+
+    for f in "${NEW_FILES[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
-            echo "$feature_name is not installed" >&2
+            echo "$FEATURE_NAME is not installed" >&2
             return 1
         fi
     done
 
-    qecho "$feature_name is installed"
+    qecho "$FEATURE_NAME is installed"
     return 0
 }
 
 function install() {
     qecho "Installing configuration files..."
-    sudo install -Dm 755 "$BASE_DIR/50-monitor.rules" /etc/udev/rules.d/50-monitor.rules
-    sudo install -Dm 755 "$BASE_DIR/fix-monitor-layout" /usr/local/bin/fix-monitor-layout
-    sudo install -Dm 644 "$BASE_DIR/on-monitor-change@.service" /etc/systemd/user/on-monitor-change@.service
+    sudo install -Dm 755 "$BASE_RULES" "$NEW_RULES"
+    sudo install -Dm 755 "$BASE_SH" "$NEW_SH"
+    sudo install -Dm 644 "$BASE_SVC" "$NEW_SVC"
 }
 
 function post_install() {
@@ -48,8 +57,9 @@ function post_install() {
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[*]}..."
-    rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    sudo rm -f "${NEW_FILES[@]}"
 }
+
 
 source "$LAD_OS_DIR/common/feature_footer.sh"
