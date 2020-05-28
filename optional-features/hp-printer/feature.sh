@@ -1,35 +1,36 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="hp-printer"
-feature_desc="Install HP printer"
-
-provides=()
-new_files=()
-modified_files=()
-temp_files=()
-
-depends_aur=()
-depends_pacman=(cups hplip)
+readonly FEATURE_NAME="hp-printer"
+readonly FEATURE_DESC="Install HP printer"
+readonly PROVIDES=()
+readonly NEW_FILES=()
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=()
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(cups hplip)
 
 # TODO: Add configuration
 
+
+
 function check_install() {
+    local resp
+
     sudo lpoptions
     read -rp "Is your printer displayed here? [y/N] " resp
 
     if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
-        qecho "$feature_name is installed"
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
 }
@@ -40,6 +41,8 @@ function prepare() {
 }
 
 function install() {
+    local name driver ip_address
+
     read -rp "Enter printer name: " name
 
     lpinfo -m
