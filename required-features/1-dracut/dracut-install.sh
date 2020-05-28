@@ -7,7 +7,6 @@ args=('--force' '--uefi' '--hostonly' '--no-hostonly-cmdline' \
 
 while read -r line; do
     if [[ "$line" == 'usr/lib/modules/'+([^/])'/pkgbase' ]]; then
-        echo "next"
 		read -r pkgbase < "/${line}"
 		kver="${line#'usr/lib/modules/'}"
 		kver="${kver%'/pkgbase'}"
