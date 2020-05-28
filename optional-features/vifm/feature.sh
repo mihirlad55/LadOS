@@ -1,58 +1,72 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
-
-EPUB_THUMBNAILER_URL="https://github.com/marianosimone/epub-thumbnailer"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly BASE_VIFMRUN_SH="$BASE_DIR/vifmrun"
+readonly BASE_VIFMIMG_SH="$BASE_DIR/vifmimg"
+readonly NEW_VIFMRUN_SH="/usr/local/bin/vifmrun"
+readonly NEW_VIFMIMG_SH="$HOME/.vifm/scripts/vifmimg"
+readonly MOD_VIFM_DESKTOP="/usr/share/applications/vifm.desktop"
+readonly TMP_EPUB_THUMBNAILER_DIR="/tmp/epub-thumbnailer"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="vifm"
-feature_desc="Install vifm with image previews"
+readonly FEATURE_NAME="vifm"
+readonly FEATURE_DESC="Install vifm with image previews"
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$NEW_VIFMIMG_SH" \
+    "$NEW_VIFMRUN_SH" \
+)
+readonly MODIFIED_FILES=("$MOD_VIFM_DESKTOP")
+readonly TEMP_FILES=("$TMP_EPUB_THUMBNAILER_DIR")
+readonly DEPENDS_AUR=(fontpreview)
+readonly DEPENDS_PACMAN=( \
+    ffmpeg \
+    ffmpegthumbnailer \
+    vifm \
+    python \
+    python-pip \
+    poppler \
+)
+readonly DEPENDS_PIP3=()
 
-provides=()
-new_files=("/usr/local/bin/vifmrun" \
-    "$HOME/.vifm/scripts/vifmimg")
-modified_files=("/usr/share/applications/vifm.desktop")
-temp_files=("/tmp/epub-thumbnailer")
+readonly EPUB_THUMBNAILER_URL="https://github.com/marianosimone/epub-thumbnailer"
 
-depends_aur=(fontpreview)
-depends_pacman=(ffmpeg ffmpegthumbnailer vifm python python-pip poppler)
-depends_pip3=()
 
 
 function check_install() {
     if command -v epub-thumbnailer &> /dev/null &&
-        [[ -f "/usr/local/bin/vifmrun" ]] &&
-        [[ -f "$HOME/.vifm/scripts/vifmimg" ]] &&
-        grep -q -P /usr/share/applications/vifm.desktop -e "Exec=vifmrun\b"; then
-        qecho "$feature_name is installed"
+        [[ -f "$NEW_VIFMRUN_SH" ]] &&
+        [[ -f "$NEW_VIFMIMG_SH" ]] &&
+        grep -q -P "$MOD_VIFM_DESKTOP" -e "Exec=vifmrun\b"; then
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    if [[ ! -d "/tmp/epub-thumbnailer" ]]; then
+    if [[ ! -d "$TMP_EPUB_THUMBNAILER_DIR" ]]; then
         qecho "Cloning epub-thumbnailer..."
-        git clone --depth 1 "${V_FLAGS[@]}" "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+        git clone "${GIT_FLAGS[@]}" "$EPUB_THUMBNAILER_URL" \
+            "$TMP_EPUB_THUMBNAILER_DIR"
     fi
 
     qecho "Installing epub-thumbnailer..."
     # Returns 1 if can't find desktop environment
-    sudo python /tmp/epub-thumbnailer/install.py install || true
+    sudo python "$TMP_EPUB_THUMBNAILER_DIR/install.py" install || true
 
     qecho "Installing vifmimg and vifmrun..."
-    sudo install -Dm 755 "$BASE_DIR/vifmrun" /usr/local/bin/vifmrun
-    command install -Dm 755 "$BASE_DIR/vifmimg" "$HOME/.vifm/scripts/vifmimg"
+    sudo install -Dm 755 "$BASE_VIFMRUN_SH" "$NEW_VIFMRUN_SH"
+    command install -Dm 755 "$BASE_VIFMIMG_SH" "$NEW_VIFMIMG_SH"
 
     qecho "Updating vifm.desktop..."
-    sudo sed -i 's/Exec=vifm\b/Exec=vifmrun/' /usr/share/applications/vifm.desktop
+    sudo sed -i 's/Exec=vifm\b/Exec=vifmrun/' "$MOD_VIFM_DESKTOP"
 }
 
 function cleanup() {
@@ -61,20 +75,21 @@ function cleanup() {
 }
 
 function uninstall() {
-    if [[ ! -d "/tmp/epub-thumbnailer" ]]; then
+    if [[ ! -d "$TMP_EPUB_THUMBNAILER_DIR" ]]; then
         qecho "Cloning epub-thumbnailer..."
-        git clone --depth 1 "${V_FLAGS[@]}" "$EPUB_THUMBNAILER_URL" /tmp/epub-thumbnailer
+        git clone "${GIT_FLAGS[@]}" "$EPUB_THUMBNAILER_URL" \
+            "$TMP_EPUB_THUMBNAILER_DIR"
     fi
 
     qecho "Uninstalling epub-thumbnailer..."
-    sudo python /tmp/epub-thumbnailer/install.py uninstall
-    sudo rm -rf /tmp/epub-thumbnailer
+    sudo python "$TMP_EPUB_THUMBNAILER_DIR/install.py" uninstall
+    sudo rm -rf "$TMP_EPUB_THUMBNAILER_DIR"
 
-    qecho "Removing ${new_files[*]}..."
-    sudo rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    sudo rm -f "${NEW_FILES[@]}"
 
     qecho "Reverting vifm.desktop..."
-    sudo sed -i 's/Exec=vifmrun\b/Exec=vifm/' /usr/share/applications/vifm.desktop
+    sudo sed -i 's/Exec=vifmrun\b/Exec=vifm/' "$MOD_VIFM_DESKTOP"
 }
 
 
