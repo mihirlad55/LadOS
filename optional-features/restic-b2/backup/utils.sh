@@ -1,12 +1,12 @@
 #!/usr/bin/bash
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-ICON_PATH="$BASE_DIR/b2.png"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly ICON_PATH="$BASE_DIR/b2.png"
 
 source "$BASE_DIR/constants.sh"
 
-NOTIFY_UID="$(id -u "$NOTIFY_USER")"
+readonly NOTIFY_UID="$(id -u "$NOTIFY_USER")"
 
 function notify() {
     local summary body urgency

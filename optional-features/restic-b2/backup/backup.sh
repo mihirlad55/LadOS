@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 
 source "$BASE_DIR/constants.sh"
 source "$BASE_DIR/utils.sh"
