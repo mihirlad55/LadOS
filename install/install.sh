@@ -1,8 +1,7 @@
 #!/usr/bin/bash
 
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/install"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
@@ -13,25 +12,25 @@ function gencrypttab() {
     local mountpoint path uuid mnt
     mountpoint="$1"
 
-    while IFS=$' ' read -r path uuid mnt <&3; do
-        {
-            mnt="${mnt%$mountpoint}"
-            if [[ "$mnt" != "/" ]]; then
-                local name password crypt_info keysize cipher options
+    while IFS=$' ' read -r path uuid mnt <&3; do {
+        mnt="${mnt%$mountpoint}"
+        if [[ "$mnt" != "/" ]]; then
+            local name password crypt_info keysize cipher options
 
-                name="${path#/dev/mapper/}"
-                password="/root/${name}.bin"
+            name="${path#/dev/mapper/}"
+            password="/root/${name}.bin"
 
-                crypt_info="$(cryptsetup status "$name" | tr -s ' ' | sed 's/ *//')"
-                keysize="$(echo "$crypt_info" | grep keysize |  cut -d' ' -f2)"
-                cipher="$(echo "$crypt_info" | grep cipher | cut -d' ' -f2)"
+            crypt_info="$(cryptsetup status "$name" | tr -s ' ' | sed 's/ *//')"
+            keysize="$(echo "$crypt_info" | grep keysize |  cut -d' ' -f2)"
+            cipher="$(echo "$crypt_info" | grep cipher | cut -d' ' -f2)"
 
-                options="cipher=$cipher,size=$keysize"
+            options="cipher=$cipher,size=$keysize"
 
-                printf "%s\tUUID=%s\t%s\t%s\n" "$name" "$uuid" "$password" "$options"
-            fi
+            printf "%s\tUUID=%s\t%s\t%s\n" "$name" "$uuid" "$password" \
+                "$options"
+        fi
 
-        } 3<&-
+    } 3<&-
     done 3< <(lsblk -n -o PATH,UUID,TYPE,MOUNTPOINT | sed -n 's/ *crypt//2p')
 }
 
@@ -47,10 +46,13 @@ function check_efi_mode() {
 
 function setup_partitions() {
     msg "Partition setup..."
-    plain "Make sure you create the system partitions, format them, and mount root on /mnt with all the filesystems mounted on root"
+
+    plain "Make sure you create the system partitions, format them, and mount"
+    plain "root on /mnt with all the filesystems mounted on root"
+
     if [[ "$CONF_NOCONFIRM" = "no" ]]; then
         if ! prompt "Are the filesystems mounted?"; then
-            msg2 "Please partition the drive and exit the shell once finished..."
+            msg2 "Please partition the drive and exit the shell once finished.."
             bash
         fi
     fi
@@ -68,9 +70,9 @@ function connect_to_internet() {
 }
 
 function setup_wifi() {
-    msg "Setting up WiFI..."
+    local network_conf conf_path adapter
 
-    local network_conf
+    msg "Setting up WiFI..."
 
     if [[ -f "$CONF_DIR/network.conf" ]]; then
         network_conf="$(cat "$CONF_DIR/network.conf")"
@@ -89,9 +91,8 @@ function setup_wifi() {
         vi $conf_path
     fi
 
-    local adapter
     if [[ "$CONF_WIFI_ADAPTER" != "" ]]; then
-        local adapter="$CONF_WIFI_ADAPTER"
+        adapter="$CONF_WIFI_ADAPTER"
     else
         ip link
         ask "Enter name of WiFI adapter"
@@ -102,6 +103,7 @@ function setup_wifi() {
     dhcpcd "${V_FLAG[@]}"
 
     WIFI_ENABLED=1
+    readonly WIFI_ENABLED
 }
 
 function update_system_clock() {
@@ -110,8 +112,9 @@ function update_system_clock() {
 }
 
 function rank_mirrors() {
-    msg "Ranking pacman mirrors..."
     local country
+
+    msg "Ranking pacman mirrors..."
 
     if [[ "$CONF_COUNTRY_CODE" != "" ]]; then
         country="$CONF_COUNTRY_CODE"        
@@ -121,9 +124,9 @@ function rank_mirrors() {
     fi
 
     msg2 "Beginning mirror ranking..." "(This may take a minute)"
-    curl -s "https://www.archlinux.org/mirrorlist/?country=${country}&protocol=https&use_mirror_status=on" | \
-        sed -e 's/^#Server/Server/' -e '/^#/d' | \
-        "$BASE_DIR"/rankmirrors -n 5 -m 1 - \
+    curl -s "https://www.archlinux.org/mirrorlist/?country=${country}&protocol=https&use_mirror_status=on" \
+        | sed -e 's/^#Server/Server/' -e '/^#/d' \
+        | "$BASE_DIR"/rankmirrors -n 5 -m 1 - \
         > /etc/pacman.d/mirrorlist
 
     msg2 "Top 5 $country mirrors saved in /etc/pacman.d/mirrorlist"
@@ -134,7 +137,8 @@ function enable_localrepo() {
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
         if ! grep -q /etc/pacman.conf -e "LadOS"; then
             msg2 "Found localrepo. Enabling..."
-            sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+            sed -i /etc/pacman.conf \
+                -e '1 i\Include = /LadOS/install/localrepo.conf'
         else
             msg2 "Localrepo already enabled"
         fi
@@ -143,8 +147,9 @@ function enable_localrepo() {
 }
 
 function create_swap_file() {
+    local total_mem swap_path
+
     msg "Creating swap file..."
-    local total_mem, swap_path
 
     total_mem="$(free -k | grep Mem | tr -s ' ' | cut -d' ' -f2)"
     swap_path="/mnt/swapfile"
@@ -179,6 +184,8 @@ function generate_fstab() {
 }
 
 function generate_crypttab() {
+    local names secret_file
+
     msg "Generating crypttab..."
 
     if ! lsblk | grep -q crypt; then
@@ -186,17 +193,17 @@ function generate_crypttab() {
         return
     fi
 
-    local names secret_file
     mapfile -t names < <(lsblk -n -o PATH,TYPE | sed -n 's/ *crypt//2')
 
-    for n in "${names[@]}"; do
-        part_path="$(lsblk -sno PATH,TYPE "$n" | \
-            grep 'part' | \
-            tr -s ' ' | \
-            cut -d' ' -f1)"
+    for name in "${names[@]}"; do
+        part_path="$(lsblk -sno PATH,TYPE "$name" \
+            | grep 'part' \
+            |  tr -s ' ' \
+            | cut -d' ' -f1)"
 
-        secret_file="/root/${n}.bin"
-        msg3 "Generating password for $n at $secret_file..."
+        secret_file="/root/${name}.bin"
+
+        msg3 "Generating password for $name at $secret_file..."
         dd if=/dev/urandom of="$secret_file" bs=32 count=1
 
         msg3 "Adding password using cryptsetup..."
@@ -217,7 +224,8 @@ function start_root_install() {
     if [[ "$WIFI_ENABLED" -eq 1 ]]; then
         msg2 "Copying wpa_supplicant to new system..."
         mkdir -p /mnt/etc/wpa_supplicant
-        install -Dm 644 /tmp/wpa_supplicant.conf /etc/wpa_supplicant/wpa_supplicant.conf
+        install -Dm 644 /tmp/wpa_supplicant.conf \
+            /etc/wpa_supplicant/wpa_supplicant.conf
     fi
 
     msg2 "Arch-chrooting to system as root..."

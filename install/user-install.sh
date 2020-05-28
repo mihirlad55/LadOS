@@ -1,11 +1,11 @@
 #!/usr/bin/bash
 
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
-OPTIONAL_FEATURES_SELECTED=()
+optional_features_selected=()
 
 
 function err_proceed() {
@@ -22,7 +22,7 @@ function enable_community_repo() {
     local path_to_feature
     path_to_feature=("$REQUIRED_FEATURES_DIR"/*enable-community-pacman/feature.sh)
 
-    "${path_to_feature[0]}" "${V_FLAG[@]}" --no-service-start full
+    "${path_to_feature[0]}" "${F_FLAGS[@]}" full
 }
 
 function install_yay() {
@@ -36,36 +36,24 @@ function install_yay() {
         local path_to_feature
         path_to_feature=("$REQUIRED_FEATURES_DIR"/*yay/feature.sh)
 
-        "${path_to_feature[0]}" "${V_FLAG[@]}" --no-service-start full
+        "${path_to_feature[0]}" "${F_FLAGS[@]}" full
     fi
 }
 
 function install_packages() {
+    local install_optional pacman_packages aur_packages name desc typ req
     msg "Installing packages..."
 
-    local install_optional=0
     if [[ "$CONF_INSTALL_OPTIONAL" = "yes" ]]  ||
       prompt "Install optional packages as well?"; then
         install_optional=1
     fi
 
-    IFS=$'\n'
-    local packages
-    mapfile -t packages < "$LAD_OS_DIR"/packages.csv
-
-    local pacman_packages=()
-    local aur_packages=()
-
-    for package in "${packages[@]}"; do
-        local name desc typ req
-        name=$(echo "$package" | cut -d',' -f1)
-        desc=$(echo "$package" | cut -d',' -f2)
-        typ=$(echo "$package" | cut -d',' -f3)
-        req=$(echo "$package" | cut -d',' -f4)
-
+    while IFS=',' read name desc typ req; do
         vecho "$name ($desc)"
 
-        if [[ $install_optional -eq 1 ]] && [[ "$req" = "optional" ]] || [[ "$req" = "required" ]]; then
+        if [[ -n "$install_optional" ]] && [[ "$req" = "optional" ]] ||
+          [[ "$req" = "required" ]]; then
             if [[ "$typ" = "system" ]]; then
                 pacman_packages=("${pacman_packages[@]}" "$name")
             elif [[ "$typ" = "aur" ]]; then
@@ -91,21 +79,23 @@ function install_packages() {
 }
 
 function install_required_features() {
+    local feature features progress total i
+
     msg "Installing required features..."
 
-    local features total
     mapfile -t features < <(ls "$REQUIRED_FEATURES_DIR")
     total="${#features[@]}"
 
     for i in "${!features[@]}"; do
         feature="${features[i]}"
-	i=$((i+1))
+        i=$(( i + 1 ))
         progress="($i/$total)"
 
-        if ! (echo "$feature" | grep -e "yay" -e "sudoers" -e "dracut"); then
+        if ! echo "$feature" | grep -e "yay" -e "sudoers" -e "dracut"; then
             msg2 "$progress Installing $feature..."
             
-            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${V_FLAG[@]}" --no-service-start full_no_check
+            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${F_FLAGS[@]}" \
+                full_no_check
 
             if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
                 pause
@@ -126,7 +116,8 @@ function is_feature_valid() {
 }
 
 function get_excluded_features() {
-    local features
+    local features conf_excluded excluded excluded_nums f i
+
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
 
     if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
@@ -141,19 +132,17 @@ function get_excluded_features() {
             fi
         done
     else
-        local i=1
-        for feature in "${features[@]}"; do
-            echo "$i. $feature"
+        i=1
+        for f in "${features[@]}"; do
+            echo "$i. $f"
             i=$((i+1))
         done
 
-        local exclusions
         ask "Enter features to exclude (i.e. 1 2 3)"
-        read -ar exclusions
+        read -ar excluded_nums
         
-        for i in "${exclusions[@]}"; do
-            excluded_feature="${features[ $(( i-1 )) ]}"
-            excluded=("${excluded[@]}" "$excluded_feature")
+        for i in "${excluded_nums[@]}"; do
+            excluded=("${excluded[@]}" "${features[ $(( i-1 )) ]}")
         done
     fi
 
@@ -161,13 +150,15 @@ function get_excluded_features() {
 }
 
 function install_optional_features() {
+    local features feature excluded feature_path excluded i total c exclude_this
+    local conflicts
+
     msg "Installing optional features..."
 
-    local features excluded feature_path excluded i total
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
+    mapfile -t excluded < <(get_excluded_features)
 
     i=0
-    mapfile -t excluded < <(get_excluded_features)
 
     total=$(( ${#features[@]} - ${#excluded[@]} ))
 
@@ -175,10 +166,11 @@ function install_optional_features() {
 
     for feature in "${features[@]}"; do
         if ! echo "${excluded[@]}" | grep -q "$feature"; then
+            feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
+
             i=$((i+1))
             progress="($i/$total)"
 
-            feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
             mapfile -t conflicts < <("$feature_path" "${V_FLAG[@]}" conflicts)
 
             for c in "${conflicts[@]}"; do
@@ -193,15 +185,15 @@ function install_optional_features() {
                 fi
             done
 
-            if [[ "$exclude_this" -eq 1 ]]; then
+            if (( "$exclude_this" == 1 )); then
                 exclude_this=0
                 continue
             fi
 
-            OPTIONAL_FEATURES_SELECTED=("${OPTIONAL_FEATURES_SELECTED[@]}" "$feature")
+            optional_features_selected=("${optional_features_selected[@]}" "$feature")
 
             msg2 "$progress Installing $feature..."
-            if ! "$feature_path" "${V_FLAG[@]}" --no-service-start full_no_check; then
+            if ! "$feature_path" "${F_FLAGS[@]}" full_no_check; then
                 err_proceed "$feature failed to install"
             fi
 
@@ -213,18 +205,20 @@ function install_optional_features() {
 }
 
 function check_required_features() {
+    local required progress feature feature_path i
+
     msg "Checking required features..."
 
-    local required
     mapfile -t required < <(ls "$REQUIRED_FEATURES_DIR")
 
     for i in "${!required[@]}"; do
         feature="${required[i]}"
+        feature_path="$REQUIRED_FEATURES_DIR/$feature/feature.sh"
         progress="($((i+1))/${#required[@]})"
 
         msg2 "$progress Checking $feature..."
 
-        if ! "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${V_FLAG[@]}" check_install; then
+        if ! "$feature_path" "${F_FLAGS[@]}" check_install; then
             error "$feature is not installed."
             exit 1
         fi
@@ -236,18 +230,20 @@ function check_required_features() {
 }
 
 function check_optional_features() {
+    local optional progress feature feature_path i
+
     msg "Checking optional features..."
 
-    local optional
-    optional=("${OPTIONAL_FEATURES_SELECTED[@]}")
+    optional=("${optional_features_selected[@]}")
 
     for i in "${!optional[@]}"; do
         feature="${optional[i]}"
+        feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
         progress="($((i+1))/${#optional[@]})"
 
         msg2 "$progress Checking $feature..."
 
-        if ! "$OPTIONAL_FEATURES_DIR"/"$feature"/feature.sh "${V_FLAG[@]}" check_install; then
+        if ! "$feature_path" "${F_FLAGS[@]}" check_install; then
             err_proceed "$feature does not seem to be installed correctly"
         fi
 
@@ -259,7 +255,8 @@ function check_optional_features() {
 
 function disable_localrepo() {
     msg "Disabling localrepo..."
-    sudo sed -i /etc/pacman.conf -e '\;Include = /LadOS/install/localrepo.conf;d'
+    sudo sed -i /etc/pacman.conf -e \
+        '\;Include = /LadOS/install/localrepo.conf;d'
 }
 
 
@@ -271,7 +268,7 @@ function remove_temp_sudoers() {
 function review() {
     msg "Configuration review..."
     
-    local pacman_mirrors fstab dracut_conf locale lang hostname hosts
+    local pacman_mirrors fstab timezone dracut_conf locale lang hostname hosts
     local default_user required_features optional_features
 
     pacman_mirrors="$(cat /etc/pacman.d/mirrorlist)"
@@ -282,7 +279,7 @@ function review() {
     hosts="$(cat /etc/hosts)"
     default_user="$USER"
     required_features="$(ls "$REQUIRED_FEATURES_DIR")"
-    optional_features="${OPTIONAL_FEATURES_SELECTED[*]}"
+    optional_features="${optional_features_selected[*]}"
     dracut_conf="$(cat /etc/dracut.conf.d/*.conf)"
     lang="$(source /etc/locale.conf; echo "$LANG")"
 
