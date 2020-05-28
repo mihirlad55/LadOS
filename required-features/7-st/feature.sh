@@ -1,64 +1,66 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly TMP_ST_DIR="/tmp/st"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="st"
-feature_desc="Install st (Simple Terminal)"
-
-ST_URL="https://github.com/mihirlad55/st"
-
-provides=()
-new_files=("/usr/local/bin/st" \
+readonly FEATURE_NAME="st"
+readonly FEATURE_DESC="Install st (Simple Terminal)"
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "/usr/local/bin/st" \
     "/usr/local/share/applications/st.desktop" \
-    "/usr/local/share/man/man1/st.1")
-modified_files=("/usr/share/terminfo")
-temp_files=("/tmp/st")
+    "/usr/local/share/man/man1/st.1" \
+)
+readonly MODIFIED_FILES=("/usr/share/terminfo")
+readonly TEMP_FILES=("$TMP_ST_DIR")
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=()
 
-depends_aur=()
-depends_pacman=()
+readonly ST_URL="https://github.com/mihirlad55/st"
+
 
 
 function check_install() {
-    for f in "${new_files[@]}"; do
+    local f
+
+    for f in "${NEW_FILES[@]}"; do
         if [[ ! -f "$f" ]]; then
             echo "$f is missing" >&2
-            echo "$feature_name is not installed" >&2
+            echo "$FEATURE_NAME is not installed" >&2
             return 1
         fi
     done
 
-    qecho "$feature_name is installed"
+    qecho "$FEATURE_NAME is installed"
     return 0
 }
 
 function prepare() {
-    if [[ ! -f "/tmp/st" ]]; then
+    if [[ ! -d "$TMP_ST_DIR" ]]; then
         qecho "Cloning st..."
-        git clone --depth 1 "${V_FLAG[@]}" "$ST_URL" /tmp/st
+        git clone "${GIT_FLAGS[@]}" "$ST_URL" "$TMP_ST_DIR"
     fi
 }
 
 function install() {
     qecho "Making st..."
-    (cd /tmp/st && sudo make clean install)
+    (cd "$TMP_ST_DIR" && sudo make clean install)
 }
 
 function cleanup() {
-    qecho "Removing /tmp/st..."
-    rm -rf /tmp/st
+    qecho "Removing $TMP_ST_DIR..."
+    rm -rf "$TMP_ST_DIR"
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[*]}..."
-    rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    rm -f "${NEW_FILES[@]}"
 }
 
+
 source "$LAD_OS_DIR/common/feature_footer.sh"
-
-
