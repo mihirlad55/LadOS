@@ -10,6 +10,7 @@ readonly REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
 readonly OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 readonly LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 readonly PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
+F_FLAGS=("--no-service-start")
 
 VERBOSITY=
 V_FLAG=("-q")
@@ -32,7 +33,8 @@ elif [[ "$1" = "-vv" ]] || [[ "$CONF_VERBOSITY" -eq 2 ]]; then
     V_FLAG=("-v")
 fi
 
-readonly VERBOSITY V_FLAG
+F_FLAGS=("${V_FLAG[@]}" "${F_FLAGS[@]}")
+readonly VERBOSITY V_FLAG F_FLAGS
 
 
 function error_trap() {
