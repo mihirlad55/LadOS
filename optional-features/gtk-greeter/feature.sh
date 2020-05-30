@@ -7,6 +7,7 @@ readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly CONF_DIR="$LAD_OS_DIR/conf/gtk-greeter"
 readonly CONF_USER_PNG="$CONF_DIR/user.png"
 readonly CONF_LOGIN_PNG="$CONF_DIR/login.png"
+readonly BASE_GTK_GREETER_CONF="$BASE_DIR/lightdm-gtk-greeter.conf"
 readonly NEW_USER_PNG="/var/lib/AccountsService/icons/$USER.png"
 readonly NEW_LOGIN_PNG="/usr/share/backgrounds/login.png"
 readonly NEW_USER_INI="/var/lib/AccountsService/users/$USER"
@@ -39,7 +40,7 @@ readonly DEPENDS_PIP3=()
 function check_install() {
     if grep -q "$MOD_LIGHTDM_CONF" -e "^greeter-session=lightdm-gtk-greeter$" &&
         pacman -Q lightdm-gtk-greeter > /dev/null &&
-        diff "$BASE_DIR/lightdm-gtk-greeter.conf" "$MOD_GTK_GREETER_CONF"; then
+        diff "$BASE_GTK_GREETER_CONF" "$MOD_GTK_GREETER_CONF"; then
         qecho "$FEATURE_NAME is installed"
         return 0
     else
@@ -50,8 +51,7 @@ function check_install() {
 
 function install() {
     qecho "Copying lightdm-gtk-greeter to /etc/lightdm/..."
-    sudo install -Dm 644 "$BASE_DIR/lightdm-gtk-greeter.conf" \
-        "$MOD_GTK_GREETER_CONF"
+    sudo install -Dm 644 "$BASE_GTK_GREETER_CONF" "$MOD_GTK_GREETER_CONF"
 
     qecho "Changing greeter session in $MOD_LIGHTDM_CONF"
     sudo sed -i 's/#*greeter-session=.*$/greeter-session=lightdm-gtk-greeter/' \
@@ -59,7 +59,7 @@ function install() {
 
     qecho "Creating $NEW_USER_INI ini"
     echo "[User]" | sudo tee "$NEW_USER_INI" > /dev/null
-    echo "Icon=$NEW_LOGIN_PNG" | sudo tee -a "$NEW_USER_INI" > /dev/null
+    echo "Icon=$NEW_USER_PNG" | sudo tee -a "$NEW_USER_INI" > /dev/null
 
     if [[ -f "$CONF_LOGIN_PNG" ]]; then
         qecho "Copying login.png from $CONF_DIR to $NEW_LOGIN_PNG"
