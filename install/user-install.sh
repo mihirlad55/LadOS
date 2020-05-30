@@ -8,6 +8,18 @@ source "$LAD_OS_DIR/common/install_common.sh"
 optional_features_selected=()
 
 
+
+##############################################################################
+# Used for non-fatal errors to prompt user if they want to proceed
+# Globals:
+#   None
+# Arguments:
+#   Strings to print as error
+# Returns:
+#   0 if user selects to proceed, exit with error code 1 otherwise
+# Outputs:
+#   Prompt user if they want to proceed
+##############################################################################
 function err_proceed() {
     error "$@"
     if prompt "Would you like to proceed?"; then
@@ -16,6 +28,18 @@ function err_proceed() {
     exit 1
 }
 
+##############################################################################
+# Check if feature name is valid 
+# Globals:
+#   OPTIONAL_FEATURES_DIR
+#   REQUIRED_FEATURES_DIR
+# Arguments:
+#   name, Name of feature
+# Returns:
+#   0 if feature exists, 1 if feature doesn't exist
+# Outputs:
+#   Nothing
+##############################################################################
 function is_feature_valid() {
     local name
     name="$1"
@@ -27,6 +51,22 @@ function is_feature_valid() {
     return 0
 }
 
+##############################################################################
+# Get list of excluded features specified by conf, otherwise prompt user to
+# specify list
+# Globals:
+#   OPTIONAL_FEATURES_DIR
+#   REQUIRED_FEATURES_DIR
+#   CONF_EXCLUDE_FEATURES
+# Arguments:
+#   None
+# Returns:
+#   0 if successful, exits on error
+# Outputs:
+#   stderr: Prompts user to select list of features to exclude if not specified
+#   in configuration
+#   stdout: List of space-separated features to exclude
+##############################################################################
 function get_excluded_features_from_conf() {
     local features conf_excluded excluded excluded_nums f i
 
@@ -76,6 +116,7 @@ function install_yay() {
 
     msg "Installing yay..."
 
+    # Install with pacman if possible (if localrepo is enabled)
     if pacman -Si yay &> /dev/null; then
         msg2 "Installing yay through cache..."
         sudo pacman -S yay --needed --noconfirm
@@ -96,6 +137,7 @@ function install_packages() {
         install_optional=1
     fi
 
+    # Split packages into pacman_packages and aur_packages arrays
     while IFS=',' read name desc typ req; do
         vecho "$name ($desc)"
 
@@ -112,6 +154,7 @@ function install_packages() {
     msg2 "Syncing pacman..."
     sudo pacman -Syu --noconfirm
     
+    # Use localrepo to install all packages if possible
     if [[ -d "$PKG_CACHE_DIR" ]]; then
         msg2 "Installing all packages using cache..."
         sudo pacman -S "${pacman_packages[@]}" "${aur_packages[@]}" \
@@ -139,9 +182,12 @@ function install_required_features() {
         i=$(( i + 1 ))
         progress="($i/$total)"
 
+        # Don't install yay, sudoers, or dracut, since they were already
+        # installed
         if ! echo "$feature" | grep -e "yay" -e "sudoers" -e "dracut"; then
             msg2 "$progress Installing $feature..."
             
+            # Install without feature check
             "$feature_path" "${F_FLAGS[@]}" full_no_check
 
             if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
@@ -167,6 +213,7 @@ function install_optional_features() {
     vecho "Excluding features ${excluded[*]}"
 
     for feature in "${features[@]}"; do
+        # Check if feature is excluded
         if ! echo "${excluded[*]}" | grep -q "$feature"; then
             feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
 
@@ -175,6 +222,7 @@ function install_optional_features() {
 
             mapfile -t conflicts < <("$feature_path" "${V_FLAG[@]}" conflicts)
 
+            # Check if this feature conflicts with any other
             for c in "${conflicts[@]}"; do
                 if ! echo "${excluded[*]}" | grep -q "$c"; then
                     plain "$c conflicts with $feature"
@@ -187,16 +235,18 @@ function install_optional_features() {
                 fi
             done
 
+            # If user says to exclude conflicting feature, go to next feature
             if (( "$exclude_this" == 1 )); then
                 exclude_this=0
                 continue
             fi
 
+            # Build list of actually installed optional features
             optional_features_selected=("${optional_features_selected[@]}" "$feature")
 
             msg2 "$progress Installing $feature..."
             if ! "$feature_path" "${F_FLAGS[@]}" full_no_check; then
-
+                # Non-fatal error
                 err_proceed "$feature failed to install"
             fi
 
