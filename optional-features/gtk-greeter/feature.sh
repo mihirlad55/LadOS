@@ -38,6 +38,7 @@ readonly DEPENDS_PIP3=()
 
 
 function check_install() {
+    # Check if gtk-greeter is set as main session in lightdm.conf
     if grep -q "$MOD_LIGHTDM_CONF" -e "^greeter-session=lightdm-gtk-greeter$" &&
         pacman -Q lightdm-gtk-greeter > /dev/null &&
         diff "$BASE_GTK_GREETER_CONF" "$MOD_GTK_GREETER_CONF"; then
