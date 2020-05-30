@@ -21,29 +21,29 @@ function enable_localrepo() {
 }
 
 function set_timezone() (
-    local zone num option options i selection re
+    local zone num option options i selection
 
     msg "Setting timezone..."
 
     if [[ "$CONF_TIMEZONE_PATH" != "" ]]; then
         zone="$CONF_TIMEZONE_PATH"
     else
-        IFS=$'\n'
         cd /usr/share/zoneinfo || exit 1
+
         while true; do
             mapfile -t options < <(ls)
 
             i=1
             for option in "${options[@]}"; do
                 echo "$i. $option"
-                i=$((i+1))
+                i=$(( i + 1 ))
             done
+
             num="$(ask "Select closest match")"
 
-            re='^[0-9]+$'
-            if ! [[ $num =~ $re ]]; then continue; fi
+            if ! [[ $num =~ ^[0-9]+$ ]]; then continue; fi
 
-            num=$((num-1))
+            num=$(( num - 1 ))
 
             selection="${options[$num]}"
 

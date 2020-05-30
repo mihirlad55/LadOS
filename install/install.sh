@@ -5,7 +5,7 @@ readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
-WIFI_ENABLED=0
+WIFI_ENABLED=
 
 
 function gencrypttab() {
@@ -63,7 +63,11 @@ function connect_to_internet() {
     if ! ping -c 1 www.google.com &> /dev/null; then
         if [[ "$CONF_USE_WIFI" = "yes" ]] || prompt "Setup WiFi for setup?"; then
             setup_wifi
+            WIFI_ENABLED=1
+        else
+            WIFI_ENABLED=0
         fi
+        readonly WIFI_ENABLED
     fi
 
     msg2 "Waiting for connection to Internet..."
@@ -81,11 +85,11 @@ function setup_wifi() {
 
     conf_path="/tmp/wpa_supplicant.conf"
 
-    echo "ctrl_interface=/run/wpa_supplicant" > $conf_path
+    echo "ctrl_interface=/run/wpa_supplicant" > "$conf_path"
     echo "update_config=1" >> $conf_path
 
     if [[ "$network_conf" != "" ]]; then
-        echo "$network_conf" >> $conf_path        
+        echo "$network_conf" >> "$conf_path"
     else
         msg2 "Opening wpa_supplicant.conf to add network info..."
         pause
@@ -101,9 +105,6 @@ function setup_wifi() {
 
     wpa_supplicant "${V_FLAG[@]}" -B -i"${adapter}" -c "$conf_path"
     dhcpcd "${V_FLAG[@]}"
-
-    WIFI_ENABLED=1
-    readonly WIFI_ENABLED
 }
 
 function update_system_clock() {
@@ -133,6 +134,7 @@ function rank_mirrors() {
 
 function enable_localrepo() {
     msg "Checking for localrepo..."
+
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
         if ! grep -q /etc/pacman.conf -e "LadOS"; then
             msg2 "Found localrepo. Enabling..."
@@ -166,8 +168,8 @@ function create_swap_file() {
     swapon "$swap_path"
 }
 
-function pacstrap_install() {
-    msg "Starting pacstrap install..."
+function base_install() {
+    msg "Starting base install..."
 
     if mount | grep -q /mnt; then
         pacstrap /mnt base linux linux-firmware
@@ -183,7 +185,7 @@ function generate_fstab() {
 }
 
 function generate_crypttab() {
-    local names secret_file
+    local name names secret_file part_path
 
     msg "Generating crypttab..."
 
@@ -247,7 +249,7 @@ enable_localrepo
 
 create_swap_file
 
-pacstrap_install
+base_install
 
 generate_fstab
 

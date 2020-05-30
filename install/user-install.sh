@@ -16,16 +16,64 @@ function err_proceed() {
     exit 1
 }
 
+function is_feature_valid() {
+    local name
+    name="$1"
+
+    if [[ ! -d "$OPTIONAL_FEATURES_DIR/$name" ]] || \
+        [[ ! -d "$REQUIRED_FEATURES_DIR/$name" ]]; then
+        return 1
+    fi
+    return 0
+}
+
+function get_excluded_features_from_conf() {
+    local features conf_excluded excluded excluded_nums f i
+
+    mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
+
+    if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
+        conf_excluded=("${CONF_EXCLUDE_FEATURES[@]}")
+        excluded=()
+
+        for f in "${conf_excluded[@]}"; do
+            if ! is_feature_valid "$f"; then
+                warn "$f is not a valid feature. Not adding to exclusions."
+            else
+                excluded=("${excluded[@]}" "$f")
+            fi
+        done
+    else
+        i=1
+
+        for f in "${features[@]}"; do
+            plain3 "$i. $f" >&2
+            i=$((i+1))
+        done
+
+        excluded_nums="$(ask_words "Enter features to exclude (i.e. 1 2 3)")"
+        
+        for i in "${excluded_nums[@]}"; do
+            excluded=("${excluded[@]}" "${features[ $(( i-1 )) ]}")
+        done
+    fi
+
+    echo "${excluded[@]}"
+}
+
 function enable_community_repo() {
+    local feature_path
+
     msg "Enabling community repo..."
     
-    local path_to_feature
-    path_to_feature=("$REQUIRED_FEATURES_DIR"/*enable-community-pacman/feature.sh)
+    feature_path=("$REQUIRED_FEATURES_DIR"/*enable-community-pacman/feature.sh)
 
-    "${path_to_feature[0]}" "${F_FLAGS[@]}" full
+    "$feature_path" "${F_FLAGS[@]}" full
 }
 
 function install_yay() {
+    local feature_path
+
     msg "Installing yay..."
 
     if pacman -Si yay &> /dev/null; then
@@ -33,10 +81,9 @@ function install_yay() {
         sudo pacman -S yay --needed --noconfirm
     else
         msg2 "Making and installing yay..."
-        local path_to_feature
-        path_to_feature=("$REQUIRED_FEATURES_DIR"/*yay/feature.sh)
+        feature_path=("$REQUIRED_FEATURES_DIR"/*yay/feature.sh)
 
-        "${path_to_feature[0]}" "${F_FLAGS[@]}" full
+        "$feature_path" "${F_FLAGS[@]}" full
     fi
 }
 
@@ -79,7 +126,7 @@ function install_packages() {
 }
 
 function install_required_features() {
-    local feature features progress total i
+    local feature feature_path features progress total i
 
     msg "Installing required features..."
 
@@ -88,64 +135,20 @@ function install_required_features() {
 
     for i in "${!features[@]}"; do
         feature="${features[i]}"
+        feature_path="$REQUIRED_FEATURES_DIR/$feature/feature.sh"
         i=$(( i + 1 ))
         progress="($i/$total)"
 
         if ! echo "$feature" | grep -e "yay" -e "sudoers" -e "dracut"; then
             msg2 "$progress Installing $feature..."
             
-            "$REQUIRED_FEATURES_DIR"/"$feature"/feature.sh "${F_FLAGS[@]}" \
-                full_no_check
+            "$feature_path" "${F_FLAGS[@]}" full_no_check
 
             if [[ "$CONF_NOCONFIRM" != "yes" ]]; then
                 pause
             fi
         fi
     done
-}
-
-function is_feature_valid() {
-    local name
-    name="$1"
-
-    if [[ ! -d "$OPTIONAL_FEATURES_DIR/$name" ]] || \
-        [[ ! -d "$REQUIRED_FEATURES_DIR/$name" ]]; then
-        return 1
-    fi
-    return 0
-}
-
-function get_excluded_features() {
-    local features conf_excluded excluded excluded_nums f i
-
-    mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
-
-    if [[ "$CONF_EXCLUDE_FEATURES" != "" ]]; then
-        conf_excluded=("${CONF_EXCLUDE_FEATURES[@]}")
-        excluded=()
-
-        for f in "${conf_excluded[@]}"; do
-            if ! is_feature_valid "$f"; then
-                warn "$f is not a valid feature. Not adding to exclusions."
-            else
-                excluded=("${excluded[@]}" "$f")
-            fi
-        done
-    else
-        i=1
-        for f in "${features[@]}"; do
-            echo "$i. $f"
-            i=$((i+1))
-        done
-
-        excluded_nums="$(ask_words "Enter features to exclude (i.e. 1 2 3)")"
-        
-        for i in "${excluded_nums[@]}"; do
-            excluded=("${excluded[@]}" "${features[ $(( i-1 )) ]}")
-        done
-    fi
-
-    echo "${excluded[@]}"
 }
 
 function install_optional_features() {
@@ -164,7 +167,7 @@ function install_optional_features() {
     vecho "Excluding features ${excluded[*]}"
 
     for feature in "${features[@]}"; do
-        if ! echo "${excluded[@]}" | grep -q "$feature"; then
+        if ! echo "${excluded[*]}" | grep -q "$feature"; then
             feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
 
             i=$((i+1))
@@ -193,6 +196,7 @@ function install_optional_features() {
 
             msg2 "$progress Installing $feature..."
             if ! "$feature_path" "${F_FLAGS[@]}" full_no_check; then
+
                 err_proceed "$feature failed to install"
             fi
 
@@ -213,7 +217,7 @@ function check_required_features() {
     for i in "${!required[@]}"; do
         feature="${required[i]}"
         feature_path="$REQUIRED_FEATURES_DIR/$feature/feature.sh"
-        progress="($((i+1))/${#required[@]})"
+        progress="($(( i + 1 ))/${#required[@]})"
 
         msg2 "$progress Checking $feature..."
 
@@ -238,7 +242,7 @@ function check_optional_features() {
     for i in "${!optional[@]}"; do
         feature="${optional[i]}"
         feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
-        progress="($((i+1))/${#optional[@]})"
+        progress="($(( i + 1 ))/${#optional[@]})"
 
         msg2 "$progress Checking $feature..."
 
