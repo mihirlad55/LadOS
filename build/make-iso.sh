@@ -37,31 +37,35 @@ function print_usage() {
     echo "   interactive                 Start interactive mode. This mode uses"
     echo "                               no options."
     echo
-    echo "   build                       Build LadOS iso from scratch. This mode"
-    echo "                               accepts the options --create-localrepo,"
-    echo "                               --ms-ttf-win10, --dev, --sb-key-path,"
-    echo "                               --sb-crt-path."
+    echo "   build                       Build LadOS iso from scratch. This"
+    echo "                               mode accepts the options"
+    echo "                               --create-localrepo, --ms-ttf-win10,"
+    echo "                               --dev, --sb-key-path, --sb-crt-path."
     echo
-    echo "   remaster                    Remaster archiso and add LadOS. This mode"
-    echo "                               accepts the options --create-localrepo,"
-    echo "                               --ms-ttf-win10, --dev, --archiso-path,"
+    echo "   remaster                    Remaster archiso and add LadOS. This"
+    echo "                               mode accepts the options"
+    echo "                               --create-localrepo, --ms-ttf-win10,"
+    echo "                               --dev, --archiso-path,"
     echo "                               --auto-download-iso, --sb-key-path,"
     echo "                               --sb-crt-path."
     echo
     echo "   image <dev>                 Image device with existing image. This"
-    echo "                               mode requires the device as an argument."
+    echo "                               mode requires the device as an"
+    echo "                               argument."
     echo
     echo "   help                        Display this message and exit"
     echo
     echo "  Options:"
     echo "   -a  --auto-download-iso     Automatically download latest archiso"
-    echo "   -c, --sb-crt-path           Path to certificate file for secure boot"
+    echo "   -c, --sb-crt-path           Path to certificate file for secure"
+    echo "                               boot"
     echo "   -d, --dev <dev>             Image <dev> with archiso image at end"
     echo "   -i, --archiso-path          Path to existing archiso to remaster"
     echo "   -k, --sb-key-path           Path to private key file to sign EFIs"
     echo "                               with for secure boot"
-    echo "   -l, --create-localrepo      Include offline repo of packages in iso"
-    echo "   -m, --ms-ttf-win10          Build and and include ms-ttf-win10 package"
+    echo "   -l, --create-localrepo      Include offline package repo in iso"
+    echo "   -m, --ms-ttf-win10          Build and and include ms-ttf-win10"
+    echo "                               package"
     echo "   -v                          Verbose level 1"
     echo "   -vv                         Verbose level 2"
     echo "   -vvv                        Verbose level 3"
@@ -166,13 +170,14 @@ function image_dev() {
 }
 
 function build_win10_fonts() {
-    local -r TMP_DIR FONTS_DIR BUILD_SH
-    local PKG_DIR
+    local TMP_DIR FONTS_DIR BUILD_SH PKG_DIR
 
     TMP_DIR="/var/tmp"
     FONTS_DIR="$TMP_DIR/win10-fonts"
     BUILD_SH="$BASE_DIR/misc/build-ttf-ms-win10.sh"
-    readonly PKG_DIR="$1"
+    PKG_DIR="$1"
+
+    readonly TMP_DIR FONTS_DIR BUILD_SH PKG_DIR
 
     if ! find "$PKG_DIR" -name "*ttf-ms-win10*" | grep -q '.'; then
         msg3 "ttf-ms-win10 not found in $PKG_DIR"
@@ -193,12 +198,14 @@ function build_win10_fonts() {
 }
 
 function build_aur_packages() {
-    local -r AUR_URL PKG_DIR TMP_DIR
+    local AUR_URL PKG_DIR TMP_DIR
     local aur_packages pkg_name pkg_dir pkg_url
 
     AUR_URL="https://aur.archlinux.org"
     TMP_DIR="/var/tmp"
     PKG_DIR="$1"
+
+    readonly AUR_URL PKG_DIR TMP_DIR
 
     mapfile -t aur_packages < <(grep "^.*,.*,aur," "$LAD_OS_DIR/packages.csv")
 
@@ -262,7 +269,6 @@ function copy_pacman_packages() {
     readonly PKG_DIR ARCH_ISO_DIR PACMAN_CONF TMP_DB_DIR ARCH_ISO_PACKAGE_LIST
 
     sudo pacman -Syu --noconfirm
-    sudo pacman -S pacman-contrib --needed --noconfirm
 
     if [[ -f "$ARCH_ISO_PACKAGE_LIST" ]]; then
         msg3 "Found package list at $ARCH_ISO_PACKAGE_LIST..."
@@ -335,6 +341,8 @@ function create_localrepo() {
     PKG_DIR="$LOCAL_REPO_DIR/pkg"
 
     readonly AIROOTFS_DIR PACMAN_CONF LOCAL_REPO_DIR PKG_DIR
+
+    sudo pacman -S pacman-contrib --needed --noconfirm
 
     sudo mkdir -p "$PKG_DIR"
 
@@ -454,8 +462,7 @@ function download_iso() {
     local ARCH_ISO
     local top_mirror url_root iso_name url_iso
 
-    ARCH_ISO="/tmp/archiso.iso"
-
+    ARCH_ISO="$1"
     readonly ARCH_ISO
 
     top_mirror="$(cat /etc/pacman.d/mirrorlist \
@@ -475,16 +482,37 @@ function download_iso() {
 
     msg "Downloading archiso..."
     curl "$url_iso" --output "$ARCH_ISO"
+}
+
+function download_and_remaster() {
+    local ARCH_ISO
+    ARCH_ISO="/tmp/archiso.iso"
+    readonly ARCH_ISO
+
+    download_iso "$ARCH_ISO"
 
     remaster "$ARCH_ISO"
 }
 
-function use_existing_iso() {
+function use_existing_and_remaster() {
     local arch_iso
 
     arch_iso="$(ask "Enter path to iso")"
 
     remaster "$arch_iso"
+}
+
+function existing_image_to_usb() {
+    iso_path="$(find "$BASE_DIR" -type f -name 'LadOS*.iso' -print -quit)"
+
+    if [[ -z "$DEV" ]]; then
+        ls /dev
+        dev="$(ask "Please enter the path to your device (i.e. /dev/sdX)")"
+
+        image_dev "$iso_path" "$dev"
+    else
+        image_dev "$iso_path" "$DEV"
+    fi
 }
 
 function remaster() {
@@ -636,25 +664,11 @@ function remaster() {
     exit 0
 }
 
-
 function remaster_iso() {
     show_menu "Remaster ISO" \
-        "Download ISO"      "download_iso" \
-        "Use existing ISO"  "use_existing_iso" \
+        "Download ISO"      "download_and_remaster" \
+        "Use existing ISO"  "use_existing_and_remaster" \
         "Go Back"           "return 0"
-}
-
-function existing_image_to_usb() {
-    iso_path="$(find "$BASE_DIR" -type f -name 'LadOS*.iso' -print -quit)"
-
-    if [[ -z "$DEV" ]]; then
-        ls /dev
-        dev="$(ask "Please enter the path to your device (i.e. /dev/sdX)")"
-
-        image_dev "$iso_path" "$dev"
-    else
-        image_dev "$iso_path" "$DEV"
-    fi
 }
 
 function interactive() {
