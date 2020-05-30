@@ -65,6 +65,7 @@ function connect_to_internet() {
             setup_wifi
         fi
     fi
+
     msg2 "Waiting for connection to Internet..."
     until ping -c 1 www.google.com &> /dev/null; do sleep 1; done
 }
@@ -95,8 +96,7 @@ function setup_wifi() {
         adapter="$CONF_WIFI_ADAPTER"
     else
         ip link
-        ask "Enter name of WiFI adapter"
-        read -r adapter
+        adapter="$(ask "Enter name of WiFI adapter")"
     fi
 
     wpa_supplicant "${V_FLAG[@]}" -B -i"${adapter}" -c "$conf_path"
@@ -119,8 +119,7 @@ function rank_mirrors() {
     if [[ "$CONF_COUNTRY_CODE" != "" ]]; then
         country="$CONF_COUNTRY_CODE"        
     else
-        ask "Enter your country code (i.e. US)"
-        read -r country
+        country="$(ask "Enter your country code (i.e. US)")"
     fi
 
     msg2 "Beginning mirror ranking..." "(This may take a minute)"

@@ -23,21 +23,35 @@ readonly CLEAR BOLD READ GREEN YELLOW BLUE
 
 
 function pause() {
-    printf "${BLUE} :: ${CLEAR}${BOLD}Press enter to continue${CLEAR}${BLUE} :: ${CLEAR}"
+    printf "${BLUE} :: ${CLEAR}${BOLD}Press enter to continue${CLEAR}${BLUE} :: ${CLEAR}" >&2
     read
 }
 
 function ask() {
     local mesg="$1"
-    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}: "
+
+    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}: " >&2
+
+    read -r resp
+    echo "$resp"
+}
+
+function ask_words() {
+    local mesg="$1"
+
+    printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR}: " >&2
+
+    read -ar resp
+    echo "${resp[@]}"
 }
 
 function prompt() {
     local mesg="$1"
     local resp
+
     while true; do
-	printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR} ${BLUE}[Y/n]:${CLEAR} "
-	read resp
+        printf "${BLUE} :: ${CLEAR}${BOLD}${mesg}${CLEAR} ${BLUE}[Y/n]:${CLEAR} " >&2
+        read resp
 
         if [[ "$resp" = "y" ]] || [[ "$resp" = "Y" ]]; then
             return 0

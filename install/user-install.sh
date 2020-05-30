@@ -138,8 +138,7 @@ function get_excluded_features() {
             i=$((i+1))
         done
 
-        ask "Enter features to exclude (i.e. 1 2 3)"
-        read -ar excluded_nums
+        excluded_nums="$(ask_words "Enter features to exclude (i.e. 1 2 3)")"
         
         for i in "${excluded_nums[@]}"; do
             excluded=("${excluded[@]}" "${features[ $(( i-1 )) ]}")

@@ -400,10 +400,8 @@ function build_from_scratch() {
     fi
 
     if iprompt "Sign the EFI binaries with keys for secure boot?"; then
-        ask "Enter path to the private key"
-        read -r sb_key_path
-        ask "Enter path to the crt"
-        read -r sb_crt_path
+        sb_key_path="$(ask "Enter path to the private key")"
+        sb_crt_path="$(ask "Enter path to the crt")"
     elif [[ -n "$SB_KEY_PATH" ]] && [[ -n "$SB_CRT_PATH" ]]; then
         sb_key_path="$SB_KEY_PATH"
         sb_crt_path="$SB_CRT_PATH"
@@ -441,8 +439,7 @@ function build_from_scratch() {
             image_dev "$out" "$DEV"
         elif iprompt "Would you like to write this image to a device?"; then
             ls /dev
-            ask "Please enter the path to your device (i.e. /dev/sdX)"
-            read -r dev
+            dev="$(ask "Please enter the path to your device (i.e. /dev/sdX)")"
 
             image_dev "$out" "$dev"
         fi
@@ -485,8 +482,7 @@ function download_iso() {
 function use_existing_iso() {
     local arch_iso
 
-    ask "Enter path to iso"
-    read -r arch_iso
+    arch_iso="$(ask "Enter path to iso")"
 
     remaster "$arch_iso"
 }
@@ -579,10 +575,8 @@ function remaster() {
 
     if iprompt "Sign the EFI binaries with keys for secure boot?"; then
         msg "Signing EFIs..."
-        ask "Enter path to the private key"
-        read -r sb_key_path
-        ask "Enter path to the crt"
-        read -r sb_crt_path
+        sb_key_path="$(ask "Enter path to the private key")"
+        sb_crt_path="$(ask "Enter path to the crt")"
     elif [[ -n "$SB_KEY_PATH" ]] && [[ -n "$SB_CRT_PATH" ]]; then
         sb_key_path="$SB_KEY_PATH"
         sb_crt_path="$SB_CRT_PATH"
@@ -634,8 +628,7 @@ function remaster() {
         image_dev "$out" "$DEV"
     elif iprompt "Would you like to write this image to a device? "; then
         ls /dev
-        ask "Please enter the path to your device (i.e. /dev/sdX)"
-        read -r dev
+        dev="$(ask "Please enter the path to your device (i.e. /dev/sdX)")"
 
         image_dev "$out" "$dev"
     fi
@@ -656,8 +649,7 @@ function existing_image_to_usb() {
 
     if [[ -z "$DEV" ]]; then
         ls /dev
-        ask "Please enter the path to your device (i.e. /dev/sdX)"
-        read -r dev
+        dev="$(ask "Please enter the path to your device (i.e. /dev/sdX)")"
 
         image_dev "$iso_path" "$dev"
     else

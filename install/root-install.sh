@@ -38,8 +38,7 @@ function set_timezone() (
                 echo "$i. $option"
                 i=$((i+1))
             done
-            ask "Select closest match"
-            read -r num
+            num="$(ask "Select closest match")"
 
             re='^[0-9]+$'
             if ! [[ $num =~ $re ]]; then continue; fi
@@ -101,8 +100,7 @@ function set_hostname() {
     if [[ "$CONF_HOSTNAME" != "" ]]; then
         hostname="$CONF_HOSTNAME"
     else
-        ask "Enter a hostname for this computer"
-        read -r hostname
+        hostname="$(ask "Enter a hostname for this computer")"
     fi
 
     echo "$hostname" > /etc/hostname
@@ -163,8 +161,7 @@ function create_user_account() {
     if [[ "$CONF_USERNAME" != "" ]]; then
         username="$CONF_USERNAME"
     else
-        ask "Enter username"
-        read -r username
+        username="$(ask "Enter username")"
     fi
 
     mapfile -t users < <(cut -d':' -f1 /etc/passwd)
