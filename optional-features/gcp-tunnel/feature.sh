@@ -75,6 +75,7 @@ function check_install() {
 function prepare() {
     local new_port
 
+    # Get ssh port from SSHD config
     port=$(grep "$MOD_SSHD_CONFIG" -P "^#*Port [0-9]*$")
 
     if ! check_conf; then
@@ -87,6 +88,7 @@ function prepare() {
             port="$new_port"
         fi
 
+        # Update port in gcp-tunnel.env
         sed -i "$TMP_ENV" -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
 
         echo "Opening environment file for updates..."
@@ -103,6 +105,7 @@ function prepare() {
 }
 
 function install() {
+    # Update port setting in sshd config
     sudo sed -i "$MOD_SSHD_CONFIG" -e "s/^#*Port [0-9]*$/Port $port/"
 
     if ! sudo test -e "$ROOT_SSH_PRIV_KEY"; then
