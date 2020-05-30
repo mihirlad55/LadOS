@@ -59,7 +59,7 @@ readonly KEY_SLOT=10
 TPM_FLAGS=
 
 
-
+# Set TPM specific flags
 function set_tpm_verbosity_flag() {
     if [[ -n "$QUIET" ]]; then
         TPM_FLAGS=("--quiet")
@@ -69,11 +69,11 @@ function set_tpm_verbosity_flag() {
     readonly TPM_FLAGS
 }
 
-
 function clear_tpm_handle() {
     local handle
     handle="$1"
 
+    # Check if data at handle can be read
     if sudo tpm2_readpublic "${TPM_FLAGS[@]}" -c "$handle"; then
         qecho "TPM object found at handle $handle"
         qecho "Evicting object at $handle..."
@@ -86,9 +86,11 @@ function check_install() {
 
     set_tpm_verbosity_flag
 
+    # Get secret from TPM
     sudo tpm2_unseal "${TPM_FLAGS[@]}" -c "$TPM_HANDLE" -p "pcr:$PCR_POLICY" \
         -o "$TMP_SECRET_BIN"
 
+    # Check if TPM secret matches
     if ! sudo diff "$TMP_SECRET_BIN" "$NEW_SECRET_BIN"; then
         sudo rm "$TMP_SECRET_BIN"
         qecho "$FEATURE_NAME is not installed correctly."
@@ -147,6 +149,7 @@ function install() {
 
     sudo install -Dm 644 "$BASE_DRACUT_CONF" "$NEW_DRACUT_CONF"
 
+    # Build commandline arguments for dracut
     cmdline="rd.luks_tpm2_handle=$TPM_HANDLE rd.luks_tpm2_auth=pcr:$PCR_POLICY"
     cmdline="$cmdline rd.luks.key=$NEW_SECRET_BIN"
 
