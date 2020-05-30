@@ -40,15 +40,15 @@ case "$1" in
         ;;
 
     name)
-        echo "$feature_name"
+        echo "$FEATURE_NAME"
         ;;
 
     desc)
-        echo "$feature_desc"
+        echo "$FEATURE_DESC"
         ;;
 
     conflicts)
-        echo "${conflicts[*]}"
+        echo "${CONFLICTS[*]}"
         ;;
 
     check_conf | load_conf | check_install | prepare | install |  post_install \
@@ -67,16 +67,16 @@ case "$1" in
 
     uninstall)
         if ! check_install &> /dev/null; then
-            echo "$feature_name is not installed"
+            echo "$FEATURE_NAME is not installed"
             exit 1
         fi
 
-        if prompt "Are you sure you want to uninstall $feature_name?"; then
-            echo "Uninstalling $feature_name..."
+        if prompt "Are you sure you want to uninstall $FEATURE_NAME?"; then
+            echo "Uninstalling $FEATURE_NAME..."
 
             if has_dependencies; then
-                echo -n "$feature_name depends on ${depends_pacman[*]} "
-                echo "${depends_aur[*]} ${depends_pip3[*]}"
+                echo -n "$FEATURE_NAME depends on ${DEPENDS_PACMAN[*]} "
+                echo "${DEPENDS_AUR[*]} ${DEPENDS_PIP3[*]}"
                 if prompt "Would you like to uninstall these dependencies?"; then
                     uninstall_dependencies
                 fi
@@ -86,7 +86,7 @@ case "$1" in
                 uninstall
             fi
 
-            echo "Finished uninstalling $feature_name"
+            echo "Finished uninstalling $FEATURE_NAME"
         fi
         ;;
 

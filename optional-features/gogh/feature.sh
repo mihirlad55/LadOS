@@ -1,23 +1,23 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="Gogh"
-feature_desc="Install gnome-terminal gogh theme"
+readonly FEATURE_NAME="Gogh"
+readonly FEATURE_DESC="Install gnome-terminal gogh theme"
+readonly PROVIDES=()
+readonly NEW_FILES=()
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=()
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(gnome-terminal)
 
-provides=()
-new_files=()
-modified_files=()
-temp_files=()
+readonly URL="https://git.io/vQgMr"
 
-depends_aur=()
-depends_pacman=(gnome-terminal)
 
 
 function check_install() {
@@ -27,7 +27,8 @@ function check_install() {
 }
 
 function install() {
-    source <(wget -qO- https://git.io/vQgMr)
+    source <(wget -qO- "$URL")
 }
+
 
 source "$LAD_OS_DIR/common/feature_footer.sh"

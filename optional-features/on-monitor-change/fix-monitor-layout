@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
-default_mon="eDP1"
+readonly DEFAULT_MON="eDP1"
+MONITORS=()
 
-monitors=$(xrandr | grep -P -e "\bconnected\b" | cut -d' ' -f1)
+mapfile -t MONITORS < <(xrandr | grep -P -e "\bconnected\b" | cut -d' ' -f1)
+readonly MONITORS
 
 IFS=$'\n'
 
-for mon in $monitors; do
-    if [ "$mon" = "$default_mon" ]; then
+
+for mon in "${MONITORS[@]}"; do
+    if [ "$mon" = "$DEFAULT_MON" ]; then
         continue
     fi
 

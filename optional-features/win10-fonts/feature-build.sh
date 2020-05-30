@@ -1,45 +1,48 @@
 #!/usr/bin/bash
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
-CONF_DIR="$LAD_OS_DIR/conf/win10-fonts"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly CONF_DIR="$LAD_OS_DIR/conf/win10-fonts"
+readonly CACHE_DIR="$HOME/.cache/yay"
+readonly BASE_FILES_TXT="$BASE_DIR/files.txt"
+readonly TMP_FONTS_DIR="/tmp/ttf-ms-win10"
+readonly TMP_FONTS_ZIP="/tmp/win10-fonts.zip"
+readonly TMP_PKG_DIR="$CACHE_DIR/ttf-ms-win10"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-REPO_PATH="$HOME/.cache/yay"
-TEMP_PATH="/tmp/ttf-ms-win10"
-TTF_MS_WIN10_URL="https://aur.archlinux.org/ttf-ms-win10.git"
+readonly FEATURE_NAME="Windows 10 TTF Fonts (make)"
+readonly FEATURE_DESC="Install windows 10 fonts (by making)"
+readonly PROVIDES=(ttf-ms-win10)
+readonly NEW_FILES=()
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=( \
+    "$TMP_PKG_DIR" \
+    "$TMP_FONTS_DIR" \
+    "$TMP_FONTS_DIR" \
+)
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=()
+readonly DEPENDS_PIP3=()
 
-feature_name="win10-fonts"
-feature_desc="Install windows 10 fonts (by making)"
+readonly TTF_MS_WIN10_URL="https://aur.archlinux.org/ttf-ms-win10.git"
 
-provides=(ttf-ms-win10)
-new_files=()
-modified_files=()
-temp_files=("$REPO_PATH/ttf-ms-win10" \
-    "/tmp/win10-fonts.zip" \
-    "$TEMP_PATH")
-
-depends_aur=()
-depends_pacman=()
-depends_pip3=()
 
 
 function check_install() {
     if pacman -Q ttf-ms-win10 > /dev/null; then
-        qecho "$feature_name is installed"
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
-
 }
 
 function check_conf() {
-    if [[ -d "$CONF_DIR" ]] && diff "$BASE_DIR/files.txt" <(ls "$CONF_DIR"); then
+    if [[ -d "$CONF_DIR" ]] && diff "$BASE_FILES_TXT" <(ls "$CONF_DIR"); then
         qecho "Found win10-fonts"
         qecho "Configuration is set"
         return 0
@@ -51,51 +54,54 @@ function check_conf() {
 }
 
 function load_conf() {
-    qecho "Copying fonts to $REPO_PATH/ttf-ms-win10..."
-    mkdir -p "$REPO_PATH/ttf-ms-win10"
-    cp -rf "$CONF_DIR"/* "$REPO_PATH/ttf-ms-win10/"
+    qecho "Copying fonts to $TMP_FONTS_DIR..."
+    mkdir -p "$TMP_FONTS_DIR"
+    cp -rf "$CONF_DIR"/* "$TMP_FONTS_DIR"
 }
 
 function prepare() {
-    mkdir -p "$REPO_PATH/ttf-ms-win10"
+    local url
 
-    if [[ ! -d "$TEMP_PATH" ]]; then
+    if [[ ! -d "$TMP_PKG_DIR" ]]; then
         qecho "Cloning ttf-ms-win10 package..."
-        git clone --depth 1 "${V_FLAGS[@]}" "$TTF_MS_WIN10_URL" "$TEMP_PATH"
+        git clone "${GIT_FLAGS[@]}" "$TTF_MS_WIN10_URL" "$TMP_PKG_DIR"
     fi
 
-    (shopt -s dotglob && cp -rf "$TEMP_PATH"/* "$REPO_PATH"/ttf-ms-win10/)
-
     if ! check_conf; then
-        echo "Enter url to windows 10 fonts zip file if available, otherwise leave blank"
-        read -rp url
+        read -rp "Enter url to windows 10 fonts zip file: " url
 
         if [[ "$url" != "" ]]; then
-            curl "${S_FLAG[@]}" "$url" --output /tmp/win10-fonts.zip
-            unzip -o /tmp/win10-fonts.zip -d "$REPO_PATH/ttf-ms-win10"
+            qecho "Downloading windows 10 fonts zip..."
+            curl "${S_FLAG[@]}" "$url" --output "$TMP_FONTS_ZIP"
+            qecho "Unzipping windows 10 fonts..."
+            unzip -o "$TMP_FONTS_ZIP" -d "$TMP_FONTS_DIR"
         else
             echo "No url provided" >&2
             exit 1
         fi
     fi
 
+    qecho "Copying fonts from $TMP_FONTS_DIR to $TMP_PKG_DIR..."
+    (shopt -s dotglob && cp -rf "$TMP_FONTS_DIR"/* "$TMP_PKG_DIR")
+
+
     qecho "Making package..."
-    (cd "$REPO_PATH/ttf-ms-win10" && makepkg --skipinteg --noconfirm)
+    (cd "$TMP_PKG_DIR" && makepkg --skipinteg --noconfirm)
 }
 
 function install() {
     qecho "Installing package..."
-    (cd "$REPO_PATH/ttf-ms-win10" && makepkg -si --noconfirm)
+    (cd "$TMP_PKG_DIR" && makepkg -si --noconfirm)
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[*]}..."
-    rm -rf "${temp_files[@]}"
+    qecho "Removing ${TEMP_FILES[*]}..."
+    rm -rf "${TEMP_FILES[@]}"
 }
 
 function uninstall() {
     qecho "Uninstalling ttf-ms-win10..."
-    sudo pacman -Rsu --noconfirm "${provides[@]}"
+    sudo pacman -Rsu --noconfirm "${PROVIDES[@]}"
 }
 
 

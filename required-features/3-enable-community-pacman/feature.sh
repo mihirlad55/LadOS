@@ -1,25 +1,27 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly MOD_PACMAN_CONF="/etc/pacman.conf"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="Enable Pacman Community Repo"
-feature_desc="Edit /etc/pacman.conf to enable pacman community repo"
+readonly FEATURE_NAME="Enable Pacman Community Repo"
+readonly FEATURE_DESC="Edit /etc/pacman.conf to enable pacman community repo"
+readonly NEW_FILES=()
+readonly MODIFIED_FILES=("$MOD_PACMAN_CONF")
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=()
 
-new_files=()
-modified_files=("/etc/pacman.conf")
-
-depends_aur=()
-depends_pacman=()
 
 
 function check_install() {
-    if [[ "$(awk '/^\[community\]/,/^Include/' /etc/pacman.conf)" != "" ]]; then
+    local match
+
+    match="$(awk '/^\[community\]/,/^Include/' "$MOD_PACMAN_CONF")"
+    if [[ "$match" != "" ]]; then
         qecho "Community repo enabled!"
         return 0
     fi
@@ -30,17 +32,14 @@ function check_install() {
 
 
 function install() {
-    qecho "Editing /etc/pacman.conf"
-    sudo sed -i /etc/pacman.conf \
-        -e "s/^#\[community\]$/\[community\]/"
-    sudo sed -i /etc/pacman.conf \
+    qecho "Editing $MOD_PACMAN_CONF"
+    sudo sed -i "$MOD_PACMAN_CONF" -e "s/^#\[community\]$/\[community\]/" \
         -e '/\[community\]/!b;n;cInclude = \/etc\/pacman.d\/mirrorlist'
 }
 
 function uninstall() {
-    qecho "Editing /etc/pacman.conf"
-    sudo sed -i /etc/pacman.conf -e "s/^\[community\]$/#&/"
-    sudo sed -i /etc/pacman.conf \
+    qecho "Editing $MOD_PACMAN_CONF"
+    sudo sed -i "$MOD_PACMAN_CONF" -e "s/^\[community\]$/#&/" \
         -e '/^#\[community\]/!b;n;c#Include = \/etc\/pacman.d\/mirrorlist'
 }
 

@@ -1,24 +1,23 @@
 #!/usr/bin/bash
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
-FEATURE_DIR="$OPTIONAL_FEATURES_DIR/win10-fonts"
-PKG_BUILD_DIR="$HOME/.cache/yay/ttf-ms-win10"
+readonly LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
+readonly FEATURE_DIR="$OPTIONAL_FEATURES_DIR/win10-fonts"
+readonly PKG_BUILD_DIR="$HOME/.cache/yay/ttf-ms-win10"
+readonly BUILD_SH="$FEATURE_DIR/feature-build.sh"
 
-PKG_DIR="$1"
+readonly PKG_DIR="$1"
 
-$FEATURE_DIR/feature-build.sh check_conf &&
-    $FEATURE_DIR/feature-build.sh load_conf
 
-$FEATURE_DIR/feature-build.sh prepare
+
+"$BUILD_SH" check_conf && "$BUILD_SH" load_conf
+
+"$BUILD_SH" prepare
 
 echo "Copying $PKG_BUILD_DIR*.pkg.tar.xz to $PKG_DIR..."
-find $PKG_BUILD_DIR -name '*.pkg.tar.xz' -exec cp -f {} "$PKG_DIR" \;
+find "$PKG_BUILD_DIR" -name '*.pkg.tar.xz' -exec cp -f {} "$PKG_DIR" \;
 
-$FEATURE_DIR/feature-build.sh cleanup
-
-echo "Done"
-
+"$BUILD_SH" cleanup

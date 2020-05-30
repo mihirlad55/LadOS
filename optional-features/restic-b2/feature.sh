@@ -1,22 +1,26 @@
 #!/usr/bin/bash
 
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
-CONF_DIR="$LAD_OS_DIR/conf/restic-b2"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly CONF_DIR="$LAD_OS_DIR/conf/restic-b2"
+readonly SYSTEMD_DIR="/etc/systemd/system"
+readonly INSTALL_DIR="/root"
+readonly CONF_CONSTANTS_SH="$CONF_DIR/constants.sh"
+readonly BASE_BACKUP_DIR="$BASE_DIR/backup"
+readonly BASE_SYSTEMD_DIR="$BASE_DIR/systemd"
+readonly NEW_BACKUP_DIR="$INSTALL_DIR/backup"
+readonly NEW_CONSTANTS_SH="$INSTALL_DIR/backup/constants.sh"
+readonly TMP_CONSTANTS_SH="/tmp/constants.sh"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-SYSTEMD_DIR="/etc/systemd/system"
-INSTALL_DIR="/root"
-
-feature_name="Restic B2 Backup Scripts"
-feature_desc="Install restic with B2 configuration"
-
-provides=()
-new_files=( \
-    "$INSTALL_DIR/backup" \
+readonly FEATURE_NAME="Restic B2 Backup Scripts"
+readonly FEATURE_DESC="Install restic with B2 configuration"
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$BASE_BACKUP_DIR" \
     "$INSTALL_DIR/backup/b2.png" \
     "$INSTALL_DIR/backup/backup.sh" \
     "$INSTALL_DIR/backup/excludes.txt" \
@@ -29,16 +33,16 @@ new_files=( \
     "$SYSTEMD_DIR/b2-prune.service " \
     "$SYSTEMD_DIR/b2-prune.timer " \
 )
-modified_files=()
-temp_files=()
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=("$TMP_CONSTANTS_SH")
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(restic)
 
-depends_aur=()
-depends_pacman=(restic)
 
 
 function check_conf() (
-    if [[ -f "$CONF_DIR/constants.sh" ]]; then
-        source "$CONF_DIR/constants.sh"
+    if [[ -f "$CONF_CONSTANTS_SH" ]]; then
+        source "$CONF_CONSTANTS_SH"
 
         qecho "Configuration is set correctly"
         return 0
@@ -49,12 +53,12 @@ function check_conf() (
 )
 
 function load_conf() {
-    qecho "Reading configuration from $CONF_DIR/constants.sh"
-    source "$CONF_DIR/constants.sh"
+    qecho "Reading configuration from $CONF_CONSTANTS_SH"
+    source "$CONF_CONSTANTS_SH"
 }
 
 function check_install() (
-    source "$TARGET_CONSTANTS_PATH"
+    sudo source "$NEW_CONSTANTS_SH"
 
     if [[ "$NOTIFY_USER" != "" ]] &&
         [[ "$B2_KEY_NAME" != "" ]] &&
@@ -62,10 +66,10 @@ function check_install() (
         [[ "$B2_ACCOUNT_ID" != "" ]] &&
         [[ "$B2_ACCOUNT_KEY" != "" ]] &&
         [[ "$RESTIC_PASSWORD" != "" ]]; then
-        qecho "$feature_name is installed"
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
 )
@@ -73,7 +77,8 @@ function check_install() (
 function prepare() {
     if [[ "$NOTIFY_USER" = "" ]]; then
         echo "Notify user not defined"
-        read -rp "Enter the username of the user to send notifications to: " NOTIFY_USER
+        echo -n "Enter the username of the user to send notifications to: "
+        read -r NOTIFY_USER
     fi
 
     if [[ "$B2_KEY_NAME" = "" ]]; then
@@ -102,9 +107,9 @@ function prepare() {
     fi
 
     qecho "Copying constants.sh to /tmp and applying configuration..."
-    cp "$CONF_DIR/constants.sh" "/tmp/constants.sh"
+    cp -f "$CONF_CONSTANTS_SH" "$TMP_CONSTANTS_SH"
 
-    sed -i "/tmp/constants.sh" \
+    sed -i "$TMP_CONSTANTS_SH" \
         -e "s/B2_KEY_NAME=.*$/B2_KEY_NAME='$B2_KEY_NAME'/" \
         -e "s/B2_BUCKET=.*$/B2_BUCKET='$B2_BUCKET'/" \
         -e "s/B2_ACCOUNT_ID=.*$/B2_ACCOUNT_ID='$B2_ACCOUNT_ID'/" \
@@ -114,16 +119,13 @@ function prepare() {
 
 function install() {
     qecho "Copying backup scripts to $INSTALL_DIR..."
-    sudo cp -rft "$INSTALL_DIR" "$BASE_DIR/backup"
+    sudo cp -rfT "$BASE_BACKUP_DIR" "$NEW_BACKUP_DIR"
 
     qecho "Copying service and timer files to $SYSTEMD_DIR..."
-    sudo install -Dm 644 "$BASE_DIR/systemd/b2-backup.service" "$SYSTEMD_DIR/b2-backup.service"
-    sudo install -Dm 644 "$BASE_DIR/systemd/b2-prune.service" "$SYSTEMD_DIR/b2-prune.service"
-    sudo install -Dm 644 "$BASE_DIR/systemd/b2-backup.timer" "$SYSTEMD_DIR/b2-backup.timer"
-    sudo install -Dm 644 "$BASE_DIR/systemd/b2-prune.timer" "$SYSTEMD_DIR/b2-prune.timer"
+    sudo cp -rfT "$BASE_SYSTEMD_DIR" "$SYSTEMD_DIR"
 
-    qecho "Copying constants.sh to $INSTALL_DIR/backup"
-    sudo mv "/tmp/constants.sh" "$INSTALL_DIR/backup"
+    qecho "Copying constants.sh to $NEW_CONSTANTS_SH"
+    sudo mv "$TMP_CONSTANTS_SH" "$NEW_CONSTANTS_SH"
 
     qecho "Done copying configuration for restic"
 }
@@ -135,8 +137,8 @@ function post_install() {
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[*]}..."
-    sudo rm -rf "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    sudo rm -rf "${NEW_FILES[@]}"
 }
 
 
