@@ -59,6 +59,19 @@ readonly DEPENDS_PIP3=()
 
 
 
+################################################################################
+# Check if any of the given paths exist and are not empty
+#   Globals:
+#     None
+#   Arguments:
+#      Paths to files, each path is a separate arugment
+#   Outputs:
+#      Prints if files at path exist/dont't exist and if they are empty only
+#      with higher script verbosity
+#   Returns:
+#      0 if all paths are to files that exist and are non-empty
+#      1 if any of the paths are to non-existent files or empty files
+################################################################################
 function is_not_empty() {
     local path contents
 
