@@ -48,6 +48,7 @@ function install() (
     qecho "Adding ${NEW_MODULES[*]} to $MOD_MKINITCPIO_CONF, if not present"
     source "$MOD_MKINITCPIO_CONF"
 
+    # Add missing modules and build new modules array
     for module in "${NEW_MODULES[@]}"; do
         if ! echo "${MODULES[*]}" | grep -q -e "$module"; then
             vecho "$MODULES"
@@ -60,6 +61,7 @@ function install() (
         fi
     done
 
+    # Replace modules array in mkinitcpio.conf new array
     qecho "Updating $MOD_MKINITCPIO_CONF..."
     MODULES_LINE="MODULES=(${MODULES[*]})"
     sudo sed -i '/etc/mkinitcpio.conf' \
