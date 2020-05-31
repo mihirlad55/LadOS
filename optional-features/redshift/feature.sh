@@ -20,14 +20,20 @@ readonly DEPENDS_PACMAN=(redshift geoclue2)
 
 
 
+# Check if geoclue conf contains added configuration
 function check_geoclue_conf() {
     local geoclue_conf_add_first_line num_of_lines after_context redshift_entry
 
+    # Get first line of added configuration
     geoclue_conf_add_first_line="$(head -n1 "$BASE_CONF_ADD")"
+    # Get number of lines of added configuration
     num_of_lines="$(wc -l "$BASE_CONF_ADD" | cut -d' ' -f1)"
+    # Number of lines after first line
     after_context=$(( num_of_lines - 1 ))
+    # Get added configuration block from config
     redshift_entry="$(grep -F "$geoclue_conf_add_first_line" \
         -A $after_context "$MOD_GEOCLUE_CONF")"
+    # Compare added configuration to what should have been added
     echo "$redshift_entry" | diff "$BASE_CONF_ADD" - > /dev/null
 }
 
@@ -57,12 +63,14 @@ function install() {
 
 function uninstall() {
     qecho "Removing redshift directive from $MOD_GEOCLUE_CONF..."
+    # Get redshift conf contents with added configuration removed
     text="$(diff \
         --suppress-common-lines \
         -D --GTYPE-group-format='' \
         "$BASE_CONF_ADD" \
         "$MOD_GEOCLUE_CONF")"
     
+    # Re-write configuration with added configuration removed
     echo "$text" | sudo tee "$MOD_GEOCLUE_CONF" > /dev/null
 }
 
