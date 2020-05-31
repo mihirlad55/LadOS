@@ -65,6 +65,7 @@ function install() {
     sudo install -Dm 755 "$BASE_VIFMRUN_SH" "$NEW_VIFMRUN_SH"
     command install -Dm 755 "$BASE_VIFMIMG_SH" "$NEW_VIFMIMG_SH"
 
+    # Use vifmrun script for launching vifm
     qecho "Updating vifm.desktop..."
     sudo sed -i 's/Exec=vifm\b/Exec=vifmrun/' "$MOD_VIFM_DESKTOP"
 }
@@ -75,6 +76,7 @@ function cleanup() {
 }
 
 function uninstall() {
+    # Clone repo to use install.py to uninstall
     if [[ ! -d "$TMP_EPUB_THUMBNAILER_DIR" ]]; then
         qecho "Cloning epub-thumbnailer..."
         git clone "${GIT_FLAGS[@]}" "$EPUB_THUMBNAILER_URL" \
