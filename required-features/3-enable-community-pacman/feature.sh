@@ -20,6 +20,7 @@ readonly DEPENDS_PACMAN=()
 function check_install() {
     local match
 
+    # Check if community repo is uncommented
     match="$(awk '/^\[community\]/,/^Include/' "$MOD_PACMAN_CONF")"
     if [[ "$match" != "" ]]; then
         qecho "Community repo enabled!"
@@ -32,12 +33,14 @@ function check_install() {
 
 
 function install() {
+    # Uncomment community repo
     qecho "Editing $MOD_PACMAN_CONF"
     sudo sed -i "$MOD_PACMAN_CONF" -e "s/^#\[community\]$/\[community\]/" \
         -e '/\[community\]/!b;n;cInclude = \/etc\/pacman.d\/mirrorlist'
 }
 
 function uninstall() {
+    # Comment out community repo
     qecho "Editing $MOD_PACMAN_CONF"
     sudo sed -i "$MOD_PACMAN_CONF" -e "s/^\[community\]$/#&/" \
         -e '/^#\[community\]/!b;n;c#Include = \/etc\/pacman.d\/mirrorlist'
