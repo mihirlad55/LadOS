@@ -37,6 +37,7 @@ readonly DEPENDS_PIP3=()
 
 
 function check_install() {
+    # Check if lightdm-webkit2-greeter is set as main session in lightdm.conf
     if grep -q "$MOD_LIGHTDM_CONF" -e "^greeter-session=lightdm-webkit2-greeter$" &&
         pacman -Q lightdm-webkit2-greeter > /dev/null; then
         qecho "$FEATURE_NAME is installed"
@@ -81,12 +82,14 @@ function uninstall() {
     qecho "Removing ${NEW_FILES[*]}..."
     rm -f "${NEW_FILES[@]}"
 
+    # Comment out greeter-session in lightdm.conf
     qecho "Changing greeter session in /etc/lightdm/lightdm.conf"
     sudo sed \
         -i 's/greeter-session=lightdm-webkit2-greeter$/#greeter-session=/' \
         "$MOD_LIGHTDM_CONF"
 
     qecho "Removing backgrounds from /usr/share/backgrounds..."
+    # Get paths to backgrounds in backgrounds directory
     mapfile -t backgrounds < <(cd "$CONF_BG_DIR" && find . -not -path '*/\.*' \
         -type f)
 
