@@ -4,14 +4,23 @@ set -o errtrace
 set -o pipefail
 trap error_trap ERR
 
+function error_trap() {
+    error_code="$?"
+    last_command="$BASH_COMMAND"
+    command_caller="$(caller)"
+    
+    echo "$command_caller: \"$last_command\" returned error code $error_code" >&2
+
+    exit $error_code
+}
 
 readonly CONF_DIR="$LAD_OS_DIR/conf/install"
 readonly REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
 readonly OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 readonly LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 readonly PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
-F_FLAGS=("--no-service-start")
 
+F_FLAGS=("--no-service-start")
 VERBOSITY=
 V_FLAG=("-q")
 
@@ -37,15 +46,6 @@ F_FLAGS=("${V_FLAG[@]}" "${F_FLAGS[@]}")
 readonly VERBOSITY V_FLAG F_FLAGS
 
 
-function error_trap() {
-    error_code="$?"
-    last_command="$BASH_COMMAND"
-    command_caller="$(caller)"
-    
-    echo "$command_caller: \"$last_command\" returned error code $error_code" >&2
-
-    exit $error_code
-}
 
 function vecho() {
     if [[ -n "$VERBOSE" ]]; then echo "$@"; fi
