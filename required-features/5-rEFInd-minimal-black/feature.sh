@@ -46,12 +46,18 @@ readonly REFIND_THEME_URL="https://github.com/andersfischernielsen/rEFInd-minima
 
 
 
+# Check if refind conf contains added configuration
 function check_refind_conf() {
+    # Get first line of added configuration
     refind_conf_add_first_line="$(head -n1 "$BASE_CONF_ADD")"
+    # Get number of lines of added configuration
     num_of_lines="$(wc -l "$BASE_CONF_ADD" | cut -d' ' -f1)"
+    # Number of lines after first line
     after_context=$(( num_of_lines - 1 ))
+    # Get added configuration block from config
     refind_includes="$(grep -F "$refind_conf_add_first_line" -A $after_context \
         "$NEW_REFIND_CONF")"
+    # Compare added configuration to what should have been added
     echo "$refind_includes" | diff "$BASE_CONF_ADD" - > /dev/null
 }
 
