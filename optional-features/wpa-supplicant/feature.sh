@@ -38,6 +38,7 @@ function check_install() {
 function check_conf() {
     local conf
 
+    # Check if network configuration exists and is non-empty
     if [[ -f "$CONF_NETWORK_CONF" ]]; then
         conf="$(cat "$CONF_NETWORK_CONF")"
 
@@ -56,6 +57,7 @@ function prepare() {
     echo "Note that the name of this card may change when you boot the system"
     read -rp "Enter name of network card: " card
 
+    # Boilerplate
     echo "ctrl_interface=/run/wpa_supplicant" > "$TMP_WPA_SUPPLICANT_CONF"
     echo "update_config=1" >> "$TMP_WPA_SUPPLICANT_CONF"
 
