@@ -5,8 +5,24 @@ readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
+# Marked readonly after set in connect_to_internet()
 WIFI_ENABLED=
 
+
+
+###############################################################################
+# Generate crypttab file contents for encrypted partitions
+# Globals:
+#   None
+# Arguments:
+#   Path to mount point of new host system
+# Outputs:
+#   Contents of a crypttab file for new host system with password files for
+#   each partition pointing to /root/<partition_name>.bin
+#
+# Returns:
+#   0 if successful
+###############################################################################
 
 function gencrypttab() {
     local mountpoint path uuid mnt
@@ -85,9 +101,11 @@ function setup_wifi() {
 
     conf_path="/tmp/wpa_supplicant.conf"
 
+    # Boilerplate for running service
     echo "ctrl_interface=/run/wpa_supplicant" > "$conf_path"
     echo "update_config=1" >> $conf_path
 
+    # Append contents of network.conf to file
     if [[ "$network_conf" != "" ]]; then
         echo "$network_conf" >> "$conf_path"
     else
@@ -103,6 +121,7 @@ function setup_wifi() {
         adapter="$(ask "Enter name of WiFI adapter")"
     fi
 
+    # Start wpa_supplicant and dhcpcd
     wpa_supplicant "${V_FLAG[@]}" -B -i"${adapter}" -c "$conf_path"
     dhcpcd "${V_FLAG[@]}"
 }
@@ -194,14 +213,20 @@ function generate_crypttab() {
         return
     fi
 
+    # Get name of each crypt partition
     mapfile -t names < <(lsblk -n -o PATH,TYPE | sed -n 's/ *crypt//2')
 
+    # Generate password file for each partition
     for name in "${names[@]}"; do
+        msg2 "Generating password file for $name partition"
+
+        # Get path to physical partition
         part_path="$(lsblk -sno PATH,TYPE "$name" \
             | grep 'part' \
             |  tr -s ' ' \
             | cut -d' ' -f1)"
 
+        # Path to secret file for $name partition
         secret_file="/root/${name}.bin"
 
         msg3 "Generating password for $name at $secret_file..."
@@ -211,6 +236,7 @@ function generate_crypttab() {
         cryptsetup luksAddKey "$part_path" "$secret_file"
     done
 
+    msg2 "Generating crypttab file..."
     gencrypttab /mnt > /mnt/etc/crypttab
     chmod 600 /mnt/etc/crypttab
 }

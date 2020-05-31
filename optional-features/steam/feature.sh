@@ -22,6 +22,7 @@ readonly DEPENDS_PACMAN=()
 
 
 function check_install() {
+    # Verify that multilib repo is uncommented in pacman.conf
     if [[ "$(awk '/^\[multilib\]/,/^Include/' "$MOD_PACMAN_CONF")" != "" ]] &&
         diff "$BASE_STEAM_CONF" "$NEW_STEAM_CONF"; then
         qecho "$FEATURE_NAME is installed"
@@ -33,6 +34,7 @@ function check_install() {
 }
 
 function install() {
+    # Uncomment multilib repo in pacman.conf
     qecho "Enabling multilib repo..."
     sudo sed -i 's/#*\[multilib\]/\[multilib\]/' "$MOD_PACMAN_CONF"
     sudo sed -i '/\[multilib\]/!b;n;cInclude = \/etc\/pacman.d\/mirrorlist' \
@@ -60,6 +62,7 @@ function uninstall() {
     rm -f "${NEW_FILES[@]}"
     sudo ldconfig
 
+    # Recomment out multilib repo in pacman.conf
     qecho "Disabling multilib repo"
     sudo sed -i "$MOD_PACMAN_CONF" -e "s/^\[multilib\]$/#&/"
     sudo sed -i "$MOD_PACMAN_CONF" \

@@ -7,6 +7,21 @@ readonly OPTIONAL_FEATURES_DIR="$BASE_DIR/optional-features"
 readonly SCRIPTS_DIR="$BASE_DIR/scripts"
 
 
+
+################################################################################
+# Display menu to user with title and options
+#   Globals:
+#     None
+#   Arguments:
+#     title, Title of menu
+#     <option name> <option_function>... Unlimited pairs of option names and
+#     functions to call when corresponding option is selected. Each option name
+#     and function are separate arguments, but must be provided in pairs.
+#   Outputs:
+#     Prompts user with list of options
+#   Returns:
+#     0 if successful
+################################################################################
 function show_menu() {
     local option num_of_options i name name_idx func_idx
 
@@ -83,6 +98,7 @@ function required_features_menu() {
 
     menu_cmd=()
 
+    # Build menu command with option names and path to install script
     for feature in "${features[@]}"; do
         feature_path="$REQUIRED_FEATURES_DIR/$feature/feature.sh"
 
@@ -103,6 +119,7 @@ function optional_features_menu() {
 
     menu_cmd=()
 
+    # Build menu command with option names and path to install script
     for feature in "${features[@]}"; do
         feature_path="$OPTIONAL_FEATURES_DIR/$feature/feature.sh"
 

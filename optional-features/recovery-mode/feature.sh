@@ -65,6 +65,7 @@ function check_boot_space() {
     free_space="$(sudo blockdev --getsize64 "$part_path")"
     recovery_size="$(du -d0 "$CONF_RECOVERY_DIR" | cut -f1)"
 
+    # Check if partition is big enough
     if (( free_space > recovery_size )); then
         vecho "There is enough space on the boot partition to copy the"
         vecho "recovery files"
@@ -80,6 +81,7 @@ function check_boot_space() {
 function check_install() {
     local f
 
+    # Check if include directive is in refind.conf
     if ! grep -q "$MOD_REFIND_CONF" -e "^include refind-recovery.conf$"; then
         echo "$FEATURE_NAME is not installed" >&2
         return 1
@@ -87,6 +89,7 @@ function check_install() {
 
     sudo mount "LABEL=$RECOVERY_LABEL" "$MOUNT_POINT"
 
+    # Check if all files are installed
     for f in "${NEW_FILES[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
@@ -156,6 +159,7 @@ function install() {
 function post_install() {
     local key crt bin
 
+    # Check if secure boot MOK or DB keys are available
     if sudo test -f "$DB_KEY" && sudo test -f "$DB_CRT"; then
         qecho "Found custom secure boot keys"
         key="$DB_KEY"
@@ -166,6 +170,7 @@ function post_install() {
         crt="$MOK_CRT"
     fi
 
+    # Sign EFI binaries in recovery partition with secure boot keys
     if [[ -n "$key" ]] && [[ -n "$crt" ]]; then
         qecho "Signing recovery binaries..."
         for bin in "${EFI_BINARIES[@]}"; do

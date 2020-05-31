@@ -26,6 +26,8 @@ readonly DEPENDS_PACMAN=(openvpn)
 
 
 
+# Change extension on expressvpn servers to .conf, simplify name to
+# <state>-<num>.conf, and add login.conf to auth-user-pass line in conf.
 function fix_server_files() {
     local servers name new_name s
 
@@ -48,6 +50,7 @@ function fix_server_files() {
 function check_conf() {
     local num_of_lines
 
+    # Check if username and password are found in login.conf
     if [[ -f "$CONF_LOGIN_CONF" ]]; then
         num_of_lines="$(wc -l "$CONF_LOGIN_CONF")"
 
@@ -62,6 +65,7 @@ function check_conf() {
 }
 
 function check_install() {
+    # Check if files in conf match files in install dir
     if sudo test -f "$NEW_LOGIN_CONF" && 
         sudo diff --exclude=".gitignore" "$CONF_CLIENT_DIR" "$NEW_CLIENT_DIR"; then
         qecho "$FEATURE_NAME is installed"
@@ -92,6 +96,7 @@ function install() {
         echo "$password" | sudo tee -a "$NEW_LOGIN_CONF" >/dev/null
     fi
 
+    # Copy any server files to install dir
     if [[ "$(ls "$CONF_DIR/client")" != "" ]]; then
         qecho "Copying files from $CONF_CLIENT_DIR to $NEW_CLIENT_DIR..."
         sudo install -m 600 "$CONF_CLIENT_DIR"/* "$NEW_CLIENT_DIR"

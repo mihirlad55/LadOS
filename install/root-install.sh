@@ -30,6 +30,8 @@ function set_timezone() (
     else
         cd /usr/share/zoneinfo || exit 1
 
+        # List files and directories in selected folder and allow user to
+        # select a zone file or subdirectory
         while true; do
             mapfile -t options < <(ls)
 
@@ -47,6 +49,8 @@ function set_timezone() (
 
             selection="${options[$num]}"
 
+            # If directory selected, cd into directory, else select zone and
+            # break from loop
             if [[ -d "$selection" ]]; then
                 cd "$selection" || exit 1
             elif [[ -e "$selection" ]]; then
@@ -69,6 +73,7 @@ function set_adjtime() {
 function install_vim() {
     msg "Installing vim to edit config files..."
 
+    # Used to edit configurations for rest of install
     pacman -S vim --noconfirm --needed
 }
 
@@ -164,8 +169,10 @@ function create_user_account() {
         username="$(ask "Enter username")"
     fi
 
+    # Get list of users
     mapfile -t users < <(cut -d':' -f1 /etc/passwd)
 
+    # Check if user exists
     if echo "${users[*]}" | grep -q "$username"; then
         msg2 "$username already exists"
     else

@@ -33,12 +33,14 @@ function update_git_doom_config() {
     email="$2"
     editor="$3"
 
+    # Update global git config
     git config --global user.name "$name"
     git config --global user.email "$email"
     git config --global core.editor "$editor"
 
     qecho "Name, email, and editor have been set globally for git."
 
+    # Update doom emacs name and mail address
     sed -i "$HOME/.doom.d/config.el" -e \
         "s/user-full-name \"\"$/user-full-name \"$name\"/"
     sed -i "$HOME/.doom.d/config.el" -e \
@@ -68,7 +70,10 @@ function load_conf() {
 }
 
 function check_install() {
+    # Get contents of dotfiles repo HEAD
     head="$(cat "$HOME/.git/HEAD")"
+
+    # Get default shell
     default_shell="$(grep "^$USER" /etc/passwd | cut -d":" -f7)"
 
     git_config_name="$(grep name "$MOD_GIT_CONFIG" \
@@ -88,6 +93,7 @@ function check_install() {
         | grep -o '".*"' \
         | sed 's/"//g')"
 
+    # Check values
     if [[ "$head" = "ref: refs/heads/arch-dwm" ]] &&
         [[ "$default_shell" = "/usr/bin/zsh" ]] &&
         [[ "$git_config_name" != "" ]] &&
@@ -169,6 +175,7 @@ function uninstall() (
     local files
 
     cd "$HOME"
+    # Get list of files part of dotfiles repo
     mapfile -t files < <(git ls-tree -r HEAD --name-only)
 
     qecho "Removing dotfiles..."

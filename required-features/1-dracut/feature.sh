@@ -53,6 +53,7 @@ readonly DEPENDS_PIP3=()
 
 
 
+# Create list of gpu drivers to include
 function get_gpu_drivers() {
     local pci_info drivers
 
@@ -74,6 +75,7 @@ function get_gpu_drivers() {
     echo "${drivers[@]}"
 }
 
+# Install ucode for CPU
 function install_ucode() {
     local model_line
 
@@ -86,17 +88,21 @@ function install_ucode() {
     fi
 }
 
+# Symlinking /dev/null to the mkinitcpio install/remove hooks in the etc
+# pacman hooks directory disables the hook
 function disable_mkinitcpio() {
     sudo mkdir -p "$PACMAN_HOOKS_DIR"
     sudo ln -sf /dev/null "$MKINITCPIO_INSTALL_HOOK"
     sudo ln -sf /dev/null "$MKINITCPIO_REMOVE_HOOK"
 }
 
+# Remove the symlinks
 function enable_mkinitcpio() {
     sudo rm -f "$MKINITCPIO_INSTALL_HOOK"
     sudo rm -f "$MKINITCPIO_REMOVE_HOOK"
 }
 
+# Generate main kernel command line arguments for dracut
 function get_cmdline() {
     local swap_uuid swap_offset root_uuid root_fstype root_flags cmdline
     local root_source mapper_name luks_uuid
@@ -118,7 +124,7 @@ function get_cmdline() {
 
     root_source="$(findmnt -no SOURCE --target /)"
 
-    # encrypted partition
+    # For encrypted root partition
     if sudo cryptsetup status "$root_source" | grep -q "LUKS"; then
         mapper_name="${root_source#/dev/mapper/}"
         luks_uuid="$(lsblk -sno UUID,TYPE "$root_source" \
