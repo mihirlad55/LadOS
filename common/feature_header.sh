@@ -158,7 +158,7 @@ function print_usage() {
 }
 
 function check_conflicts() {
-    for c in "${conflicts[@]}"; do
+    for c in "${CONFLICTS[@]}"; do
         if [[ -d "$REQUIRED_FEATURES_DIR/$c" ]] &&
             "$REQUIRED_FEATURES_DIR"/"$c"/feature.sh -q check_install &> /dev/null ||
             [[ -d "$OPTIONAL_FEATURES_DIR/$c" ]] &&
@@ -208,13 +208,13 @@ function uninstall_dependencies() {
     fi
 
     if [[ "${DEPENDS_AUR[*]}" != "" ]]; then
-        qecho "Installing ${DEPENDS_AUR[*]}..."
+        qecho "Uninstalling ${DEPENDS_AUR[*]}..."
         # Some normal output goes to stderr
         yay -Rsu "${DEPENDS_AUR[@]}" --noconfirm
     fi
 
     if [[ "${DEPENDS_PIP3[*]}" != "" ]]; then
-        qecho "Installing ${DEPENDS_PIP3[*]}..."
+        qecho "Uninstalling ${DEPENDS_PIP3[*]}..."
         sudo pip3 uninstall "${DEPENDS_PIP3[@]}"
     fi
 }
