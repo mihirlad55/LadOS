@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+# Exit on error to avoid complications
 set -o errtrace
 set -o pipefail
 trap error_trap ERR
@@ -20,6 +21,7 @@ readonly OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 readonly LOCAL_REPO_PATH="$LAD_OS_DIR/localrepo"
 readonly PKG_CACHE_DIR="$LOCAL_REPO_PATH/pkg"
 
+# Set as readonly below
 F_FLAGS=("--no-service-start")
 VERBOSITY=
 V_FLAG=("-q")

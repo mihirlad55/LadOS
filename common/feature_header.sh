@@ -18,6 +18,7 @@ readonly LAD_OS_DIR
 readonly REQUIRED_FEATURES_DIR="$LAD_OS_DIR/required-features"
 readonly OPTIONAL_FEATURES_DIR="$LAD_OS_DIR/optional-features"
 
+# The following flags are set to readonly below
 VERBOSE=
 QUIET=
 V_FLAG=()     # Verbosity flag and also use arrays to avoid SC2086
@@ -64,6 +65,8 @@ readonly VERBOSE QUIET V_FLAG S_FLAG SYSTEMD_FLAGS GIT_FLAGS
 
 
 # If user is root or sudo does not exist, don't use sudo
+# This is for installing features as part of the main installation in case
+# sudo has not yet been installed
 shopt -s expand_aliases
 if [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null; then
     vecho "Aliasing sudo to command"
@@ -71,15 +74,28 @@ if [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null; then
 fi
 
 
-
+# Only print this if quiet flag is not set 
 function qecho() {
     if [[ -z "$QUIET" ]]; then echo "$@"; fi
 }
 
+# Only print this if verbose flag is set
 function vecho() {
     if [[ -n "$VERBOSE" ]]; then echo "$@"; fi
 }
 
+################################################################################
+# Prompt user with specified yes/no question and return response
+#   Globals:
+#     None
+#   Arguments:
+#     mesg, Question to ask user
+#   Outputs:
+#     Prompts user with question
+#   Returns:
+#     0, if user responds with "Y" or "y"
+#     1, if user responds with "N" or "n"
+################################################################################
 function prompt() {
     local mesg resp
     mesg="$1"
@@ -157,6 +173,21 @@ function print_usage() {
     echo
 }
 
+################################################################################
+# Check if any conflicting features are installed
+#   Globals:
+#     REQUIRED_FEATURES_DIR
+#     OPTIONAL_FEATURES_DIR
+#     FEATURES_NAME
+#   Arguments:
+#     None
+#   Outputs:
+#     Name of conflicting feature in a message, if it is installed and if script
+#     is not in quiet mode
+#   Returns:
+#     0, if no conflicting features are installed
+#     1, if a conflicting feature is installed
+################################################################################
 function check_conflicts() {
     for c in "${CONFLICTS[@]}"; do
         if [[ -d "$REQUIRED_FEATURES_DIR/$c" ]] &&
@@ -171,6 +202,21 @@ function check_conflicts() {
     return 0
 }
 
+
+################################################################################
+# Check if feature has any dependencies
+#   Globals:
+#     DEPENDS_PACMAN
+#     DEPENDS_AUR
+#     DEPENDS_PIP3
+#   Arguments:
+#     None
+#   Outputs:
+#     None
+#   Returns:
+#     0, if there are dependencies for this feature
+#     1, if there are no dependencies for this feature
+################################################################################
 function has_dependencies() {
     if [[ "${DEPENDS_PACMAN[*]}${DEPENDS_AUR[*]}${DEPENDS_PIP3[*]}" = "" ]]; then
         return 1
@@ -179,6 +225,19 @@ function has_dependencies() {
     fi
 }
 
+################################################################################
+# Install dependencies for feature
+#   Globals:
+#     DEPENDS_PACMAN
+#     DEPENDS_AUR
+#     DEPENDS_PIP3
+#   Arguments:
+#     None
+#   Outputs:
+#     Info about progress (if quiet flag is not set)
+#   Returns:
+#     0, if successful
+################################################################################
 function install_dependencies() {
     if [[ "${DEPENDS_PACMAN[*]}" != "" ]]; then
         qecho "Installing ${DEPENDS_PACMAN[*]}..."
@@ -201,6 +260,19 @@ function install_dependencies() {
     fi
 }
 
+################################################################################
+# Uninstall dependencies for feature
+#   Globals:
+#     DEPENDS_PACMAN
+#     DEPENDS_AUR
+#     DEPENDS_PIP3
+#   Arguments:
+#     None
+#   Outputs:
+#     Info about progress (if quiet flag is not set)
+#   Returns:
+#     0, if successful
+################################################################################
 function uninstall_dependencies() {
     if [[ "${DEPENDS_PACMAN[*]}" != "" ]]; then
         qecho "Uninstalling ${DEPENDS_PACMAN[*]}..."
