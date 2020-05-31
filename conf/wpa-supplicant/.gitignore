@@ -2,3 +2,6 @@
 *
 # Except this file
 !.gitignore
+
+# and network.conf.sample
+!network.conf.sample
