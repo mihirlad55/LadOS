@@ -1,114 +1,92 @@
 # LadOS
 
+## Overview
 This repo contains setup/install scripts to install a heavily-riced version of
 Arch Linux.
 
-# Pre-Install
+This repo contains two types of features: **required** and **optional**.
+Required features are those that are either required to have a functional system
+or those that I consider vital to defining what LadOS is. Optional features are
+extra features that either improve the system in some additional way or fix a
+system-specific issue.
 
+
+### Required Features
+- **dracut**: A replacement for mkinitcpio. It's included for its simplicity and
+support for unified kernel images.
+- **sudoers:** Sudo with additional configuration added
+- **enable-community-repo**: Enable pacman community repo
+- **yay**: AUR helper
+- **rEFInd-minimal-black**: rEFInd bootloader with minimal-black theme applied.
+The main **bootloade**r for the system.
+- **dwm**: A window manager. My patched version of dwm.
+- **st**: A terminal emulator. My patched version of st.
+- **crontab**: Cronie with additional configuration added
+- **dotfiles**: My dotfiles and configuration files
+
+
+### Optional Features
+- **auto-mirror-rank**: Auto-ranks pacman mirrors every boot
+- **configure-backlight**: intel\_backlight X11 config file for controlling
+display backlight
+- **configure-touchpad**: Touchpad configuration for X11 which enables tapping,
+natural scrolling, and an lrm button map.
+- **corsair-headset**: Corsair headset X11 config file to fix buggy behavior
+(https://www.c0urier.net/2016/corsair-gaming-void-usb-rgb-linux-fun)
+- **doom-emacs**: Installs doom emacs
+- **gcp-tunnel**: Sets up remote port forwarding using SSH with a Google Cloud
+Platform Compute instance which enables SSH over the Internet through the
+GCP instance no matter what network the computer is connected to.
+- **gogh**: Installs a gogh theme on gnome-terminal (Not fully implemented)
+- **gtk-greeter**: Installs lightdm-gtk-greeter with the maia-gtk-theme and
+custom configuration
+- **hp-printer**: Installs hplip, CUPS, and setups up an HP printer
+- **huion**: Installs drivers and additional configuration for a huion graphics
+tablet
+- **luks-encryption-tpm**: Installs a dracut module to allow storing and
+retreiving the encryption key of a LUKS root partition from the system's TPM
+- **on-monitor-change**: Auto-outputs connected displays above the main display
+and restarts polybar on connecting new displays
+- **openvpn-expressvpn**: Setups up openvpn with ExpressVPN servers (requires
+ExpressVPN account)
+- **physlock**: Sets up a physlock service to prevent TTY switching
+- **plymouth**: Installs plymouth with deus\_ex boot animation (credits to
+[adi1090x](https://github.com/adi1090x))
+- **power-desktop-options**: Installs desktop files that execute power options
+such as poweroff, reboot, etc.
+- **powertop**: Installs powertop and service
+- **recovery-mode**: Installs a recovery partition
+- **redshift**: Installs redshift with geoclue for location-based updates
+- **restic-b2**: Installs services and scripts to auto-backup computer to B2
+Cloud Storage using restic
+- **secure-boot-custom**: Sets up secure boot with custom keys
+- **secure-boot-preloader**: Sets up secure boot with Preloader
+- **secure-boot-shim**: Sets up secure boot with Shim
+- **setup-gpu-passthrough**: Sets up the computer to allow GPU passthrough (Not
+fully implemented)
+- **ssh-keys**: Installs existing user and root SSH keys into system
+- **steam**: Installs steam and enables multilib repos
+- **systemd-boot**: Installs the systemd-boot bootloader
+- **user-services**: Installs a set of systemd services to autostart particular
+applications such as compton, redshift, etc.
+- **vifm**: Installs vifm with image previews using ueberzug
+- **weather-polybar-module**: Installs existing OpenWeatherMap API key to use
+with a custom weather module on polybar
+- **webkit2-greeter**: Installs the lightdm-webkit2-greeter with user avatar and
+backgrounds
+- **win10-fonts**: Installs Windows 10 fonts (fonts must be acquired yourself)
+- **wpa-supplicant**: Installs wpa\_supplicant with dhcpcd with existing network
+configuration
+
+
+## Pre-Install
 Before you begin an install of LadOS, you can create some files that can reduce
 manual input during the installation and futher manual installation later.
-All such files should be placed accordingly in the `conf` directory.
-
-## For Main Installation
-
-You can edit `conf/install/defaults.sh` to configure some default installation
-settings such as the default locale, timezone, etc. to avoid having to specify
-this during the installation.
-
-The `conf/install/hosts` file can be edited to include additional entries for
-the /etc/hosts file. The default entries included by the installation process
-are:
-```
-localhost   127.0.0.1
-::1         127.0.0.1
-```
-
-The `conf/install/network.conf` file can be edited to include a wpa\_supplicant
-formatted configuration to be used during the installation process.
-For example,
-```
-network={
-    ssid="Example WiFi"
-    psk="Example Password"
-}
-```
-can be used to connect to `Example WiFi` with `Example Password` during the
-installation process.
-
-
-## openvpn-expressvpn Feature
-In the `/conf/openvpn-expressvpn/client` folder, the unmodified .ovpn
-configuration files from ExpressVPN can be copied.
-In addition, a `login.conf` file with the following credential format can be
-created:
-```
-<username>
-<password>
-```
-
-
-## restic-b2
-In the `conf/restic-b2` folder, the `constants.sh` file can be modified to
-include your configuration for restic which will be copied over to
-`$HOME/.scripts/restic/constants.sh` during the `restic-b2` feature
-installation.
-
-
-## weather-polybar-module Feature
-In the `/conf/weather-polybar-module` folder, a `openweathermap.key` file can
-be created containing an OpenWeatherMap key which can be obtained from
-https://home.openweathermap.org/api\_keys.
-This is used to retreive weather information for polybar.
-
-
-## webkit2 Feature
-In the `/conf/webkit2` folder, a picture named `user.png` can be created to be
-used as your account avatar which will be displayed on
-`lightdm-webkit2-greeter`.
-In addition, background images for the login screen can put in
-`/conf/webkit2/backgrounds/`.
-
-
-## win10-fonts Feature
-In the `/conf/win10-fonts` folder, the windows 10 fonts can be copied to be
-installed by the win10-fonts feature.
-
+All such files should be placed accordingly in the `conf` directory. For more
+details, see the [wiki](https://github.com/mihirlad55/LadOS/wiki).
 
 
 # Install
-
-To install LadOS, follow the below steps:
-
-1. Download the Arch Linux image from https://www.archlinux.org/download/ and
-use the following command to copy it to a USB.
-Warning: this will wipe all data on the USB:
-`dd bs=4M if=path/to/archlinux.iso of=/dev/sdx status=progress oflag=sync`
-
-2. Boot into the archiso on your computer.
-
-3. Download and unzip the repo using the following commands:
-```
-curl -L https://github.com/mihirlad55/LadOS/archive/master.zip \
-    --output LadOS.zip
-unzip LadOS.zip
-```
-
-4. Copy over any pre-installation files from another USB/storage medium or by
-downloading them.
-
-5. Run the installer by running setup.sh and then selecting
-`Install Arch Linux`.
-```
-% ./setup.sh
------Main Menu-----
-1. Install Arch Linux
-2. Install Required Features
-3. Install Optional Features
-4. Fixes
-5. Scripts
-6. Exit
-Option: 1
-
-```
-
-6. Follow any on-screen prompts and wait for the installation to complete.
+To install LadOS, go to the
+[install](https://github.com/mihirlad55/LadOS/Install)
+page on the wiki.
