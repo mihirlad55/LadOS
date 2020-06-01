@@ -2,7 +2,7 @@
 Description=Package update notification
 
 [Service]
-ExecStart=%h/.scripts/dunst/update/update-notify
+ExecStart=%h/.scripts/notifications/update/update-notify
 Type=simple
 
 [Install]
