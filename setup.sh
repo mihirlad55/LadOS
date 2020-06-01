@@ -62,7 +62,7 @@ function show_menu() {
 
 function main_menu() {
     show_menu "Main Menu" \
-        "Install Arch Linux" "install_arch" \
+        "Install LadOS" "install_lados" \
         "Install Required Features" "required_features_menu" \
         "Install Optional Features" "optional_features_menu" \
         "Fixes" "fixes_menu" \
@@ -70,7 +70,7 @@ function main_menu() {
         "Exit" "exit"
 }
 
-function install_arch() {
+function install_lados() {
     $BASE_DIR/install/install.sh
 }
 
