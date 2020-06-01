@@ -973,8 +973,11 @@ case "$1" in
         exit 0
         ;;
     *)
-        echo "Invalid command $1"
-        print_usage
+        if [[ "$1" != "" ]]; then
+            echo "Unrecognized option '$1'"
+        fi
+        echo "usage: ${0} <mode> [options]"
+        echo "Try '${0} help' for more information"
         exit 1
 esac
 
@@ -1032,8 +1035,11 @@ while [[ "$#" -gt 0 ]]; do
             shift
             ;;
         *)
-            echo "Invalid command $1"
-            print_usage
+            if [[ "$1" != "" ]]; then
+                echo "Unrecognized option '$1'"
+            fi
+            echo "usage: ${0} <mode> [options]"
+            echo "Try '${0} help' for more information"
             exit 1
             ;;
     esac
