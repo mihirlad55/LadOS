@@ -200,8 +200,7 @@ function generate_key_files() {
 function check_conf() {
     if is_not_empty "$CONF_PK_KEY" "$CONF_PK_CRT" \
         "$CONF_KEK_KEY" "$CONF_KEK_CRT" \
-        "$CONF_DB_KEY" "$CONF_DB_CRT" \
-        "$CONF_GUID_TXT"; then
+        "$CONF_DB_KEY" "$CONF_DB_CRT"; then
             qecho "Configuration is set correctly"        
         return 0
     else
