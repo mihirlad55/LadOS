@@ -44,7 +44,6 @@ readonly SYM_NITROGEN_DELAYED_SVC="$TARGET_DIR/nitrogen-delayed.service"
 readonly SYM_NITROGEN_SVC="$TARGET_DIR/nitrogen.service"
 readonly SYM_POLYBAR_SVC="$TARGET_DIR/polybar.service"
 readonly SYM_REDSHIFT_SVC="$TARGET_DIR/redshift.service"
-readonly SYM_STARTUP_APP_SVC="$TARGET_DIR/startup-application@.service"
 readonly SYM_UPDATE_NOTIFY_SVC="$TARGET_DIR/update-notify.service"
 readonly SYM_NOTIFY_TMR="$TARGET_DIR/update-notify.timer"
 readonly SYM_XAUTOLOCK_SVC="$TARGET_DIR/xautolock.service"
@@ -82,7 +81,6 @@ readonly NEW_FILES=( \
     "$SYM_NITROGEN_SVC" \
     "$SYM_POLYBAR_SVC" \
     "$SYM_REDSHIFT_SVC" \
-    "$SYM_STARTUP_APP_SVC" \
     "$SYM_UPDATE_NOTIFY_SVC" \
     "$SYM_NOTIFY_TMR" \
     "$SYM_XAUTOLOCK_SVC" \
@@ -158,6 +156,7 @@ function post_install() {
         "$INSTALL_DIR/polybar.service" \
         "$INSTALL_DIR/redshift.service" \
         "$INSTALL_DIR/battery-check-notify.service" \
+        "$INSTALL_DIR/update-notify.service" \
         "$INSTALL_DIR/update-notify.timer" \
         "$INSTALL_DIR/xautolock.service" \
         "$INSTALL_DIR/xbindkeys.service" \
