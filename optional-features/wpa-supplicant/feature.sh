@@ -6,15 +6,24 @@ readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly CONF_DIR="$LAD_OS_DIR/conf/wpa-supplicant"
 readonly CONF_NETWORK_CONF="$CONF_DIR/network.conf"
+readonly BASE_NOTIFY_SERVICE="$BASE_DIR/wpa-cli-notify@.service"
+readonly BASE_NOTIFY_SH="$BASE_DIR/wpa-cli-notify.sh"
+readonly NEW_NOTIFY_SERVICE="/etc/systemd/system/wpa-cli-notify@.service"
+readonly NEW_NOTIFY_SH="/usr/local/bin/wpa-cli-notify.sh"
 readonly NEW_WPA_SUPPLICANT_DIR="/etc/wpa_supplicant"
 readonly TMP_WPA_SUPPLICANT_CONF="/tmp/wpa_supplicant.conf"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
 readonly FEATURE_NAME="WPA Supplicant"
-readonly FEATURE_DESC="Install wpa_supplicant with existing configuration"
+readonly FEATURE_DESC="Install wpa_supplicant with existing configuration and \
+notification script and service"
 readonly PROVIDES=()
-readonly NEW_FILES=("$NEW_WPA_SUPPLICANT_DIR")
+readonly NEW_FILES=( \
+    "$NEW_WPA_SUPPLICANT_DIR" \
+    "$NEW_NOTIFY_SERVICE" \
+    "$NEW_NOTIFY_SH" \
+)
 readonly MODIFIED_FILES=()
 readonly TEMP_FILES=("$TMP_NETWORK_CONF")
 readonly DEPENDS_AUR=()
@@ -26,6 +35,8 @@ readonly DEPENDS_PIP3=()
 function check_install() {
     if pacman -Q wpa_supplicant > /dev/null &&
         pacman -Q dhcpcd > /dev/null &&
+        [[ -f "$NEW_NOTIFY_SH" ]] &&
+        [[ -f "$NEW_NOTIFY_SERVICE" ]] &&
         test -f "$NEW_WPA_SUPPLICANT_DIR"/wpa_supplicant-*.conf; then
         qecho "$FEATURE_NAME is installed"
         return 0
@@ -79,19 +90,28 @@ function install() {
 
     name="wpa_supplicant-${card}.conf"
     new_wpa_supplicant_conf="$NEW_WPA_SUPPLICANT_DIR/$name"
+
     qecho "Copying "$TMP_WPA_SUPPLICANT_CONF" to $new_wpa_supplicant_conf..."
     sudo install -Dm 600 "$TMP_WPA_SUPPLICANT_CONF" "$new_wpa_supplicant_conf"
+
+    qecho "Copying $BASE_NOTIFY_SERVICE to $NEW_NOTIFY_SERVICE..."
+    sudo install -Dm 644 "$BASE_NOTIFY_SERVICE" "$NEW_NOTIFY_SERVICE"
+
+    qecho "Copying $BASE_NOTIFY_SH to $NEW_NOTIFY_SH..."
+    sudo install -Dm 755 "$BASE_NOTIFY_SH" "$NEW_NOTIFY_SH"
 }
 
 function post_install() {
-    local service
+    local wpa_supplicant_service notify_service
 
-    service="wpa_supplicant@${card}.service"
+    wpa_supplicant_service="wpa_supplicant@${card}.service"
+    notify_service="wpa-cli-notify@${card}.service"
 
-    qecho "Enabling $service and dhcpcd.service..."
-    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" "$service"
+    qecho "Enabling $wpa_supplicant_service, $notify_service, and"
+    qecho "dhcpcd.service..."
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" "$wpa_supplicant_service"
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" "$notify_service"
     sudo systemctl enable "${SYSTEMD_FLAGS[@]}" dhcpcd.service
-    qecho "Enabled $service and dhcpcd.service"
 }
 
 function cleanup() {
@@ -100,17 +120,21 @@ function cleanup() {
 }
 
 function uninstall() {
-    local card service name new_wpa_supplicant_conf
+    local card wpa_supplicant_service notify_service name
+    local new_wpa_supplicant_conf
 
     ip link
     read -rp "Enter name of network card: " card
 
-    service="wpa_supplicant@${card}.service"
+    wpa_supplicant_service="wpa_supplicant@${card}.service"
+    notify_service="wpa-cli-notify@${card}.service"
     name="wpa_supplicant-${card}.conf"
     new_wpa_supplicant_conf="$NEW_WPA_SUPPLICANT_DIR/$name"
 
-    qecho "Disabling $service and dhcpcd.service..."
-    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" "$service"
+    qecho "Disabling $wpa_supplicant_service, $notify_service, and"
+    qecho "dhcpcd.service..."
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" "$wpa_supplicant_service"
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" "$notify_service"
     sudo systemctl disable "${SYSTEMD_FLAGS[@]}" dhcpcd.service
 
     qecho "Removing $new_wpa_supplicant_conf..." 

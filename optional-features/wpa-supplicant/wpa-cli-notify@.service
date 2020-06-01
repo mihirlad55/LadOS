@@ -1,0 +1,16 @@
+[Unit]
+Description=Notify user about WPA Supplicant events
+StartLimitIntervalSec=20
+StartLimitBurst=10
+Requires=network.target
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/wpa_cli -i"%i" -a /usr/local/bin/wpa-cli-notify.sh
+Type=simple
+
+RestartSec=0.5
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
