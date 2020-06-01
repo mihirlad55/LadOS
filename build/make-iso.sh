@@ -57,6 +57,9 @@ function print_usage() {
     echo "                               mode requires the device as an"
     echo "                               argument."
     echo
+    echo "   make_recovery               Build recovery mode and copy it to"
+    echo "                               conf/recovery-mode/recovery."
+    echo
     echo "   help                        Display this message and exit"
     echo
     echo "  Options:"
@@ -153,6 +156,13 @@ function is_arch_user() {
     pacman -V > /dev/null
 }
 
+# Make recovery for recovery-mode feature
+# Used for make recovery menu function
+function _make_recovery() {
+    make_recovery "$LAD_OS_DIR/conf/recovery-mode"
+    exit 0
+}
+
 ################################################################################
 # Make boot directory with squashed recovery mode
 #   Globals:
@@ -165,13 +175,14 @@ function is_arch_user() {
 #     0 if successful
 ################################################################################
 function make_recovery() {
-    local -r RECOVERY_DIR AIROOTFS_DIR
+    local RECOVERY_DIR AIROOTFS_DIR
     local install_dir
 
     RECOVERY_DIR="/var/tmp/recovery"
     AIROOTFS_DIR="$RECOVERY_DIR/airootfs"
-
     install_dir="$1"
+
+    readonly RECOVERY_DIR AIROOTFS_DIR
 
     msg "Making recovery..."
 
@@ -927,6 +938,7 @@ function interactive() {
             "Build from scratch"    "build_from_scratch" \
             "Remaster ISO"          "remaster_iso" \
             "Image USB"             "existing_image_to_usb" \
+            "Make Recovery"         "_make_recovery" \
             "Exit"                  "exit 0"
     else
         echo "Since you are not using Arch Linux, the only way to create an ISO"
@@ -946,7 +958,7 @@ function interactive() {
 
 # Parse script arguments and set main mode
 case "$1" in
-    interactive | build | remaster)
+    interactive | build | remaster | make_recovery)
         CMD="$1"
         shift
         ;;
@@ -1055,5 +1067,8 @@ case "$CMD" in
         ;;
     image)
         existing_image_to_usb
+        ;;
+    make_recovery)
+        _make_recovery
         ;;
 esac
