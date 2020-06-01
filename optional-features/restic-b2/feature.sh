@@ -8,10 +8,14 @@ readonly CONF_DIR="$LAD_OS_DIR/conf/restic-b2"
 readonly SYSTEMD_DIR="/etc/systemd/system"
 readonly INSTALL_DIR="/root"
 readonly CONF_CONSTANTS_SH="$CONF_DIR/constants.sh"
+readonly CONF_EXCLUDES_TXT="$CONF_DIR/excludes.txt"
+readonly CONF_INCLUDES_TXT="$CONF_DIR/includes.txt"
 readonly BASE_BACKUP_DIR="$BASE_DIR/backup"
 readonly BASE_SYSTEMD_DIR="$BASE_DIR/systemd"
 readonly NEW_BACKUP_DIR="$INSTALL_DIR/backup"
-readonly NEW_CONSTANTS_SH="$INSTALL_DIR/backup/constants.sh"
+readonly NEW_CONSTANTS_SH="$NEW_BACKUP_DIR/constants.sh"
+readonly NEW_EXCLUDES_TXT="$NEW_BACKUP_DIR/excludes.txt"
+readonly NEW_INCLUDES_TXT="$NEW_BACKUP_DIR/includes.txt"
 readonly TMP_CONSTANTS_SH="/tmp/constants.sh"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -20,18 +24,18 @@ readonly FEATURE_NAME="Restic B2 Backup Scripts"
 readonly FEATURE_DESC="Install restic with B2 configuration"
 readonly PROVIDES=()
 readonly NEW_FILES=( \
-    "$BASE_BACKUP_DIR" \
-    "$INSTALL_DIR/backup/b2.png" \
-    "$INSTALL_DIR/backup/backup.sh" \
-    "$INSTALL_DIR/backup/excludes.txt" \
-    "$INSTALL_DIR/backup/includes.txt" \
-    "$INSTALL_DIR/backup/prune.sh" \
-    "$INSTALL_DIR/backup/unset-constants.sh" \
-    "$INSTALL_DIR/backup/utils.sh" \
-    "$SYSTEMD_DIR/b2-backup.service " \
-    "$SYSTEMD_DIR/b2-backup.timer " \
-    "$SYSTEMD_DIR/b2-prune.service " \
-    "$SYSTEMD_DIR/b2-prune.timer " \
+    "$NEW_BACKUP_DIR" \
+    "$NEW_BACKUP_DIR/b2.png" \
+    "$NEW_BACKUP_DIR/backup.sh" \
+    "$NEW_BACKUP_DIR/excludes.txt" \
+    "$NEW_BACKUP_DIR/includes.txt" \
+    "$NEW_BACKUP_DIR/prune.sh" \
+    "$NEW_BACKUP_DIR/unset-constants.sh" \
+    "$NEW_BACKUP_DIR/utils.sh" \
+    "$SYSTEMD_DIR/b2-backup.service" \
+    "$SYSTEMD_DIR/b2-backup.timer" \
+    "$SYSTEMD_DIR/b2-prune.service" \
+    "$SYSTEMD_DIR/b2-prune.timer" \
 )
 readonly MODIFIED_FILES=()
 readonly TEMP_FILES=("$TMP_CONSTANTS_SH")
@@ -41,7 +45,9 @@ readonly DEPENDS_PACMAN=(restic)
 
 
 function check_conf() (
-    if [[ -f "$CONF_CONSTANTS_SH" ]]; then
+    if [[ -f "$CONF_CONSTANTS_SH" ]] &&
+        [[ -f "$CONF_INCLUDES_TXT" ]] &&
+        [[ -f "$CONF_EXCLUDES_TXT" ]]; then
         source "$CONF_CONSTANTS_SH"
 
         qecho "Configuration is set correctly"
@@ -57,22 +63,20 @@ function load_conf() {
     source "$CONF_CONSTANTS_SH"
 }
 
-function check_install() (
-    sudo source "$NEW_CONSTANTS_SH"
+function check_install() {
+    local f
 
-    if [[ "$NOTIFY_USER" != "" ]] &&
-        [[ "$B2_KEY_NAME" != "" ]] &&
-        [[ "$B2_BUCKET" != "" ]] &&
-        [[ "$B2_ACCOUNT_ID" != "" ]] &&
-        [[ "$B2_ACCOUNT_KEY" != "" ]] &&
-        [[ "$RESTIC_PASSWORD" != "" ]]; then
-        qecho "$FEATURE_NAME is installed"
-        return 0
-    else
-        echo "$FEATURE_NAME is not installed" >&2
-        return 1
-    fi
-)
+    for f in "${NEW_FILES[@]}"; do
+        if ! sudo test -e "$f"; then
+            echo "$f is missing" >&2
+            echo "$FEATURE_NAME is not installed" >&2
+            return 1
+        fi
+    done
+
+    qecho "$FEATURE_NAME is installed"
+    return 0
+}
 
 function prepare() {
     if [[ "$NOTIFY_USER" = "" ]]; then
@@ -126,6 +130,12 @@ function install() {
 
     qecho "Copying constants.sh to $NEW_CONSTANTS_SH"
     sudo mv "$TMP_CONSTANTS_SH" "$NEW_CONSTANTS_SH"
+
+    qecho "Copying $CONF_INCLUDES_TXT to $NEW_INCLUDES_TXT..."
+    sudo cp -f "$CONF_INCLUDES_TXT" "$NEW_INCLUDES_TXT"
+    
+    qecho "Copying $CONF_EXCLUDES_TXT to $NEW_EXCLUDES_TXT..."
+    sudo cp -f "$CONF_EXCLUDES_TXT" "$NEW_EXCLUDES_TXT"
 
     qecho "Done copying configuration for restic"
 }
