@@ -51,6 +51,7 @@ maia-gtk-theme,Theme for gtk-greeter,aur,optional
 mailspring,Main email client,aur,optional
 make,For making stuff,system,required
 man-db,Man pages,system,required
+ttf-material-design-icons,Main icon font,aur,required
 nautilus,File explorer mainly for thumbnails,system,required
 neovim,Main editor,system,required
 nerd-fonts-complete,Icon fonts,aur,required
