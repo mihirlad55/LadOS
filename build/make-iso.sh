@@ -326,7 +326,7 @@ function build_aur_packages() {
             tar_path="$(find "$PKG_DIR" -iname "$tar_name_prefix*.pkg.tar.xz")"
 
             # Build package if not found already in localrepo
-            if [[ "$tar_path" != "" ]]; then
+            if [[ "$tar_path" == "" ]]; then
                 msg4 "Building $pkg_name..."
 
                 cd "$pkg_dir"
