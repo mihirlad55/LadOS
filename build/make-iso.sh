@@ -19,7 +19,7 @@ readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 readonly LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 readonly ISO_NAME="LadOS"
-readonly ISO_PUBLISHER="Mihir Lad <https://mihirlad.com"
+readonly ISO_PUBLISHER="Mihir Lad <https://mihirlad.com>"
 readonly ISO_APPLICATION="LadOS Linux Live CD"
 readonly ISO_OUT_DIR="$BASE_DIR"
 
