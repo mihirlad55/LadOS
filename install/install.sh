@@ -225,20 +225,21 @@ function generate_crypttab() {
     fi
 
     # Get name of each crypt partition
-    mapfile -t names < <(lsblk -n -o PATH,TYPE | sed -n 's/ *crypt//2')
+    mapfile -t paths < <(lsblk -n -o PATH,TYPE | sed -n 's/ *crypt//2p')
 
     # Generate password file for each partition
-    for name in "${names[@]}"; do
+    for path in "${paths[@]}"; do
         msg2 "Generating password file for $name partition"
+        name="${path#/dev/mapper/}"
 
         # Get path to physical partition
-        part_path="$(lsblk -sno PATH,TYPE "$name" \
+        part_path="$(lsblk -sno PATH,TYPE "$path" \
             | grep 'part' \
             |  tr -s ' ' \
             | cut -d' ' -f1)"
 
         # Path to secret file for $name partition
-        secret_file="/root/${name}.bin"
+        secret_file="/mnt/root/${name}.bin"
 
         msg3 "Generating password for $name at $secret_file..."
         dd if=/dev/urandom of="$secret_file" bs=32 count=1
