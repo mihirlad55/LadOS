@@ -24,7 +24,7 @@ QUIET=
 V_FLAG=()     # Verbosity flag and also use arrays to avoid SC2086
 S_FLAG=()     # Silent flag
 SYSTEMD_FLAGS=("-f")
-GIT_FLAGS=("--depth 1")
+GIT_FLAGS=("--depth" "1")
 
 if [[ "$1" = "-v" ]]; then
     VERBOSE=1
