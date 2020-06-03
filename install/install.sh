@@ -175,6 +175,13 @@ function create_swap_file() {
 
     msg "Creating swap file..."
 
+    if [[ -f /mnt/swapfile ]] && findmnt --target /mnt/swapfile > /dev/null; then
+        msg2 "Swap file already exists at /mnt/swapfile"
+	return
+    else
+        rm -f /mnt/swapfile
+    fi
+
     total_mem="$(free -k | grep Mem | tr -s ' ' | cut -d' ' -f2)"
     swap_path="/mnt/swapfile"
 
