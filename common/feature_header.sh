@@ -64,16 +64,6 @@ readonly VERBOSE QUIET V_FLAG S_FLAG SYSTEMD_FLAGS GIT_FLAGS
 
 
 
-# If user is root or sudo does not exist, don't use sudo
-# This is for installing features as part of the main installation in case
-# sudo has not yet been installed
-shopt -s expand_aliases
-if [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null; then
-    vecho "Aliasing sudo to command"
-    alias sudo='command'
-fi
-
-
 # Only print this if quiet flag is not set 
 function qecho() {
     if [[ -z "$QUIET" ]]; then echo "$@"; fi
@@ -83,6 +73,15 @@ function qecho() {
 function vecho() {
     if [[ -n "$VERBOSE" ]]; then echo "$@"; fi
 }
+
+# If user is root or sudo does not exist, don't use sudo
+# This is for installing features as part of the main installation in case
+# sudo has not yet been installed
+shopt -s expand_aliases
+if [[ "$USER" = "root" ]] || ! command -v sudo &> /dev/null; then
+    vecho "Aliasing sudo to command"
+    alias sudo='command'
+fi
 
 ################################################################################
 # Prompt user with specified yes/no question and return response
