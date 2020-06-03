@@ -322,7 +322,7 @@ function review() {
     msg "Configuration review..."
     
     local pacman_mirrors fstab timezone dracut_conf locale lang hostname hosts
-    local default_user required_features optional_features
+    local default_user required_features optional_features crypttab
 
     pacman_mirrors="$(cat /etc/pacman.d/mirrorlist)"
     fstab="$(cat /etc/fstab)"
@@ -336,11 +336,20 @@ function review() {
     dracut_conf="$(cat /etc/dracut.conf.d/*.conf)"
     lang="$(source /etc/locale.conf; echo "$LANG")"
 
+    if [[ -f /etc/crypttab ]]; then
+        crypttab="$(cat /etc/crypttab)"
+    fi
+
     msg2 "Pacman mirrors:"
     echo "$pacman_mirrors"
 
     msg2 "fstab:"
     echo "$fstab"
+
+    if [[ -n "$crypttab" ]]; then
+        msg2 "crypttab:"
+        echo "$crypttab"
+    fi
 
     msg2 "Timezone:"
     echo "$timezone"
@@ -368,6 +377,7 @@ function review() {
 
     msg2 "Installed Optional Features:"
     echo "$optional_features" | tr '\n' ' '
+    echo
 
     pause
 }
