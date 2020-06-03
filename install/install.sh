@@ -25,13 +25,16 @@ WIFI_ENABLED=
 ###############################################################################
 
 function gencrypttab() {
-    local mountpoint path uuid mnt
+    local mountpoint path mnt part_uuid name password crypt_info keysize cipher
+    local options
+
     mountpoint="$1"
 
     while IFS=$' ' read -r path uuid mnt <&3; do {
         mnt="${mnt%$mountpoint}"
         if [[ "$mnt" != "/" ]]; then
-            local name password crypt_info keysize cipher options
+
+            part_uuid="$(lsblk -sno UUID,TYPE "$path" | sed -n 's/ *part//p')"
 
             name="${path#/dev/mapper/}"
             password="/root/${name}.bin"
@@ -40,9 +43,10 @@ function gencrypttab() {
             keysize="$(echo "$crypt_info" | grep keysize |  cut -d' ' -f2)"
             cipher="$(echo "$crypt_info" | grep cipher | cut -d' ' -f2)"
 
+
             options="cipher=$cipher,size=$keysize"
 
-            printf "%s\tUUID=%s\t%s\t%s\n" "$name" "$uuid" "$password" \
+            printf "%s\tUUID=%s\t%s\t%s\n" "$name" "$part_uuid" "$password" \
                 "$options"
         fi
 
