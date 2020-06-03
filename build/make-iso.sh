@@ -25,7 +25,7 @@ readonly ISO_OUT_DIR="$BASE_DIR"
 
 # These flags are marked as readonly after being finalized at the bottom
 VERBOSE=
-GIT_FLAGS=("--depth 1")
+GIT_FLAGS=("--depth" "1")
 V_FLAG=()
 Q_FLAG=("-q")
 
