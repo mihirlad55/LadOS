@@ -44,7 +44,7 @@ function is_feature_valid() {
     local name
     name="$1"
 
-    if [[ ! -d "$OPTIONAL_FEATURES_DIR/$name" ]] || \
+    if [[ ! -d "$OPTIONAL_FEATURES_DIR/$name" ]] && \
         [[ ! -d "$REQUIRED_FEATURES_DIR/$name" ]]; then
         return 1
     fi
@@ -67,7 +67,7 @@ function is_feature_valid() {
 #   in configuration
 #   stdout: List of space-separated features to exclude
 ##############################################################################
-function get_excluded_features_from_conf() {
+function get_excluded_features() {
     local features conf_excluded excluded excluded_nums f i
 
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
@@ -138,7 +138,7 @@ function install_packages() {
     fi
 
     # Split packages into pacman_packages and aur_packages arrays
-    while IFS=',' read name desc typ req; do
+    while IFS=$',' read -r name desc typ req; do
         vecho "$name ($desc)"
 
         if [[ -n "$install_optional" ]] && [[ "$req" = "optional" ]] ||
@@ -149,7 +149,7 @@ function install_packages() {
                 aur_packages=("${aur_packages[@]}" "$name")
             fi
         fi
-    done
+    done < "$LAD_OS_DIR/packages.csv"
 
     msg2 "Syncing pacman..."
     sudo pacman -Syu --noconfirm
@@ -204,7 +204,7 @@ function install_optional_features() {
     msg "Installing optional features..."
 
     mapfile -t features < <(ls "$OPTIONAL_FEATURES_DIR")
-    mapfile -t excluded < <(get_excluded_features)
+    excluded=( $(get_excluded_features) )
 
     i=0
 
@@ -236,7 +236,7 @@ function install_optional_features() {
             done
 
             # If user says to exclude conflicting feature, go to next feature
-            if (( "$exclude_this" == 1 )); then
+            if (( exclude_this == 1 )); then
                 exclude_this=0
                 continue
             fi
