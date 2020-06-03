@@ -55,19 +55,17 @@ readonly TPM_HANDLE="0x81000000"
 readonly PCR_POLICY="sha1:0,2,4,7"
 readonly KEY_SLOT=10
 
-# Readonly after set
-TPM_FLAGS=
 
 
 # Set TPM specific flags
-function set_tpm_verbosity_flag() {
-    if [[ -n "$QUIET" ]]; then
-        TPM_FLAGS=("--quiet")
-    else
-        TPM_FLAGS=("--verbose")
-    fi
-    readonly TPM_FLAGS
-}
+if [[ -n "$QUIET" ]]; then
+    TPM_FLAGS=("--quiet")
+else
+    TPM_FLAGS=("--verbose")
+fi
+readonly TPM_FLAGS
+
+
 
 function clear_tpm_handle() {
     local handle
@@ -83,8 +81,6 @@ function clear_tpm_handle() {
 
 function check_install() {
     local f
-
-    set_tpm_verbosity_flag
 
     # Get secret from TPM
     sudo tpm2_unseal "${TPM_FLAGS[@]}" -c "$TPM_HANDLE" -p "pcr:$PCR_POLICY" \
@@ -112,8 +108,6 @@ function check_install() {
 
 function install() {
     local root_path root_dev cmdline
-
-    set_tpm_verbosity_flag
 
     qecho "Generating new secret for LUKS..."
     sudo dd if=/dev/random of="$NEW_SECRET_BIN" bs=32 count=1
@@ -167,15 +161,11 @@ function post_install() {
 }
 
 function cleanup() {
-    set_tpm_verbosity_flag
-
     qecho "Removing ${TEMP_FILES[*]}..."
     sudo rm -f "${TEMP_FILES[@]}"
 }
 
 function uninstall() {
-    set_tpm_verbosity_flag
-
     qecho "Clearing $TPM_HANDLE..."
     clear_tpm_object "$TPM_HANDLE"
 
