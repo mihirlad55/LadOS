@@ -312,12 +312,6 @@ function disable_localrepo() {
         '\;Include = /LadOS/install/localrepo.conf;d'
 }
 
-
-function remove_temp_sudoers() {
-    msg "Removing temp sudoers..."
-    sudo rm -f /etc/sudoers.d/20-sudoers-temp
-}
-
 function review() {
     msg "Configuration review..."
     
@@ -336,8 +330,8 @@ function review() {
     dracut_conf="$(cat /etc/dracut.conf.d/*.conf)"
     lang="$(source /etc/locale.conf; echo "$LANG")"
 
-    if [[ -f /etc/crypttab ]]; then
-        crypttab="$(cat /etc/crypttab)"
+    if blkid | grep -q crypt; then
+        crypttab="$(sudo cat /etc/crypttab)"
     fi
 
     msg2 "Pacman mirrors:"
@@ -382,6 +376,11 @@ function review() {
     pause
 }
 
+function remove_temp_sudoers() {
+    msg "Removing temp sudoers..."
+    sudo rm -f /etc/sudoers.d/20-sudoers-temp
+}
+
 
 
 enable_community_repo
@@ -400,6 +399,6 @@ check_optional_features
 
 disable_localrepo
 
-remove_temp_sudoers
-
 review
+
+remove_temp_sudoers
