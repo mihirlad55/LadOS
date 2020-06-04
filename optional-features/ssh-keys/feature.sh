@@ -104,31 +104,31 @@ function install() {
             command install -Dm 644 "$CONF_USER_SSH_HOSTS" "$NEW_USER_SSH_HOSTS"
         fi
 
-        chown -R "$USER" "$CONF_USER_SSH_DIR"
+        chown -R "$USER" "$NEW_USER_SSH_DIR"
 
         qecho "Copying root ssh files to $CONF_ROOT_SSH_DIR"
-        sudo mkdir -p "$CONF_ROOT_SSH_DIR"
-        sudo chmod 700 "$CONF_ROOT_SSH_DIR"
+        sudo mkdir -p "$NEW_ROOT_SSH_DIR"
+        sudo chmod 700 "$NEW_ROOT_SSH_DIR"
 
-        if [[ -f "$CONF_ROOT_SSH_KEY" ]]; then
-            command install -Dm 600 "$CONF_ROOT_SSH_KEY" "$NEW_ROOT_SSH_KEY"
+        if sudo test -f "$CONF_ROOT_SSH_KEY"; then
+            sudo install -Dm 600 "$CONF_ROOT_SSH_KEY" "$NEW_ROOT_SSH_KEY"
         fi
 
-        if [[ -f "$CONF_ROOT_SSH_CONFIG" ]]; then
-            command install -Dm 600 "$CONF_ROOT_SSH_CONFIG" \
+        if sudo test -f "$CONF_ROOT_SSH_CONFIG"; then
+            sudo install -Dm 600 "$CONF_ROOT_SSH_CONFIG" \
                 "$NEW_ROOT_SSH_CONFIG"
         fi
 
-        if [[ -f "$CONF_ROOT_SSH_AUTH" ]]; then
-            command install -Dm 600 "$CONF_ROOT_SSH_AUTH" "$NEW_ROOT_SSH_AUTH"
+        if sudo test -f "$CONF_ROOT_SSH_AUTH"; then
+            sudo install -Dm 600 "$CONF_ROOT_SSH_AUTH" "$NEW_ROOT_SSH_AUTH"
         fi
 
-        if [[ -f "$CONF_ROOT_SSH_PUB" ]]; then
-            command install -Dm 644 "$CONF_ROOT_SSH_PUB" "$NEW_ROOT_SSH_PUB"
+        if sudo test -f "$CONF_ROOT_SSH_PUB"; then
+            sudo install -Dm 644 "$CONF_ROOT_SSH_PUB" "$NEW_ROOT_SSH_PUB"
         fi
 
-        if [[ -f "$CONF_ROOT_SSH_HOSTS" ]]; then
-            command install -Dm 644 "$CONF_ROOT_SSH_HOSTS" "$NEW_ROOT_SSH_HOSTS"
+        if sudo test -f "$CONF_ROOT_SSH_HOSTS"; then
+            sudo install -Dm 644 "$CONF_ROOT_SSH_HOSTS" "$NEW_ROOT_SSH_HOSTS"
         fi
 
         sudo chown -R root "$NEW_ROOT_SSH_DIR"

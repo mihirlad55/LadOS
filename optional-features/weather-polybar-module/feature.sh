@@ -5,7 +5,7 @@ readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly CONF_DIR="$LAD_OS_DIR/conf/weather-polybar-module"
-readonly INSTALL_DIR="$HOME/.apikeys/openweathermap.key"
+readonly INSTALL_DIR="$HOME/.apikeys"
 readonly CONF_KEY_FILE="$CONF_DIR/openweathermap.key"
 readonly NEW_KEY_FILE="$INSTALL_DIR/openweathermap.key"
 readonly TMP_KEY_FILE="/tmp/openweathermap.key"

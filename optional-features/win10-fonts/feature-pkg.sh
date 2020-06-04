@@ -1,10 +1,5 @@
 #!/usr/bin/bash
 
-# Get absolute path to directory of script
-readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-# Get absolute path to root of repo
-readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
-
 source "$LAD_OS_DIR/common/feature_header.sh"
 
 FEATURE_NAME="Windows 10 TTF Fonts (pkg)"

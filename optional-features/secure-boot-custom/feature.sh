@@ -221,7 +221,7 @@ function check_install() {
     local f
 
     for f in "${NEW_FILES[@]}"; do
-        if ! sudo test -f "$f"; then
+        if ! sudo test -e "$f"; then
             echo "$f is missing" >&2
             echo "$FEATURE_NAME is not installed" >&2
             return 1

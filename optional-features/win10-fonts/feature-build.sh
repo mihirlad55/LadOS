@@ -1,9 +1,5 @@
 #!/usr/bin/bash
 
-# Get absolute path to directory of script
-readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-# Get absolute path to root of repo
-readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly CONF_DIR="$LAD_OS_DIR/conf/win10-fonts"
 readonly CACHE_DIR="$HOME/.cache/yay"
 readonly BASE_FILES_TXT="$BASE_DIR/files.txt"

@@ -52,7 +52,7 @@ function check_conf() {
 
     # Check if username and password are found in login.conf
     if [[ -f "$CONF_LOGIN_CONF" ]]; then
-        num_of_lines="$(wc -l "$CONF_LOGIN_CONF")"
+        num_of_lines="$(wc -l "$CONF_LOGIN_CONF" | cut -d' ' -f1)"
 
         if (( num_of_lines == 2 )); then
             qecho "Configuration at $CONF_LOGIN_CONF is set correctly"

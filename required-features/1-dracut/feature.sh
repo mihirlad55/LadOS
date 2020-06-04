@@ -170,7 +170,7 @@ function prepare() {
 
 function install() {
     qecho "Copying dracut conf to $DRACUT_CONF_DIR..."
-    sudo install -Dm 644 "TMP_DRACUT_CONF" "$NEW_DRACUT_CONF"
+    sudo install -Dm 644 "$TMP_DRACUT_CONF" "$NEW_DRACUT_CONF"
 
     qecho "Copying cmdline to $CMDLINE_DIR..."
     sudo install -Dm 644 "$TMP_CMDLINE_CONF" "$NEW_CMDLINE_CONF"

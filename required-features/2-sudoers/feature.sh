@@ -16,7 +16,7 @@ readonly NEW_FILES=("$NEW_SUDOERS_CONF")
 readonly MODIFIED_FILES=()
 readonly TEMP_FILES=()
 readonly DEPENDS_AUR=()
-readonly DEPENDS_PACMAN=("sudo")
+readonly DEPENDS_PACMAN=("sudo" "diffutils")
 
 
 function check_install() {

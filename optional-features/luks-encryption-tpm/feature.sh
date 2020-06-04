@@ -94,7 +94,7 @@ function check_install() {
     fi
 
     for f in "${NEW_FILES[@]}"; do
-        if [[ ! -f "$f" ]]; then
+        if ! sudo test -f "$f"; then
             echo "$f is missing" >&2
             echo "$FEATURE_NAME is not installed" >&2
             return 1

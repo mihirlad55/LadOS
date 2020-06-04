@@ -117,7 +117,8 @@ function install() {
     sudo install -Dm 755 "$TMP_MANUAL_CONF" "$NEW_MANUAL_CONF"
     sudo install -Dm 755 "$REFIND_CONF_SAMPLE" "$NEW_REFIND_CONF"
 
-    < "\n$BASE_CONF_ADD" sudo tee -a "$NEW_REFIND_CONF" > /dev/null
+    echo | sudo tee -a "$NEW_REFIND_CONF" > /dev/null
+    < "$BASE_CONF_ADD" sudo tee -a "$NEW_REFIND_CONF" > /dev/null
 
     qecho "Copying refind-install hook to $PACMAN_HOOKS_DIR..."
     sudo install -Dm 644 "$BASE_INSTALL_HOOK" "$NEW_INSTALL_HOOK"

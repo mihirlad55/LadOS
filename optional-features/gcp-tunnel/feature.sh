@@ -76,7 +76,7 @@ function prepare() {
     local new_port
 
     # Get ssh port from SSHD config
-    port=$(grep "$MOD_SSHD_CONFIG" -P "^#*Port [0-9]*$")
+    port=$(grep -P "^#*Port [0-9]*$" "$MOD_SSHD_CONFIG")
 
     if ! check_conf; then
         cp -f "$BASE_ENV" "$TMP_ENV"

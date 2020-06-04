@@ -49,7 +49,6 @@ readonly SYM_NOTIFY_TMR="$TARGET_DIR/update-notify.timer"
 readonly SYM_XAUTOLOCK_SVC="$TARGET_DIR/xautolock.service"
 readonly SYM_XBINDKEYS_SVC="$TARGET_DIR/xbindkeys.service"
 readonly SYM_STARTUP_SVC="$TARGET_DIR/startup.service"
-readonly SYM_SUCKLESS_NOTIFY_SVC="$TARGET_DIR/suckless-notify.service"
 readonly SYM_SUCKLESS_NOTIFY_TMR="$TARGET_DIR/suckless-notify.timer"
 readonly MOD_LOGIND_CONF="/etc/systemd/logind.conf"
 
@@ -86,7 +85,6 @@ readonly NEW_FILES=( \
     "$SYM_XAUTOLOCK_SVC" \
     "$SYM_XBINDKEYS_SVC" \
     "$SYM_STARTUP_SVC" \
-    "$SYM_SUCKLESS_NOTIFY_SVC" \
     "$SYM_SUCKLESS_NOTIFY_TMR" \
 )
 readonly MODIFIED_FILES=("$MOD_LOGIND_CONF")
