@@ -368,6 +368,7 @@ function review() {
 
     msg2 "Installed Required Features:"
     echo "$required_features" | tr '\n' ' '
+    echo
 
     msg2 "Installed Optional Features:"
     echo "$optional_features" | tr '\n' ' '
@@ -402,3 +403,5 @@ disable_localrepo
 review
 
 remove_temp_sudoers
+
+msg "Done!"
