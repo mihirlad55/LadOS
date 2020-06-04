@@ -1,38 +1,38 @@
 #!/usr/bin/bash
 
+# Get absolute path to directory of script
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+# Get absolute path to root of repo
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-# Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-# Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-
 # Name of feature
-feature_name=
+readonly FEATURE_NAME=
 # Description of feature
-feature_desc=
+readonly FEATURE_DESC=
 
 # Features (required/optional) that conflict with this feature
-conflicts=()
+readonly CONFLICTS=()
 
 # New packages (not including depends) that are installed permenantly
-provides=()
+readonly PROVIDES=()
 # Paths to files/folders that are permenantly created by the install. This
 # does not have to include files/folders created by a package install.
-new_files=()
+readonly NEW_FILES=()
 # Paths to files/folders that are permenantly modified by the install. This
 # does not have to include files/folders created by a package install.
-modified_files=()
+readonly MODIFIED_FILES=()
 # Paths to files/folders that are temporarily created at any point during the
 # script, but removed during the cleanup function
-temp_files=()
+readonly TEMP_FILES=()
 
 # Package names that the feature depends on, but must be installed from the AUR
-depends_aur=()
+readonly DEPENDS_AUR=()
 # Package names that the feature depends on that can be installed with pacman
-depends_pacman=()
+readonly DEPENDS_PACMAN=()
 # Package names that the feature depends on, but must be installed with pip3
-depends_pip3=()
+readonly DEPENDS_PIP3=()
 
 
 

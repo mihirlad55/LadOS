@@ -1,36 +1,60 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/ssh-keys"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly CONF_DIR="$LAD_OS_DIR/conf/ssh-keys"
+readonly CONF_USER_SSH_DIR="$CONF_DIR/user/.ssh"
+readonly CONF_USER_SSH_KEY="$CONF_USER_SSH_DIR/id_rsa"
+readonly CONF_USER_SSH_PUB="$CONF_USER_SSH_DIR/id_rsa.pub"
+readonly CONF_USER_SSH_AUTH="$CONF_USER_SSH_DIR/authorized_keys"
+readonly CONF_USER_SSH_HOSTS="$CONF_USER_SSH_DIR/known_hosts"
+readonly CONF_USER_SSH_CONFIG="$CONF_USER_SSH_DIR/config"
+readonly CONF_ROOT_SSH_DIR="$CONF_DIR/root/.ssh"
+readonly CONF_ROOT_SSH_KEY="$CONF_ROOT_SSH_DIR/id_rsa"
+readonly CONF_ROOT_SSH_PUB="$CONF_ROOT_SSH_DIR/id_rsa.pub"
+readonly CONF_ROOT_SSH_AUTH="$CONF_ROOT_SSH_DIR/authorized_keys"
+readonly CONF_ROOT_SSH_HOSTS="$CONF_ROOT_SSH_DIR/known_hosts"
+readonly CONF_ROOT_SSH_CONFIG="$CONF_ROOT_SSH_DIR/config"
+readonly NEW_USER_SSH_DIR="$HOME/.ssh"
+readonly NEW_USER_SSH_KEY="$NEW_USER_SSH_DIR/id_rsa"
+readonly NEW_USER_SSH_PUB="$NEW_USER_SSH_DIR/id_rsa.pub"
+readonly NEW_USER_SSH_AUTH="$NEW_USER_SSH_DIR/authorized_keys"
+readonly NEW_USER_SSH_HOSTS="$NEW_USER_SSH_DIR/known_hosts"
+readonly NEW_USER_SSH_CONFIG="$NEW_USER_SSH_DIR/config"
+readonly NEW_ROOT_SSH_DIR="/root/.ssh"
+readonly NEW_ROOT_SSH_KEY="$NEW_ROOT_SSH_DIR/id_rsa"
+readonly NEW_ROOT_SSH_PUB="$NEW_ROOT_SSH_DIR/id_rsa.pub"
+readonly NEW_ROOT_SSH_AUTH="$NEW_ROOT_SSH_DIR/authorized_keys"
+readonly NEW_ROOT_SSH_HOSTS="$NEW_ROOT_SSH_DIR/known_hosts"
+readonly NEW_ROOT_SSH_CONFIG="$NEW_ROOT_SSH_DIR/config"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-USER_SSH_DIR="$CONF_DIR/user/.ssh"
-ROOT_SSH_DIR="$CONF_DIR/root/.ssh"
+readonly FEATURE_NAME="Import Root and User SSH Keys"
+readonly FEATURE_DESC="Install existing ssh keys for your user and for root"
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$NEW_USER_SSH_DIR" \
+    "$NEW_USER_SSH_KEY" \
+    "$NEW_USER_SSH_PUB" \
+    "$NEW_USER_SSH_AUTH" \
+    "$NEW_USER_SSH_HOSTS" \
+    "$NEW_USER_SSH_CONFIG" \
+    "$NEW_ROOT_SSH_DIR" \
+    "$NEW_ROOT_SSH_KEY" \
+    "$NEW_ROOT_SSH_PUB" \
+    "$NEW_ROOT_SSH_AUTH" \
+    "$NEW_ROOT_SSH_HOSTS" \
+    "$NEW_ROOT_SSH_CONFIG" \
+)
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=()
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(openssh)
 
-feature_name="ssh-keys"
-feature_desc="Install existing ssh keys for your user and for root"
 
-provides=()
-new_files=("$HOME/.ssh/id_rsa" \
-    "$HOME/.ssh/config" \ 
-    "$HOME/.ssh/authorized_keys" \ 
-    "$HOME/.ssh/id_rsa.pub" \ 
-    "$HOME/.ssh/known_hosts" \
-    "/root/.ssh/id_rsa" \ 
-    "/root/.ssh/config" \ 
-    "/root/.ssh/authorized_keys" \ 
-    "/root/.ssh/id_rsa.pub" \ 
-    "/root/.ssh/known_hosts")
-modified_files=()
-temp_files=()
-
-depends_aur=()
-depends_pacman=(openssh)
 
 function install_exists() {
     source_file="$1"; shift
@@ -43,49 +67,71 @@ function install_exists() {
 }
 
 function check_install() {
-    if diff "$HOME/.ssh" "$USER_SSH_DIR" &&
-        sudo diff "/root/.ssh" "$ROOT_SSH_DIR"; then
-        qecho "$feature_name is installed"
+    if diff "$NEW_USER_SSH_DIR" "$CONF_USER_SSH_DIR" &&
+        sudo diff "$NEW_ROOT_SSH_DIR" "$CONF_ROOT_SSH_DIR"; then
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    if [[ -d "$CONF_DIR/user/.ssh" ]] &&
-        [[ -d "$CONF_DIR/root/.ssh" ]]; then
-        
-        qecho "Copying user ssh files to $HOME/.ssh..."
-        mkdir -p "$HOME/.ssh"
-        chmod 700 "$HOME/.ssh"
-        [[ -f "$USER_SSH_DIR/id_rsa" ]] &&
-            command install -Dm 600 "$USER_SSH_DIR/id_rsa" "$HOME/.ssh/id_rsa"
-        [[ -f "$USER_SSH_DIR/config" ]] &&
-            command install -Dm 600 "$USER_SSH_DIR/config" "$HOME/.ssh/config"
-        [[ -f "$USER_SSH_DIR/authorized_keys" ]] &&
-            command install -Dm 600 "$USER_SSH_DIR/authorized_keys" "$HOME/.ssh/authorized_keys"
-        [[ -f "$USER_SSH_DIR/id_rsa.pub" ]] &&
-            command install -Dm 644 "$USER_SSH_DIR/id_rsa.pub" "$HOME/.ssh/id_rsa.pub"
-        [[ -f "$USER_SSH_DIR/known_hosts" ]] &&
-            command install -Dm 644 "$USER_SSH_DIR/known_hosts" "$HOME/.ssh/known_hosts"
-        chown -R $USER "$HOME/.ssh"
+    if [[ -d "$CONF_USER_SSH_DIR" ]] && [[ -d "$CONF_ROOT_SSH_DIR" ]]; then
+        qecho "Copying user ssh files to $NEW_USER_SSH_DIR..."
+        mkdir -p "$NEW_USER_SSH_DIR"
+        chmod 700 "$NEW_USER_SSH_DIR"
 
-        qecho "Copying root ssh files to /root/.ssh"
-        sudo mkdir -p "/root/.ssh"
-        sudo chmod 700 "/root/.ssh"
-        [[ -f "$ROOT_SSH_DIR/id_rsa" ]] &&
-            sudo install -Dm 600 "$ROOT_SSH_DIR/id_rsa" "/root/.ssh/id_rsa"
-        [[ -f "$ROOT_SSH_DIR/config" ]] &&
-            sudo install -Dm 600 "$ROOT_SSH_DIR/config" "/root/.ssh/config"
-        [[ -f "$ROOT_SSH_DIR/authorized_keys" ]] &&
-            sudo install -Dm 600 "$ROOT_SSH_DIR/authorized_keys" "/root/.ssh/authorized_keys"
-        [[ -f "$ROOT_SSH_DIR/id_rsa.pub" ]] &&
-            sudo install -Dm 644 "$ROOT_SSH_DIR/id_rsa.pub" "/root/.ssh/id_rsa.pub"
-        [[ -f "$ROOT_SSH_DIR/known_hosts" ]] &&
-            sudo install -Dm 644 "$ROOT_SSH_DIR/known_hosts" "/root/.ssh/known_hosts"
-        sudo chown -R root "/root/.ssh"
+        if [[ -f "$CONF_USER_SSH_KEY" ]]; then
+            command install -Dm 600 "$CONF_USER_SSH_KEY" "$NEW_USER_SSH_KEY"
+        fi
+
+        if [[ -f "$CONF_USER_SSH_CONFIG" ]]; then
+            command install -Dm 600 "$CONF_USER_SSH_CONFIG" \
+                "$NEW_USER_SSH_CONFIG"
+        fi
+
+        if [[ -f "$CONF_USER_SSH_AUTH" ]]; then
+            command install -Dm 600 "$CONF_USER_SSH_AUTH" "$NEW_USER_SSH_AUTH"
+        fi
+
+        if [[ -f "$CONF_USER_SSH_PUB" ]]; then
+            command install -Dm 644 "$CONF_USER_SSH_PUB" "$NEW_USER_SSH_PUB"
+        fi
+
+        if [[ -f "$CONF_USER_SSH_HOSTS" ]]; then
+            command install -Dm 644 "$CONF_USER_SSH_HOSTS" "$NEW_USER_SSH_HOSTS"
+        fi
+
+        chown -R "$USER" "$NEW_USER_SSH_DIR"
+
+        qecho "Copying root ssh files to $CONF_ROOT_SSH_DIR"
+        sudo mkdir -p "$NEW_ROOT_SSH_DIR"
+        sudo chmod 700 "$NEW_ROOT_SSH_DIR"
+
+        if sudo test -f "$CONF_ROOT_SSH_KEY"; then
+            sudo install -Dm 600 "$CONF_ROOT_SSH_KEY" "$NEW_ROOT_SSH_KEY"
+        fi
+
+        if sudo test -f "$CONF_ROOT_SSH_CONFIG"; then
+            sudo install -Dm 600 "$CONF_ROOT_SSH_CONFIG" \
+                "$NEW_ROOT_SSH_CONFIG"
+        fi
+
+        if sudo test -f "$CONF_ROOT_SSH_AUTH"; then
+            sudo install -Dm 600 "$CONF_ROOT_SSH_AUTH" "$NEW_ROOT_SSH_AUTH"
+        fi
+
+        if sudo test -f "$CONF_ROOT_SSH_PUB"; then
+            sudo install -Dm 644 "$CONF_ROOT_SSH_PUB" "$NEW_ROOT_SSH_PUB"
+        fi
+
+        if sudo test -f "$CONF_ROOT_SSH_HOSTS"; then
+            sudo install -Dm 644 "$CONF_ROOT_SSH_HOSTS" "$NEW_ROOT_SSH_HOSTS"
+        fi
+
+        sudo chown -R root "$NEW_ROOT_SSH_DIR"
 
         qecho "Done copying ssh files"
     else
@@ -95,8 +141,8 @@ function install() {
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
-    rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    rm -f "${NEW_FILES[@]}"
 }
 
 

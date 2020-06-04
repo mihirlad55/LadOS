@@ -1,48 +1,48 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly BASE_SVC="$BASE_DIR/physlock.service"
+readonly NEW_SVC="/etc/systemd/system/physlock.service"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="physlock"
-feature_desc="Install physlock and custom service file"
+readonly FEATURE_NAME="Physlock service"
+readonly FEATURE_DESC="Install physlock and custom service file"
+readonly PROVIDES=()
+readonly NEW_FILES=("$NEW_SVC")
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=()
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(physlock)
 
-provides=()
-new_files=("/etc/systemd/system/physlock.service")
-modified_files=()
-temp_files=()
-
-depends_aur=()
-depends_pacman=(physlock)
 
 
 function check_install() {
-    if diff $BASE_DIR/physlock.service /etc/systemd/system/physlock.service; then
-        qecho "$feature_name is installed"
+    if diff "$BASE_SVC" "$NEW_SVC"; then
+        qecho "$FEATURE_NAME is installed"
         return 0
     else
-        echo "$feature_name is not installed" >&2
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
 }
 
 function install() {
-    qecho "Copying physlock.service..."
-    sudo install -Dm 644 $BASE_DIR/physlock.service /etc/systemd/system/physlock.service
+    qecho "Copying from $BASE_SVC to $NEW_SVC..."
+    sudo install -Dm 644 "$BASE_SVC" "$NEW_SVC"
 }
 
 function post_install() {
     qecho "Enabling physlock.service..."
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} physlock.service
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" physlock.service
 }
 
 function uninstall() {
-    qecho "Removing ${new_files[@]}..."
-    rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    rm -f "${NEW_FILES[@]}"
 }
 
 

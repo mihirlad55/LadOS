@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
-LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//')"
 
 source "$LAD_OS_DIR/common/install_common.sh"
 
@@ -11,43 +11,46 @@ function enable_localrepo() {
     if [[ -f "$LAD_OS_DIR/localrepo/localrepo.db" ]]; then
         if ! grep -q /etc/pacman.conf -e "LadOS"; then
             msg2 "Found localrepo. Enabling..."
-            sed -i /etc/pacman.conf -e '1 i\Include = /LadOS/install/localrepo.conf'
+            sed -i /etc/pacman.conf \
+                -e '1 i\Include = /LadOS/install/localrepo.conf'
         else
-                msg2 "Localrepo already enabled"
+            msg2 "Localrepo already enabled"
         fi
         pacman -Sy
     fi
 }
 
 function set_timezone() (
-    msg "Setting timezone..."
+    local zone num option options i selection
 
-    local zone=
-    local num=
+    msg "Setting timezone..."
 
     if [[ "$CONF_TIMEZONE_PATH" != "" ]]; then
         zone="$CONF_TIMEZONE_PATH"
     else
-        IFS=$'\n'
         cd /usr/share/zoneinfo || exit 1
+
+        # List files and directories in selected folder and allow user to
+        # select a zone file or subdirectory
         while true; do
-            local options
             mapfile -t options < <(ls)
 
-            local i=1
+            i=1
             for option in "${options[@]}"; do
                 echo "$i. $option"
-                i=$((i+1))
+                i=$(( i + 1 ))
             done
+
             num="$(ask "Select closest match")"
 
-            re='^[0-9]+$'
-            if ! [[ $num =~ $re ]]; then continue; fi
+            if ! [[ $num =~ ^[0-9]+$ ]]; then continue; fi
 
-            num=$((num-1))
+            num=$(( num - 1 ))
 
             selection="${options[$num]}"
 
+            # If directory selected, cd into directory, else select zone and
+            # break from loop
             if [[ -d "$selection" ]]; then
                 cd "$selection" || exit 1
             elif [[ -e "$selection" ]]; then
@@ -56,7 +59,6 @@ function set_timezone() (
             fi
         done
     fi
-
 
     msg2 "$zone selected"
     
@@ -71,10 +73,13 @@ function set_adjtime() {
 function install_vim() {
     msg "Installing vim to edit config files..."
 
+    # Used to edit configurations for rest of install
     pacman -S vim --noconfirm --needed
 }
 
 function set_locale() {
+    local lang
+
     msg "Setting locale..."
 
     if [[ "$CONF_LOCALE" != "" ]]; then
@@ -87,15 +92,15 @@ function set_locale() {
 
     locale-gen
 
-    local lang
     lang=$(grep -E /etc/locale.gen -e '^[^#].*$' -m 1 | cut -d' ' -f1)
 
     echo "LANG=$lang" > /etc/locale.conf
 }
 
 function set_hostname() {
-    msg "Setting hostname..."
     local hostname
+
+    msg "Setting hostname..."
 
     if [[ "$CONF_HOSTNAME" != "" ]]; then
         hostname="$CONF_HOSTNAME"
@@ -107,6 +112,8 @@ function set_hostname() {
 }
 
 function setup_hosts() {
+    local hosts
+
     msg "Setting up hosts file..."
 
     echo "127.0.0.1  localhost" > /etc/hosts
@@ -128,7 +135,7 @@ function setup_hosts() {
 function install_dracut() {
     msg "Installing dracut..."
 
-    "$REQUIRED_FEATURES_DIR"/*dracut/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
+    "$REQUIRED_FEATURES_DIR"/*dracut/feature.sh "${F_FLAGS[@]}" full
 }
 
 function sync_pacman() {
@@ -138,7 +145,7 @@ function sync_pacman() {
 function install_sudo() {
     msg "Installing sudo..."
 
-    "$REQUIRED_FEATURES_DIR"/*sudoers/feature.sh "${VERBOSITY_FLAG}" --no-service-start full
+    "$REQUIRED_FEATURES_DIR"/*sudoers/feature.sh "${F_FLAGS[@]}" full
 }
 
 function set_root_passwd() {
@@ -152,9 +159,9 @@ function set_root_passwd() {
 }
 
 function create_user_account() {
-    msg "Creating new default user account..."
-
     local users
+    
+    msg "Creating new default user account..."
 
     if [[ "$CONF_USERNAME" != "" ]]; then
         username="$CONF_USERNAME"
@@ -162,8 +169,10 @@ function create_user_account() {
         username="$(ask "Enter username")"
     fi
 
-    mapfile -t users < <(cat /etc/passwd | cut -d':' -f1)
+    # Get list of users
+    mapfile -t users < <(cut -d':' -f1 /etc/passwd)
 
+    # Check if user exists
     if echo "${users[*]}" | grep -q "$username"; then
         msg2 "$username already exists"
     else
@@ -190,7 +199,7 @@ function start_user_install() {
     msg "Preparing for user install..."
 
     msg2 "Switching user to $username..."
-    su -P -c "/LadOS/install/user-install.sh $VERBOSITY_FLAG" - "$username"
+    su -P -c "/LadOS/install/user-install.sh ${V_FLAG[@]}" - "$username"
 }
 
 

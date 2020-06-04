@@ -1,6 +1,8 @@
 #!/usr/bin/bash
 
-REMOTE_USER="portforward"
+readonly REMOTE_USER="portforward"
+readonly CUSTOM_SUODERS="/etc/sudoers.d/10-$REMOTE_USER"
+
 useradd -m $REMOTE_USER
 
 mkdir /home/${REMOTE_USER}/.ssh
@@ -11,16 +13,16 @@ chown ${REMOTE_USER}:${REMOTE_USER} -R /home/${REMOTE_USER}/.ssh
 
 install -Dm 700 free-port /usr/local/bin/free-port
 
-echo -n "Enter public key to authorize (blank for none): "
-read public_key
+read -rp "Enter public key to authorize (blank for none): " public_key
 
 [[ "$public_key" != "" ]] &&
     echo "$public_key" > /home/${REMOTE_USER}/.ssh/authorized_keys
 
-echo -n "Enter a port to run sshd on (blank to leave default): "
-read port
+read -rp "Enter a port to run sshd on (blank to leave default): " port
 
 if [[ "$port" != "" ]]; then
     sed -i /etc/ssh/sshd_config -e "s/^Port [0-9]*$/Port $port/"
     systemctl restart sshd
 fi
+
+echo "$REMOTE_USER ALL=NOPASSWD:/usr/local/bin/free-port" > "$CUSTOM_SUODERS"

@@ -1,0 +1,19 @@
+#!/usr/bin/bash
+
+COUNTRY="US"
+URL="https://www.archlinux.org/mirrorlist/?country=${COUNTRY}&protocol=https&use_mirror_status=on"
+
+echo "Waiting for Internet connection..."
+until ping -c 1 www.google.com &> /dev/null; do sleep 1; done
+
+echo "Ranking pacman mirrors..."
+ranked="$(curl -s "$URL" | \
+    sed -e 's/^#Server/Server/' -e '/^#/d' | \
+    /usr/bin/rankmirrors -n 5 -m 1 -)"
+
+echo "The following mirrors will be used:"
+echo "${ranked[@]}"
+
+echo "${ranked[@]}" > /etc/pacman.d/mirrorlist
+
+echo "Ranked mirrors saved in /etc/pacman.d/mirrorlist"

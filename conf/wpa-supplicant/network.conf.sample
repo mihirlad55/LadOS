@@ -1,0 +1,5 @@
+# Duplicate this file and rename to network.conf to use
+network={
+	ssid=""
+	psk=""
+}

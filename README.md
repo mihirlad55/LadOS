@@ -1,114 +1,53 @@
-# LadOS
+![LadOS main image](https://raw.githubusercontent.com/mihirlad55/LadOS/master/screenshots/main.gif)
 
+# Overview
 This repo contains setup/install scripts to install a heavily-riced version of
 Arch Linux.
 
-# Pre-Install
+# Features
+- **Dracut**: For easy initramfs generation
+- **rEFInd**: Boot loader with minimal-black theme
+- **Yay**: AUR helper
+- **DWM**: Tag-based tiling window manager
+- **st**: Simple lightweight terminal
+- **Polybar**: A productive and beautiful status bar
+- **Convenient Scripts**: Mulititude of convenience scripts and systemd services
+for openvpn, automated backup, screenshotting, timers, and more!
+- **Dotfiles**: My personal dotfiles and configuration
+- **Keyboard-centric**: You can almost ditch the mouse
+- **Secure**: Secure boot with TPM and LUKS encryption support
+- **Pre-Configured Install**: Set your configuration, click install, and come
+back in 20 minutes
+- **Easily Customizable**: Add your own features to automatically install
+- **Dunst**: Notifcations
+- **Compton**: Blurred and transparent backgrounds
+- **Rofi**: Custom scripts
+- **Plymouth**: Deus Ex boot animation (Thanks to [adi1090x](https://github.com/adi1090x))
+- **Vifm**: Vim-based file manager with image previews
+- **And so much more!**
 
+To see a detailed list of features, visit the
+[Features](https://github.com/mihirlad55/LadOS/wiki/Features)
+page on the wiki.
+
+Check out my configurations in my
+[dotfiles](https://github.com/mihirlad55/dotfiles)
+repo.
+
+
+# Pre-Install
 Before you begin an install of LadOS, you can create some files that can reduce
 manual input during the installation and futher manual installation later.
-All such files should be placed accordingly in the `conf` directory.
-
-## For Main Installation
-
-You can edit `conf/install/defaults.sh` to configure some default installation
-settings such as the default locale, timezone, etc. to avoid having to specify
-this during the installation.
-
-The `conf/install/hosts` file can be edited to include additional entries for
-the /etc/hosts file. The default entries included by the installation process
-are:
-```
-localhost   127.0.0.1
-::1         127.0.0.1
-```
-
-The `conf/install/network.conf` file can be edited to include a wpa\_supplicant
-formatted configuration to be used during the installation process.
-For example,
-```
-network={
-    ssid="Example WiFi"
-    psk="Example Password"
-}
-```
-can be used to connect to `Example WiFi` with `Example Password` during the
-installation process.
-
-
-## openvpn-expressvpn Feature
-In the `/conf/openvpn-expressvpn/client` folder, the unmodified .ovpn
-configuration files from ExpressVPN can be copied.
-In addition, a `login.conf` file with the following credential format can be
-created:
-```
-<username>
-<password>
-```
-
-
-## restic-b2
-In the `conf/restic-b2` folder, the `constants.sh` file can be modified to
-include your configuration for restic which will be copied over to
-`$HOME/.scripts/restic/constants.sh` during the `restic-b2` feature
-installation.
-
-
-## weather-polybar-module Feature
-In the `/conf/weather-polybar-module` folder, a `openweathermap.key` file can
-be created containing an OpenWeatherMap key which can be obtained from
-https://home.openweathermap.org/api\_keys.
-This is used to retreive weather information for polybar.
-
-
-## webkit2 Feature
-In the `/conf/webkit2` folder, a picture named `user.png` can be created to be
-used as your account avatar which will be displayed on
-`lightdm-webkit2-greeter`.
-In addition, background images for the login screen can put in
-`/conf/webkit2/backgrounds/`.
-
-
-## win10-fonts Feature
-In the `/conf/win10-fonts` folder, the windows 10 fonts can be copied to be
-installed by the win10-fonts feature.
-
+All such files should be placed accordingly in the `conf` directory. For more
+details, see the [wiki](https://github.com/mihirlad55/LadOS/wiki).
 
 
 # Install
+To install LadOS, go to the
+[install](https://github.com/mihirlad55/LadOS/wiki/Install)
+page on the wiki.
 
-To install LadOS, follow the below steps:
 
-1. Download the Arch Linux image from https://www.archlinux.org/download/ and
-use the following command to copy it to a USB.
-Warning: this will wipe all data on the USB:
-`dd bs=4M if=path/to/archlinux.iso of=/dev/sdx status=progress oflag=sync`
-
-2. Boot into the archiso on your computer.
-
-3. Download and unzip the repo using the following commands:
-```
-curl -L https://github.com/mihirlad55/LadOS/archive/master.zip \
-    --output LadOS.zip
-unzip LadOS.zip
-```
-
-4. Copy over any pre-installation files from another USB/storage medium or by
-downloading them.
-
-5. Run the installer by running setup.sh and then selecting
-`Install Arch Linux`.
-```
-% ./setup.sh
------Main Menu-----
-1. Install Arch Linux
-2. Install Required Features
-3. Install Optional Features
-4. Fixes
-5. Scripts
-6. Exit
-Option: 1
-
-```
-
-6. Follow any on-screen prompts and wait for the installation to complete.
+# Credits
+Special thanks to [adi1090x](https://github.com/adi1090x) for his inspiring
+plymouth, polybar, and rofi themes.

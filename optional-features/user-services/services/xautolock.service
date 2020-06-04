@@ -3,9 +3,9 @@ Description=xautolock
 
 [Service]
 Environment=AUTOLOCK_DELAY=3
-Environment=LOCKER_COMMAND=%h/.scripts/lock
+Environment="LOCKER_COMMAND=\'%h/.scripts/lock autolock\'"
 
-ExecStart=xautolock -time $AUTOLOCK_DELAY -locker $LOCKER_COMMAND
+ExecStart=xautolock -time "$AUTOLOCK_DELAY" -locker "$LOCKER_COMMAND"
 
 Type=simple
 

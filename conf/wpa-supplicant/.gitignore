@@ -1,0 +1,7 @@
+# Ignore everything in this folder
+*
+# Except this file
+!.gitignore
+
+# and network.conf.sample
+!network.conf.sample

@@ -1,29 +1,45 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/gcp-tunnel"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly CONF_DIR="$LAD_OS_DIR/conf/gcp-tunnel"
+readonly BASE_ENV="$BASE_DIR/gcp-tunnel.env"
+readonly BASE_SERVICE="$BASE_DIR/gcp-tunnel.service"
+readonly CONF_ENV="$CONF_DIR/gcp-tunnel.env"
+readonly MOD_SSHD_CONFIG="/etc/ssh/sshd_config"
+readonly TMP_ENV="/tmp/gcp-tunnel.env"
+readonly NEW_ENV="/etc/gcp-tunnel.env"
+readonly NEW_SERVICE="/etc/systemd/system/gcp-tunnel.service"
+readonly ROOT_SSH_PRIV_KEY="/root/.ssh/id_rsa"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="gcp-tunnel"
-feature_desc="Install gcp-tunnel which remote forwards your computer's SSH port to a Google Cloud Platform instance allowing it to be accessible over the Internet"
+readonly FEATURE_NAME="GCP Tunnel"
+readonly FEATURE_DESC="Install gcp-tunnel which remote forwards your \
+computer's SSH port to a Google Cloud Platform instance allowing it \
+to be accessible over the Internet"
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$NEW_ENV" \
+    "$NEW_SERVICE" \
+    "$MOD_SSHD_CONFIG" \
+)
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=("$TMP_ENV")
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(openssh)
 
-provides=()
-new_files=("/etc/gcp-tunnel.env" \
-    "/etc/systemd/system/gcp-tunnel.service")
-modified_files=()
-temp_files=("/tmp/gcp-tunnel.env")
+port=
 
-depends_aur=()
-depends_pacman=(openssh)
 
 
 function check_conf() (
-    [[ -f "$CONF_DIR/gcp-tunnel.env" ]] && source "$CONF_DIR/gcp-tunnel.env"
+    if [[ -f "$CONF_ENV" ]]; then
+        source "$CONF_ENV"
+    fi
+
     if [[ "$HOSTNAME" =  "" ]] ||
         [[ "$REMOTE_USERNAME" = "" ]] ||
         [[ "$LOCAL_PORT" = "" ]] ||
@@ -38,45 +54,50 @@ function check_conf() (
 )
 
 function load_conf() {
-    source "$CONF_DIR/gcp-tunnel.env"
+    source "$CONF_ENV"
 }
 
 function check_install() {
-    for f in ${new_files[@]}; do
+    local f
+
+    for f in "${NEW_FILES[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
-            echo "$feature_name is not installed" >&2
+            echo "$FEATURE_NAME is not installed" >&2
             return 1
         fi
     done
 
-    qecho "$feature_name is installed"
+    qecho "$FEATURE_NAME is installed"
     return 0
 }
 
 function prepare() {
-    port=$(egrep /etc/ssh/sshd_config -e "^#*Port [0-9]*$")
+    local new_port
+
+    # Get ssh port from SSHD config
+    port=$(grep -P "^#*Port [0-9]*$" "$MOD_SSHD_CONFIG")
 
     if ! check_conf; then
-        cp $BASE_DIR/gcp-tunnel.env /tmp/gcp-tunnel.env
+        cp -f "$BASE_ENV" "$TMP_ENV"
 
         echo -n "Enter a port to run sshd on (blank to leave default: $port): "
-        read new_port
+        read -r new_port
 
         if [[ "$new_port" != "" ]]; then
             port="$new_port"
         fi
 
-        sed -i /tmp/gcp-tunnel.env \
-            -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
+        # Update port in gcp-tunnel.env
+        sed -i "$TMP_ENV" -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
 
         echo "Opening environment file for updates..."
-        read -p "Press enter to continue..."
+        read -rp "Press enter to continue..."
 
         if [[ "$EDITOR" != "" ]]; then
-            $EDITOR /tmp/gcp-tunnel.env
+            "$EDITOR" "$TMP_ENV"
         else
-            vim /tmp/gcp-tunnel.env
+            vim "$TMP_ENV"
         fi
     else
         port="$LOCAL_PORT"
@@ -84,46 +105,47 @@ function prepare() {
 }
 
 function install() {
-    sudo sed -i /etc/ssh/sshd_config -e "s/^#*Port [0-9]*$/Port $port/"
+    # Update port setting in sshd config
+    sudo sed -i "$MOD_SSHD_CONFIG" -e "s/^#*Port [0-9]*$/Port $port/"
 
-    if ! sudo test -e "/root/.ssh/id_rsa"; then
+    if ! sudo test -e "$ROOT_SSH_PRIV_KEY"; then
         echo "Warning: Root's SSH keys are not setup" >&2
     fi
 
-    sudo install -Dm 644 $BASE_DIR/gcp-tunnel.service /etc/systemd/system/gcp-tunnel.service
+    sudo install -Dm 644 "$BASE_SERVICE" "$NEW_SERVICE"
+
     if ! check_conf; then
-        sudo install -Dm 600 /tmp/gcp-tunnel.env /etc/gcp-tunnel.env
+        sudo install -Dm 600 "$TMP_ENV" "$NEW_ENV"
     else
-        sudo install -Dm 600 "$CONF_DIR/gcp-tunnel.env" /etc/gcp-tunnel.env
+        sudo install -Dm 600 "$CONF_ENV" "$NEW_ENV"
     fi
 }
 
 function post_install() {
     qecho "Enabling gcp-tunnel.service..."
-    sudo systemctl enable -f ${SYSTEMD_FLAGS[*]} gcp-tunnel
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" gcp-tunnel.service
 
     qecho "Enabling sshd.service"
-    sudo systemctl enable ${SYSTEMD_FLAGS[*]} sshd
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" sshd.service
 
     qecho "Done enabling services"
 }
 
 function cleanup() {
-    qecho "Removing /tmp/gcp-tunnel.env"
-    rm -f /tmp/gcp-tunnel.env
+    qecho "Removing $TMP_ENV"
+    rm -f "$TMP_ENV"
 }
 
 function uninstall() {
     qecho "Disabling gcp-tunnel.service..."
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} gcp-tunnel
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" gcp-tunnel.service
 
     qecho "Disabling sshd.service"
-    sudo systemctl disable ${SYSTEMD_FLAGS[*]} sshd
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" sshd.service
 
-    qecho "Removing ${new_files[@]}..."
-    rm -f "${new_files[@]}"
+    qecho "Removing ${NEW_FILES[*]}..."
+    rm -f "${NEW_FILES[@]}"
 }
 
+
 source "$LAD_OS_DIR/common/feature_footer.sh"
-
-

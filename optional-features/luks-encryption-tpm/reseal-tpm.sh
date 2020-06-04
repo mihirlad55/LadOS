@@ -1,29 +1,29 @@
 #!/usr/bin/bash
 
-SECRET_FILE="/root/cryptroot.bin"
-POLICY_DIGEST_FILE="/tmp/policy.digest"
-PRIMARY_CTX_FILE="/tmp/primary.context"
-OBJ_PUB_FILE="/tmp/obj.pub"
-OBJ_KEY_FILE="/tmp/obj.key"
-LOAD_CTX_FILE="/tmp/load.context"
-OBJ_ATTR="noda|adminwithpolicy|fixedparent|fixedtpm"
-TPM_HANDLE="0x81000000"
+readonly SECRET_BIN="/root/cryptroot.bin"
+readonly TMP_POLICY_DIGEST="/tmp/policy.digest"
+readonly TMP_PRIMARY_CTX="/tmp/primary.context"
+readonly TMP_OBJ_PUB="/tmp/obj.pub"
+readonly TMP_OBJ_KEY="/tmp/obj.key"
+readonly TMP_LOAD_CTX="/tmp/load.context"
 
-PCR_POLICY="sha1:0,2,4,7"
+readonly OBJ_ATTR="noda|adminwithpolicy|fixedparent|fixedtpm"
+readonly TPM_HANDLE="0x81000000"
+readonly PCR_POLICY="sha1:0,2,4,7"
+readonly QUIET_FLAG=("--quiet")
 
-QUIET_FLAG="--quiet"
-
-TMP_FILES=( \
-    "$POLICY_DIGEST_FILE" \
-    "$PRIMARY_CTX_FILE" \
-    "$OBJ_PUB_FILE" \
-    "$OBJ_KEY_FILE" \
-    "$LOAD_CTX_FILE" \
+readonly TMP_FILES=( \
+    "$TMP_POLICY_DIGEST" \
+    "$TMP_PRIMARY_CTX" \
+    "$TMP_OBJ_PUB" \
+    "$TMP_OBJ_KEY" \
+    "$TMP_LOAD_CTX" \
 )
 
 
+
 function check_object() {
-    if tpm2_readpublic $QUIET_FLAG -c "$TPM_HANDLE"; then
+    if tpm2_readpublic ${QUIET_FLAG[@]} -c "$TPM_HANDLE"; then
         return 0
     fi
     return 1
@@ -38,7 +38,7 @@ function clear_tpm_handle() {
 }
 
 function try_unseal() {
-    if tpm2_unseal $QUIET_FLAG -c "$TPM_HANDLE" -p "pcr:$PCR_POLICY" > /dev/null; then
+    if tpm2_unseal ${QUIET_FLAG[@]} -c "$TPM_HANDLE" -p "pcr:$PCR_POLICY" > /dev/null; then
         return 0
     fi
     return 1
@@ -46,25 +46,24 @@ function try_unseal() {
 
 function seal_tpm() {
     echo "Creating new policy..."
-    tpm2_createpolicy $QUIET_FLAG --policy-pcr -l "$PCR_POLICY" \
-        -L "$POLICY_DIGEST_FILE"
+    tpm2_createpolicy ${QUIET_FLAG[@]} --policy-pcr -l "$PCR_POLICY" \
+        -L "$TMP_POLICY_DIGEST"
 
     echo "Creating new primary key..."
-    tpm2_createprimary $QUIET_FLAG -C e -g sha1 -G rsa \
-        -c "$PRIMARY_CTX_FILE"
+    tpm2_createprimary ${QUIET_FLAG[@]} -C e -g sha1 -G rsa \
+        -c "$TMP_PRIMARY_CTX"
 
     echo "Creating new child key..."
-    tpm2_create $QUIET_FLAG -g sha256 -u "$OBJ_PUB_FILE" \
-        -r "$OBJ_KEY_FILE" -C "$PRIMARY_CTX_FILE" -L "$POLICY_DIGEST_FILE" \
-        -a "$OBJ_ATTR" -i "$SECRET_FILE"
+    tpm2_create ${QUIET_FLAG[@]} -g sha256 -u "$TMP_OBJ_PUB" \
+        -r "$TMP_OBJ_KEY" -C "$TMP_PRIMARY_CTX" -L "$TMP_POLICY_DIGEST" \
+        -a "$OBJ_ATTR" -i "$SECRET_BIN"
 
     echo "Loading secret..."
-    tpm2_load $QUIET_FLAG -C "$PRIMARY_CTX_FILE" \
-        -u "$OBJ_PUB_FILE" -r "$OBJ_KEY_FILE" -c "$LOAD_CTX_FILE"
+    tpm2_load ${QUIET_FLAG[@]} -C "$TMP_PRIMARY_CTX" -u "$TMP_OBJ_PUB" \
+        -r "$TMP_OBJ_KEY" -c "$TMP_LOAD_CTX"
 
     echo "Persisting secret..."
-    tpm2_evictcontrol $QUIET_FLAG -C o -c "$LOAD_CTX_FILE" \
-        "$TPM_HANDLE"
+    tpm2_evictcontrol ${QUIET_FLAG[@]} -C o -c "$TMP_LOAD_CTX" "$TPM_HANDLE"
 }
 
 function cleanup() {

@@ -5,9 +5,9 @@ arc-gtk-theme,GTK theme,system,required
 aspell,Spell check,system,required
 audacity,Audio editing,system,optional
 base,Base packages,system,required
+base-devel,Packages for AUR,system,required
 bluez-utils,Bluetooth,system,required
 chromium,main browser,system,required
-chromium-widevine,widevine patch for Netflix,aur,required
 clang,For C-code formatting,system,optional
 cmatrix,To be a hacker,system,required
 colorpicker,Color picker,aur,optional
@@ -51,6 +51,7 @@ maia-gtk-theme,Theme for gtk-greeter,aur,optional
 mailspring,Main email client,aur,optional
 make,For making stuff,system,required
 man-db,Man pages,system,required
+ttf-material-design-icons,Main icon font,aur,required
 nautilus,File explorer mainly for thumbnails,system,required
 neovim,Main editor,system,required
 nerd-fonts-complete,Icon fonts,aur,required

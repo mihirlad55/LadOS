@@ -1,23 +1,24 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly TMP_YAY_DIR="/tmp/yay"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-feature_name="Yay AUR Helper"
-feature_desc="Install yay AUR helper"
+readonly FEATURE_NAME="YAY AUR Helper"
+readonly FEATURE_DESC="Install YAY AUR helper"
+readonly PROVIDES=("yay")
+readonly NEW_FILES=()
+readonly MODIFIED_FILES=()
+readonly TEMP_FILES=("$TMP_YAY_DIR")
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(base-devel git wget yajl)
 
-provides=("yay")
-new_files=()
-modified_files=()
-temp_files=("/tmp/yay")
+readonly YAY_URL="https://aur.archlinux.org/yay.git"
 
-depends_aur=()
-depends_pacman=(base-devel git wget yajl)
 
 
 function check_install() {
@@ -31,26 +32,26 @@ function check_install() {
 }
 
 function prepare() {
-    if [[ ! -d "/tmp/yay" ]]; then
+    if [[ ! -d "$TMP_YAY_DIR" ]]; then
         qecho "Cloning yay..."
-        git clone --depth 1 $VERBOSITY_FLAG https://aur.archlinux.org/yay.git /tmp/yay
+        git clone "${GIT_FLAGS[@]}" "$YAY_URL" /tmp/yay
     fi
 }
 
 function install() {
     # Make package
     qecho "Making yay..."
-    # Some non-error output goes to stderr
-    (cd /tmp/yay && makepkg -si --noconfirm --noprogressbar)
+    (cd "$TMP_YAY_DIR" && makepkg -si --noconfirm --noprogressbar --nocolor)
 }
 
 function cleanup() {
-    qecho "Removing ${temp_files[@]}..."
-    rm -dRf ${temp_files[@]}
+    qecho "Removing ${TEMP_FILES[*]}..."
+    rm -rf "${TEMP_FILES[@]}"
 }
 
 function uninstall() {
-    sudo pacman -Rsu "${provides[@]}" --noconfirm
+    sudo pacman -Rsu "${PROVIDES[@]}" --noconfirm
 }
+
 
 source "$LAD_OS_DIR/common/feature_footer.sh"

@@ -12,6 +12,7 @@ cp -aT /etc/skel/ /root/
 chmod 700 /root
 
 # Set root password
+echo "Enter password to set for recovery root: "
 passwd
 
 sed -i 's/#\(PermitRootLogin \).\+/\1yes/' /etc/ssh/sshd_config

@@ -1,7 +1,6 @@
 #!/usr/bin/bash
 
 port="$1"
-pid=$(lsof -i:${port} -t) && \
-    kill $pid
+pid=$(lsof -i:"$port" -t) && kill "$pid"
 
 

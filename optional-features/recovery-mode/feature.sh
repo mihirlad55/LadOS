@@ -1,138 +1,176 @@
 #!/usr/bin/bash
 
-
 # Get absolute path to directory of script
-BASE_DIR="$( readlink -f "$(dirname "$0")" )"
+readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
-LAD_OS_DIR="$( echo $BASE_DIR | grep -o ".*/LadOS/" | sed 's/.$//')"
-CONF_DIR="$LAD_OS_DIR/conf/recovery-mode"
+readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
+readonly MOUNT_POINT="/var/tmp/recovery"
+readonly CONF_DIR="$LAD_OS_DIR/conf/recovery-mode"
+readonly CONF_RECOVERY_DIR="$CONF_DIR/recovery"
+readonly REFIND_DIR="/boot/EFI/refind"
+readonly MOD_REFIND_CONF="$REFIND_DIR/refind.conf"
+readonly BASE_RECOVERY_CONF="$BASE_DIR/refind-recovery.conf"
+readonly NEW_RECOVERY_CONF="$REFIND_DIR/refind-recovery.conf"
+readonly DB_DIR="/root/sb-keys/db"
+readonly DB_KEY="$DB_DIR/db.key"
+readonly DB_CRT="$DB_DIR/db.crt"
+readonly MOK_DIR="/root/sb-keys/MOK"
+readonly MOK_KEY="$MOK_DIR/MOK.key"
+readonly MOK_CRT="$MOK_DIR/MOK.crt"
+readonly EFI_BINARIES=( \
+    "$MOUNT_POINT/shellx64_v2.efi" \
+    "$MOUNT_POINT/shellx64_v1.efi" \
+    "$MOUNT_POINT/boot/x86_64/vmlinuz" \
+)
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-REFIND_DIR="/boot/EFI/refind"
-REFIND_CONF="$REFIND_DIR/refind.conf"
-REFIND_RECOVERY_CONF="$BASE_DIR/refind-recovery.conf"
-
-EFI_BINARIES=( \
-    "/boot/recovery/shellx64_v2.efi" \
-    "/boot/recovery/shellx64_v1.efi" \
-    "/boot/recovery/boot/x86_64/vmlinuz" \
+readonly FEATURE_NAME="Recovery Mode"
+readonly FEATURE_DESC="Create recovery mode option in bootloader"
+readonly CONFLICTS=()
+readonly PROVIDES=()
+readonly NEW_FILES=( \
+    "$NEW_RECOVERY_CONF" \
+    "$MOUNT_POINT" \
+    "$MOUNT_POINT/shellx64_v2.efi" \
+    "$MOUNT_POINT/shellx64_v1.efi" \
+    "$MOUNT_POINT/x86_64" \
+    "$MOUNT_POINT/pkglist.x86_64.txt" \
+    "$MOUNT_POINT/x86_64/airootfs.sfs" \
+    "$MOUNT_POINT/x86_64/airootfs.sha512" \
+    "$MOUNT_POINT/boot" \
+    "$MOUNT_POINT/boot/x86_64/archiso.img" \
+    "$MOUNT_POINT/boot/x86_64/vmlinuz" \
+    "$MOUNT_POINT/boot/memtest" \
+    "$MOUNT_POINT/boot/memtest.COPYING" \
+    "$MOUNT_POINT/boot/intel_ucode.img" \
+    "$MOUNT_POINT/boot/intel_ucode.LICENSE" \
+    "$MOUNT_POINT/boot/amd_ucode.img" \
+    "$MOUNT_POINT/boot/amd_ucode.LICENSE" \
 )
+readonly MODIFIED_FILES=("$MOD_REFIND_CONF")
+readonly TEMP_FILES=()
+readonly DEPENDS_AUR=()
+readonly DEPENDS_PACMAN=(dosfstools refind)
+readonly DEPENDS_PIP3=()
 
-feature_name="Recovery Mode"
-feature_desc="Create recovery mode option in bootloader"
+readonly RECOVERY_LABEL="RECOVERY"
 
-conflicts=()
-
-provides=()
-new_files=( \
-    "$REFIND_DIR/refind-recovery.conf" \
-    "/boot/recovery" \
-    "/boot/recovery/shellx64_v2.efi" \
-    "/boot/recovery/shellx64_v1.efi" \
-    "/boot/recovery/x86_64" \
-    "/boot/recovery/pkglist.x86_64.txt" \
-    "/boot/recovery/x86_64/airootfs.sfs" \
-    "/boot/recovery/x86_64/airootfs.sha512" \
-    "/boot/recovery/boot" \
-    "/boot/recovery/boot/x86_64/archiso.img" \
-    "/boot/recovery/boot/x86_64/vmlinuz" \
-    "/boot/recovery/boot/memtest" \
-    "/boot/recovery/boot/memtest.COPYING" \
-    "/boot/recovery/boot/intel_ucode.img" \
-    "/boot/recovery/boot/intel_ucode.LICENSE" \
-    "/boot/recovery/boot/amd_ucode.img" \
-    "/boot/recovery/boot/amd_ucode.LICENSE" \
-)
-modified_files=("$REFIND_CONF")
-temp_files=()
-
-depends_aur=()
-depends_pacman=(dosfstools refind)
-depends_pip3=()
 
 
 function check_boot_space() {
-    free_space="$(df /boot | tail -n1 | awk '{print $4}')"
-    recovery_size="$(du -d0 "$CONF_DIR/recovery" | cut -f1)"
-    overwritable_space="$(du ${new_files[@]} -c | tail -n1 | cut -f1)"
+    local free_space recovery_size part_path
+    part_path="$1"
 
-    free_space=$((free_space + overwritable_space))
+    free_space="$(sudo blockdev --getsize64 "$part_path")"
+    recovery_size="$(du -d0 "$CONF_RECOVERY_DIR" | cut -f1)"
 
-    if [[ "$free_space" -gt "$recovery_size" ]]; then
-        vecho "There is enough space on the boot partition to copy the recovery files"
+    # Check if partition is big enough
+    if (( free_space > recovery_size )); then
+        vecho "There is enough space on the boot partition to copy the"
+        vecho "recovery files"
         return 0
     else
-        vecho "There is not enough space on the boot partition to copy the recovery files"
+        vecho "There is not enough space on the boot partition to copy the"
+        vecho "recovery files"
         return 1
     fi
 }
 
 
 function check_install() {
-    if ! grep -q "$REFIND_CONF" -e "^include refind-recovery.conf$"; then
-        echo "$feature_name is not installed" >&2
+    local f
+
+    # Check if include directive is in refind.conf
+    if ! grep -q "$MOD_REFIND_CONF" -e "^include refind-recovery.conf$"; then
+        echo "$FEATURE_NAME is not installed" >&2
         return 1
     fi
 
-    for f in ${new_files[@]}; do
+    sudo mount "LABEL=$RECOVERY_LABEL" "$MOUNT_POINT"
+
+    # Check if all files are installed
+    for f in "${NEW_FILES[@]}"; do
         if [[ ! -e "$f" ]]; then
             echo "$f is missing" >&2
-            echo "$feature_name is not installed" >&2
+            echo "$FEATURE_NAME is not installed" >&2
+            sudo umount "$MOUNT_POINT"
             return 1
         fi
     done
 
-    qecho "$feature_name is installed"
+    sudo umount "$MOUNT_POINT"
+    qecho "$FEATURE_NAME is installed"
     return 0
 }
 
 function install() {
-    if check_boot_space; then
-        qecho "Copying recovery mode files to /boot"
-        sudo cp -rfT "$CONF_DIR/recovery" "/boot/recovery"
+    local part_path recovery_size part_path resp
+
+    recovery_size="$(du -hd0 "$CONF_RECOVERY_DIR" | cut -f1)"
+
+    qecho "This feature requires a $recovery_size partition"
+    read -rp "Enter the device path to the recovery partition: " part_path
+    read -rp "Is $part_path is the recovery partition [y/N]: " resp
+
+    if [[ "$resp" != "y" ]] && [[ "$resp" != "Y" ]]; then
+        exit 1
+    fi
+
+    sudo mkdir -p "$MOUNT_POINT"
+
+    qecho "Formatting $part_path..."
+    if mount | grep -q "$part_path"; then
+        qecho "$part_path is currently mounted. Unmounting..."
+        sudo umount "$part_path"
+    fi
+
+    sudo mkfs.vfat -F32 "$part_path"
+
+    qecho "Labelling $part_path $RECOVERY_LABEL..."
+    sudo fatlabel "$part_path" "$RECOVERY_LABEL"
+
+    qecho "Mounting $part_path at $MOUNT_POINT..."
+    sudo mount "$part_path" "$MOUNT_POINT"
+
+    if check_boot_space "$part_path"; then
+        qecho "Copying recovery mode files to $MOUNT_POINT"
+        sudo cp -rfT "$CONF_RECOVERY_DIR" "$MOUNT_POINT"
     else
-        recovery_size="$(du -hd0 "$CONF_DIR/recovery" | cut -f1)"
         echo "There is not enough space to copy the recovery files"
-        echo "You need at least $recovery_size to install $feature_name"
+        echo "You need at least $recovery_size to install $FEATURE_NAME"
         exit 1
     fi
 
     qecho "Copying configuration files to $REFIND_DIR..."
-    sudo install -Dm 755 "$REFIND_RECOVERY_CONF" $REFIND_DIR/refind-recovery.conf
+    sudo install -Dm 755 "$BASE_RECOVERY_CONF" "$NEW_RECOVERY_CONF"
 
-    if ! grep -q "$REFIND_CONF" -e "^include refind-recovery.conf$"; then
-        qecho "Adding include to $REFIND_CONF..."
-        sudo sed -i "$REFIND_CONF" \
+    if ! grep -q "$MOD_REFIND_CONF" -e "^include refind-recovery.conf$"; then
+        qecho "Adding include to $MOD_REFIND_CONF..."
+        sudo sed -i "$MOD_REFIND_CONF" \
             -e '1 i\include refind-recovery.conf'
     else
-        qecho "Include command already in $REFIND_CONF"
+        qecho "Include command already in $MOD_REFIND_CONF"
     fi
-
-    qecho "Labelling root partition as 'BOOT'"
-    boot_path="$(cat /etc/fstab | \
-        grep -B1 -P -e "UUID=[a-zA-Z0-9\-]*[\t ]+/boot[\t ]+" | \
-        head -n1 | \
-        sed 's/[# ]*//')"
-
-    sudo fatlabel "$boot_path" "BOOT"
 
     qecho "Done"
 }
 
 function post_install() {
-    local key crt
+    local key crt bin
 
-    if sudo test -f "/root/sb-keys/db/db.key" && sudo test -f "/root/sb-keys/db/db.crt"; then
+    # Check if secure boot MOK or DB keys are available
+    if sudo test -f "$DB_KEY" && sudo test -f "$DB_CRT"; then
         qecho "Found custom secure boot keys"
-        key="/root/sb-keys/db/db.key"
-        crt="/root/sb-keys/db/db.crt"
-    elif sudo test -f "/root/sb-keys/MOK/MOK.key" && sudo test -f "/root/sb-keys/MOK/MOK.crt"; then
+        key="$DB_KEY"
+        crt="$DB_CRT"
+    elif sudo test -f "$MOK_KEY" && sudo test -f "$MOK_CRT"; then
         qecho "Found shim secure boot installation"
-        key="/root/sb-keys/MOK/MOK.key"
-        crt="/root/sb-keys/MOK/MOK.crt"
+        key="$MOK_KEY"
+        crt="$MOK_CRT"
     fi
 
+    # Sign EFI binaries in recovery partition with secure boot keys
     if [[ -n "$key" ]] && [[ -n "$crt" ]]; then
         qecho "Signing recovery binaries..."
         for bin in "${EFI_BINARIES[@]}"; do
@@ -146,14 +184,18 @@ function post_install() {
     fi
 }
 
-function uninstall() {
-    qecho "Removing ${new_files[@]}..."
-    sudo rm -rf "${new_files[@]}"
-
-    qecho "Removing include command from $REFIND_CONF..."
-    sudo sed -i "$REFIND_CONF" -e "s/^include refind-recovery.conf$//"
+function cleanup() {
+    qecho "Unmounting $MOUNT_POINT..."
+    sudo umount "$MOUNT_POINT"
 }
 
-source "$LAD_OS_DIR/common/feature_footer.sh"
+function uninstall() {
+    qecho "Removing ${NEW_FILES[*]}..."
+    sudo rm -rf "${NEW_FILES[@]}"
 
-# vim:ft=sh
+    qecho "Removing include command from $MOD_REFIND_CONF..."
+    sudo sed -i "$MOD_REFIND_CONF" -e "s/^include refind-recovery.conf$//"
+}
+
+
+source "$LAD_OS_DIR/common/feature_footer.sh"

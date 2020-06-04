@@ -1,0 +1,65 @@
+# /home
+/home/*/.arduino15
+/home/*/.cache
+/home/*/.config/Slack/Cache
+/home/*/.config/discord/Cache
+/home/*/.config/Slack/Service\ Worker/CacheStorage
+/home/*/.config/chromium/Default/Application Cache/
+/home/*/.config/Franz/Partitions
+/home/*/.config/Mailspring/Cache
+/home/*/.config/Mailspring/mailsync-*.log
+/home/*/.npm/_cacache
+/home/*/.local/lib
+/home/*/.local/bin
+/home/*/.local/share/Steam/steamapps
+/home/*/.local/share/Steam/ubuntu*
+/home/*/.local/share/Steam/package
+/home/*/.local/share/Steam/appcache
+/home/*/.local/share/Steam/tenfoot
+
+# root
+/root/.arduino15
+/root/.cache
+/root/.config/Slack/Cache
+/root/.config/discord/Cache
+/root/.config/Slack/Service\ Worker/CacheStorage
+/root/.config/chromium/Default/Application Cache/
+/root/.config/Franz/Partitions
+/root/.config/Mailspring/Cache
+/root/.config/Mailspring/mailsync-*.log
+/root/.npm/_cacache
+/root/.local/lib
+/root/.local/bin
+/root/.local/share/Steam/steamapps
+/root/.local/share/Steam/ubuntu*
+/root/.local/share/Steam/package
+/root/.local/share/Steam/appcache
+/root/.local/share/Steam/tenfoot
+
+# /etc
+/etc/at.deny
+/etc/brlapi.key
+/etc/crypttab
+/etc/gshadow
+/etc/gshadow-
+/etc/libaudit.conf
+/etc/shadow
+/etc/shadow-
+/etc/sudoers
+/etc/sudoers.d
+/etc/tcsd.conf
+
+# /
+/bin
+/dev
+/lib
+/lib64
+/lost+found
+/proc
+/run
+/sbin
+/share
+/sys
+/tmp
+/usr
+/var
