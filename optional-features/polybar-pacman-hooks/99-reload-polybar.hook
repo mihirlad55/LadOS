@@ -1,0 +1,9 @@
+[Trigger]
+Type = Path
+Operation = Upgrade
+Target = *
+
+[Action]
+Description = Reloading polybar...
+When = PostTransaction
+Exec = /usr/bin/polybar-msg cmd restart
