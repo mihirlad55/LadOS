@@ -24,7 +24,7 @@ readonly ISO_APPLICATION="LadOS Linux Live CD"
 readonly ISO_OUT_DIR="$BASE_DIR"
 
 # These flags are marked as readonly after being finalized at the bottom
-VERBOSE=
+VERBOSITY=
 GIT_FLAGS=("--depth" "1")
 V_FLAG=()
 Q_FLAG=("-q")
@@ -91,7 +91,7 @@ function iprompt() {
 }
 
 function vecho() {
-    if [[ -n "$VERBOSE" ]]; then echo "$@"; fi
+    if [[ -n "$VERBOSITY" ]]; then echo "$@"; fi
 }
 
 ################################################################################
@@ -639,6 +639,8 @@ function download_iso() {
     ARCH_ISO="$1"
     readonly ARCH_ISO
 
+    msg "Downloading archiso..."
+
     # Get first uncommented mirror from /etc/pacman.d/mirrorlist
     top_mirror="$(cat /etc/pacman.d/mirrorlist \
         | grep "^Server = " \
@@ -658,7 +660,10 @@ function download_iso() {
     # Construct full URL to iso
     url_iso="$url_root/$iso_name"
 
-    msg "Downloading archiso..."
+    msg2 "Downloading from $url_iso"
+
+    vecho "Saving at $ARCH_ISO"
+
     curl "$url_iso" --output "$ARCH_ISO"
 }
 
@@ -1065,10 +1070,9 @@ case "$CMD" in
         ;;
     remaster)
         if [[ -n "$AUTO_DOWNLOAD_ISO" ]]; then
-            download_iso
-            remaster
+            download_and_remaster
         elif [[ -n "$ARCH_ISO_PATH" ]]; then
-            remaster
+            use_existing_and_remaster
         fi
         ;;
     image)
