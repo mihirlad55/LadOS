@@ -533,7 +533,7 @@ function build_from_scratch() {
     local ARCH_ISO_DIR AIROOTFS_DIR RECOVERY_DIR BOOT_ENTRIES_DIR PACMAN_CONF
     local sb_key_path sb_crt_path res out dev
 
-    ARCH_ISO_DIR="/var/tmp/archiso"
+    ARCH_ISO_DIR="/var/tmp/lados"
     AIROOTFS_DIR="$ARCH_ISO_DIR/airootfs"
     RECOVERY_DIR="$AIROOTFS_DIR/LadOS/conf/recovery-mode/"
     BOOT_ENTRIES_DIR="$ARCH_ISO_DIR/efiboot/loader/entries/"
@@ -559,8 +559,8 @@ function build_from_scratch() {
         yay -S archiso-git --noconfirm --needed --mflags -m
     fi
 
-    msg "Copying archiso config to $ARCH_ISO_DIR..."
-    sudo cp -afT "$BASE_DIR/archiso" "$ARCH_ISO_DIR"
+    msg "Copying LadOS config to $ARCH_ISO_DIR..."
+    sudo cp -afT "$BASE_DIR/lados" "$ARCH_ISO_DIR"
 
     msg "Copying LadOS to $AIROOTFS_DIR..."
     sudo cp -rft "$AIROOTFS_DIR" "$LAD_OS_DIR"
