@@ -1,4 +1,4 @@
-![LadOS main image](https://raw.githubusercontent.com/mihirlad55/LadOS/master/screenshots/main.gif)
+![LadOS main image](https://raw.githubusercontent.com/mihirlad55/LadOS/master/screenshots/main-small.gif)
 
 # Overview
 This repo contains setup/install scripts to install a heavily-riced version of
