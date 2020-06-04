@@ -100,18 +100,6 @@ function install() {
         sudo cp -rf "$TMP_THEME_DIR"/* "$NEW_THEME_DIR"
     )
 
-    echo "Opening configuration files for any changes. Default commandline"
-    echo "options are set in dracut's configuration"
-    read -rp "Press enter to continue..."
-
-    if [[ "$EDITOR" != "" ]]; then
-        "$EDITOR" "$TMP_OPTIONS_CONF"
-        "$EDITOR" "$TMP_MANUAL_CONF"
-    else
-        vim "$TMP_OPTIONS_CONF"
-        vim "$TMP_MANUAL_CONF"
-    fi
-
     qecho "Copying configuration files to $REFIND_DIR..."
     sudo install -Dm 755 "$TMP_OPTIONS_CONF" "$NEW_OPTIONS_CONF"
     sudo install -Dm 755 "$TMP_MANUAL_CONF" "$NEW_MANUAL_CONF"
