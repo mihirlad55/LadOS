@@ -8,7 +8,7 @@ Arch Linux.
 - **Dracut**: For easy initramfs generation
 - **rEFInd**: Boot loader with minimal-black theme
 - **Yay**: AUR helper
-- **DWM**: Tag-based tiling window manager
+- **dwm**: Tag-based tiling window manager
 - **st**: Simple lightweight terminal
 - **Polybar**: A productive and beautiful status bar
 - **Convenient Scripts**: Mulititude of convenience scripts and systemd services
@@ -20,7 +20,7 @@ for openvpn, automated backup, screenshotting, timers, and more!
 back in 20 minutes
 - **Easily Customizable**: Add your own features to automatically install
 - **Dunst**: Notifcations
-- **Compton**: Blurred and transparent backgrounds
+- **Compton**: Blurred and semi-transparent windows
 - **Rofi**: Custom scripts
 - **Plymouth**: Deus Ex boot animation (Thanks to [adi1090x](https://github.com/adi1090x))
 - **Vifm**: Vim-based file manager with image previews
