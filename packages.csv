@@ -25,7 +25,7 @@ ffmpeg,Video encoding and screen capture,system,optional
 ffmpegthumbnailer,Thumbnails,system,required
 firefox,Backup browser,system,optional
 fontpreview-git,Font previews in vifm,aur,optional
-franz-bin,For web apps,aur,optional
+ferdi-bin,For web apps,aur,optional
 gdb,C Debugger,system,optional
 geoclue2,For redshift location,system,required
 gimp,Main image editor,system,optional
