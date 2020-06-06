@@ -1,0 +1,15 @@
+--- webview.js	2020-06-05 00:38:27.031747622 -0400
++++ webview.js	2020-06-05 00:38:01.878413686 -0400
+@@ -32,8 +32,10 @@
+   const getMessages = () => Franz.setBadge(updates);
+ 
+   modal = createModal();
+-  document.body.appendChild(modal);
+-  document.addEventListener('keydown', event => event.keyCode === 27 && hideModal());
++  document.addEventListener("DOMContentLoaded", function(event) {
++    document.body.appendChild(modal);
++    document.addEventListener('keydown', event => event.keyCode === 27 && hideModal());
++  });
+ 
+   Franz.injectCSS(path.join(__dirname, 'calendar.css'));
+   Franz.loop(getMessages);
