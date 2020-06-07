@@ -7,19 +7,21 @@ source "$BASE_DIR/utils.sh"
 
 
 function check_ready() {
-    local time sub_state res
+    local time res num_restarts restart_limit
 
     # Check if another restic process is currently running
     if pgrep restic; then
         # If backup is in progress, fail the service and wait RestartSec if
         # restarting, otherwise fail until next timer activation
-        if systemctl is-active --quiet b2-clean.service; then
+        if systemctl is-active --quiet b2-backup.service; then
             time="$(systemctl show b2-clean.service \
                 --property RestartUSec --value)"
-            sub_state="$(systemctl show b2-clean.service \
-                --property SubState --value)"
+            num_restarts="$(systemctl show b2-clean.service \
+                --property NRestarts --value)"
+            restart_limit="$(systemctl show b2-clean.service \
+                --property StartLimitBurst --value)"
 
-            if [[ "$sub_state" == "auto-restart" ]]; then
+            if (( num_restarts < restart_limit )); then
                 notify "Cannot begin cleaning. Backup in progress. Retrying in $time."
             else
                 notify "Cannot begin cleaning. Backup in progress. Will not retry." -u critical

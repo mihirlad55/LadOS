@@ -20,7 +20,7 @@ function check_ready() {
                 | cut -d';' -f2 \
                 | sed -e 's/ //' -e 's/ left//')"
 
-            notify "Cannot begin backup. Cleaning in progress. Retrying in $time seconds"
+            notify "Cannot begin backup. Cleaning in progress. Retrying in $time."
             # TEMPFAIL exit code considered successful exit by systemd
             # This will restart the backup at its next normally scheduled time
             # instead of after RestartSec
