@@ -21,6 +21,7 @@
 # Chromium
 /home/*/.config/chromium/*/Application\ Cache
 /home/*/.config/chromium/*/AutofillStrikeDatabase
+/home/*/.config/chromium/*/BrowserMetrics
 /home/*/.config/chromium/*/BudgetDatabase
 /home/*/.config/chromium/*/Extension\ Rules
 /home/*/.config/chromium/*/Extension\ State
@@ -124,6 +125,7 @@
 # Chromium
 /root/.config/chromium/*/Application\ Cache
 /root/.config/chromium/*/AutofillStrikeDatabase
+/root/.config/chromium/*/BrowserMetrics
 /root/.config/chromium/*/BudgetDatabase
 /root/.config/chromium/*/Extension\ Rules
 /root/.config/chromium/*/Extension\ State
