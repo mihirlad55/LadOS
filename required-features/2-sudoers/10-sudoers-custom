@@ -9,5 +9,7 @@ Cmnd_Alias PASSWORDLESS = /bin/udevadm
 
 # Set default editor
 Defaults editor=/bin/nvim
+# Insults on incorrect passwords
+Defaults insults
 
 
