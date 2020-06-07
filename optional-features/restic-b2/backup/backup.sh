@@ -64,7 +64,7 @@ function display_last_backup_stats() {
 
     last_id="${snapshot_ids[-1]}"
     second_last_id="${snapshot_ids[-2]}"
-    last_diff="$(restic diff "$last_id" "$second_last_id")"
+    last_diff="$(restic diff "$second_last_id" "$last_id")"
 
     files_stat="$(echo "$last_diff" | grep '^Files:' | tr -s ' ')"
     size_stat="$(echo "$last_diff" \
