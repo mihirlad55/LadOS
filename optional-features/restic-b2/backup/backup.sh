@@ -9,7 +9,7 @@ source "$BASE_DIR/utils.sh"
 
 
 function check_ready() {
-    local time
+    local time res
 
     # Check if another restic process is running
     if pgrep restic; then
@@ -26,12 +26,19 @@ function check_ready() {
             # instead of after RestartSec
             exit 75
         else
-            notify "Cannot begin backup. There is another restic process active."
+            notify "Cannot begin backup. There is another restic process active." -u critical
             exit 1
         fi
     elif is_locked; then
-        notify "Cannot begin backup. There are stale locks. Please run restic unlock to continue."
-        exit 1
+        res="$(notify "Cannot begin backup. There are stale locks. Please run restic unlock to continue." \
+            -A yes,Unlock -u critical)"
+
+        if [[ "$res" == "yes" ]]; then
+            restic unlock
+            notify "Successfully removed locks. Continuing with backup."
+        else
+            exit 1
+        fi
     fi
 }
 

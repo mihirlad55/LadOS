@@ -20,16 +20,16 @@ cp -f "$BASE_DIR/b2.png" "$ICON_PATH"
 
 
 function notify() {
-    local summary body urgency
+    local summary body urgency args
     summary="Restic B2 Backup"
-    body="$1"
-    urgency="${2:-normal}"
+    body="$1"; shift
+    args=("$@")
 
-    echo -e "$body"
+    echo -e "$body" >&2
 
     sudo -u "$NOTIFY_USER" \
         DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$NOTIFY_UID/bus" \
-        notify-send "$summary" "$body" -u normal -i "$ICON_PATH"
+        dunstify -i "$ICON_PATH" "${args[@]}" "$summary" "$body"
 }
 
 function error_trap() {
@@ -40,7 +40,7 @@ function error_trap() {
     msg="$command_caller: \"$last_command\" returned error code $error_code"
 
     echo "$msg" >&2
-    notify "$msg"
+    notify "$msg" -u critical
 
     exit $error_code
 }

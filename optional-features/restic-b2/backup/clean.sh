@@ -7,7 +7,7 @@ source "$BASE_DIR/utils.sh"
 
 
 function check_ready() {
-    local time sub_state
+    local time sub_state res
 
     # Check if another restic process is currently running
     if pgrep restic; then
@@ -22,7 +22,7 @@ function check_ready() {
             if [[ "$sub_state" == "auto-restart" ]]; then
                 notify "Cannot begin cleaning. Backup in progress. Retrying in $time."
             else
-                notify "Cannot begin cleaning. Backup in progress. Will not retry."
+                notify "Cannot begin cleaning. Backup in progress. Will not retry." -u critical
             fi
             exit 1
         else
@@ -30,8 +30,15 @@ function check_ready() {
             exit 1
         fi
     elif is_locked; then
-        notify "Cannot begin backup. There are stale locks. Please run restic unlock to continue."
-        exit 1
+        res="$(notify "Cannot begin backup. There are stale locks. Please run restic unlock to continue." \
+            -A yes,Unlock -u critical)"
+
+        if [[ "$res" == "yes" ]]; then
+            restic unlock
+            notify "Successfully removed locks. Continuing with clean."
+        else
+            exit 1
+        fi
     fi
 }
 
