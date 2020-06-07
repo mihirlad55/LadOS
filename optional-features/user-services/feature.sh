@@ -168,7 +168,7 @@ function post_install() {
     ln -sf "$INSTALL_DIR/startup-application@.service" \
         "$TARGET_DIR/startup-application@mailspring.service"
     ln -sf "$INSTALL_DIR/startup-application@.service" \
-        "$TARGET_DIR/startup-application@franz.service"
+        "$TARGET_DIR/startup-application@ferdi.service"
     
     qecho "Done"
 }
