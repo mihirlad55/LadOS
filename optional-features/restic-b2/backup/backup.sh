@@ -6,12 +6,38 @@ readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 source "$BASE_DIR/constants.sh"
 source "$BASE_DIR/utils.sh"
 
-# Send /dev/fd/5 to stdout
-exec 5>&1
 
+
+function check_ready() {
+    local time
+
+    # Check if another restic process is running
+    if pgrep restic; then
+        # If b2-clean is running, skip this backup
+        if systemctl is-active --quiet b2-clean.service; then
+            time="$(systemctl status b2-backup.timer \
+                | grep Trigger: \
+                | cut -d';' -f2 \
+                | sed -e 's/ //' -e 's/ left//')"
+
+            notify "Cannot begin backup. Cleaning in progress. Retrying in $time seconds"
+            # TEMPFAIL exit code considered successful exit by systemd
+            # This will restart the backup at its next normally scheduled time
+            # instead of after RestartSec
+            exit 75
+        else
+            notify "Cannot begin backup. There is another restic process active."
+            exit 1
+        fi
+    elif is_locked; then
+        notify "Cannot begin backup. There are stale locks. Please run restic unlock to continue."
+        exit 1
+    fi
+}
 
 function backup() {
-    restic init
+    # Will return 1 if already exists
+    restic init || true
 
     notify "Beginning B2 backup using restic"
 
@@ -21,59 +47,46 @@ function backup() {
 }
 
 function display_last_backup_stats() {
-    last_snapshot_id=$(restic snapshots "$O_OPTIONS" --json |
-        grep -o -P '"short_id":"[A-Za-z0-9]*"' |
-        tail -n 1 |
-        cut -d':' -f2 |
-        sed 's/"//g' |
-        tee /dev/fd/5)
+    local snapshot_ids last_id second_last_id last_diff files_stat size_stat
+    local total_size_stat body
 
-    backup_size=$(restic stats "$last_snapshot_id" "$O_OPTIONS" |
-        grep -o "Total Size:.*$" |
-        grep -o -P "[0-9]*\.[0-9]* [A-Za-z]{3}" |
-        tee /dev/fd/5)
+    mapfile -t snapshot_ids < <(restic snapshots -c "$O_OPTIONS" \
+        | head -n-2 \
+        | tail -n+3 \
+        | cut -d' ' -f1)
 
-    notify "Backup complete! $backup_size of data was backed up. Now beginning backup check"
+    last_id="${snapshot_ids[-1]}"
+    second_last_id="${snapshot_ids[-2]}"
+    last_diff="$(restic diff "$last_id" "$second_last_id")"
+
+    files_stat="$(echo "$last_diff" | grep '^Files:' | tr -s ' ')"
+    size_stat="$(echo "$last_diff" \
+        | grep -e 'Added: ' -e 'Removed: ' \
+        | tr -s ' ' \
+        | sed 's/ *//')"
+    total_size_stat=$(restic stats "$last_id" "$O_OPTIONS" \
+        | grep 'Total Size:' \
+        | tr -s ' ' \
+        | sed 's/ *//')
+
+    body="Backup complete!"
+    body="$body\n$files_stat\n$size_stat\n$total_size_stat"
+
+    notify "$body"
 }
 
-function backup_check() {
-    check="$(restic check --check-unused --read-data --with-cache "$O_OPTIONS" |
-        tee /dev/fd/5)"
-    unused_blobs=$(echo "$check" |
-        grep -c "unused blob")
-    unreferenced_indexes=$(echo "$check" |
-        grep -P -l "pack [0-9A-Za-z]{8}: not referenced in any index")
-    res=$(echo "$check" | tail -n 1)
 
-    notify "Backup check complete! $unused_blobs unused blobs. $unreferenced_indexes packs not referenced in any index $res"
-}
+# Send file descriptor to stdout
+exec 5>&1
 
-function forget() {
-    notify "Removing old snapshots. Forgetting snapshots and keeping only:
-    - 24 hourly snapshots
-    - 7 daily snapshots
-    - 4 weekly snapshots
-    - 12 monthly snapshots
-    - 80 yearly snapshots"
-
-    restic forget "$O_OPTIONS" \
-        --keep-hourly 24 \
-        --keep-daily 7 \
-        --keep-weekly 4 \
-        --keep-monthly 12 \
-        --keep-yearly 80
-
-    notify "Finished removing old snapshots from B2"
-}
-
+check_ready
 
 backup
 
 display_last_backup_stats
 
-backup_check
-
-forget
+# Close file descriptor
+exec 5>&-
 
 
 source "$BASE_DIR/unset-constants.sh"

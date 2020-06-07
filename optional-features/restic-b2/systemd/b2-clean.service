@@ -1,0 +1,17 @@
+[Unit]
+Description=Check B2 backup, prune, and forget snapshots using restic
+Requires=network.target
+After=network.target
+# Stop after 5 failed restarts
+StartLimitIntervalSec=4600
+StartLimitBurst=5
+
+[Service]
+ExecStart=/root/backup/clean.sh
+# Run as root to set environment variables such as $HOME, so restic can set a
+# cache directory accordingly
+User=root
+Type=simple
+# Restart after 15 minutes
+RestartSec=900
+Restart=on-failure

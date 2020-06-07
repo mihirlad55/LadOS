@@ -1,40 +1,176 @@
 # /home
+/home/*/.ICEauthority
+/home/*/.Xauthority
+/home/*/.aptitude
 /home/*/.arduino15
 /home/*/.cache
-/home/*/.config/Slack/Cache
-/home/*/.config/discord/Cache
-/home/*/.config/Slack/Service\ Worker/CacheStorage
-/home/*/.config/chromium/Default/Application Cache/
+/home/*/.cddb
+/home/*/.config/Ferdi/Cache
+/home/*/.config/Ferdi/Code\ Cache
+/home/*/.config/Ferdi/GPUCache
+/home/*/.config/Ferdi/Local\ Storage
+/home/*/.config/Ferdi/Partitions
+/home/*/.config/Ferdi/Session\ Storage
+/home/*/.config/Franz/Cache
+/home/*/.config/Franz/Code\ Cache
+/home/*/.config/Franz/GPUCache
+/home/*/.config/Franz/Local\ Storage
 /home/*/.config/Franz/Partitions
+/home/*/.config/Franz/Session\ Storage
 /home/*/.config/Mailspring/Cache
+/home/*/.config/Mailspring/Code\ Cache
+/home/*/.config/Mailspring/GPUCache
+/home/*/.config/Mailspring/Local\ Storage
+/home/*/.config/Mailspring/Partitions
+/home/*/.config/Mailspring/Session\ Storage
+/home/*/.config/Mailspring/compile-cache
 /home/*/.config/Mailspring/mailsync-*.log
-/home/*/.npm/_cacache
-/home/*/.local/lib
+/home/*/.config/Slack/Cache
+/home/*/.config/Slack/Code\ Cache/
+/home/*/.config/Slack/GPUCache
+/home/*/.config/Slack/IndexedDB/
+/home/*/.config/Slack/Local\ Storage/
+/home/*/.config/Slack/Service\ Worker/
+/home/*/.config/Slack/TransportSecurity
+/home/*/.config/chromium/*/Application\ Cache
+/home/*/.config/chromium/*/Extension\ State
+/home/*/.config/chromium/*/Extensions
+/home/*/.config/chromium/*/Feature\ Engagement\ Tracker
+/home/*/.config/chromium/*/GrShaderCache
+/home/*/.config/chromium/*/History\ Index
+/home/*/.config/chromium/*/IndexedDB
+/home/*/.config/chromium/*/InterventionPolicyDatabase
+/home/*/.config/chromium/*/Local\ Extension\ Settings
+/home/*/.config/chromium/*/Local\ Storage
+/home/*/.config/chromium/*/MEIPreload
+/home/*/.config/chromium/*/Managed\ Extension\ Settings
+/home/*/.config/chromium/*/Platform\ Notifications
+/home/*/.config/chromium/*/QuotaManager
+/home/*/.config/chromium/*/QuotaManager-journal
+/home/*/.config/chromium/*/SSLErrorAssistant
+/home/*/.config/chromium/*/Safe\ Browsing
+/home/*/.config/chromium/*/SafetyTips
+/home/*/.config/chromium/*/Service\ Worker
+/home/*/.config/chromium/*/Session\ Storage
+/home/*/.config/chromium/*/ShaderCache
+/home/*/.config/chromium/*/Subsource\ Filter
+/home/*/.config/chromium/*/Sync\ App\ Settings
+/home/*/.config/chromium/*/Sync\ Extension\ Settings
+/home/*/.config/chromium/*/TLSDeprecationConfig
+/home/*/.config/chromium/*/WidevineCdm
+/home/*/.config/discord/Cache
+/home/*/.dbus
+/home/*/.esd_auth
+/home/*/.gksu.lock
+/home/*/.gnupg/*.lock
+/home/*/.gnupg/.#*
+/home/*/.gnupg/gpg-agent-info-*
+/home/*/.gnupg/random_seed
+/home/*/.gnupg/rnd
+/home/*/.gvfs
 /home/*/.local/bin
-/home/*/.local/share/Steam/steamapps
-/home/*/.local/share/Steam/ubuntu*
-/home/*/.local/share/Steam/package
+/home/*/.local/lib
 /home/*/.local/share/Steam/appcache
+/home/*/.local/share/Steam/package
+/home/*/.local/share/Steam/steamapps
 /home/*/.local/share/Steam/tenfoot
+/home/*/.local/share/Steam/ubuntu*
+/home/*/.local/share/gvfs-metada
+/home/*/.local/share/nvim/shada
+/home/*/.npm/_cacache
+/home/*/.pulse
+/home/*/.pulse-cookie
+/home/*/.recently-used
+/home/*/.recently-used.xbel
+/home/*/.thumbnails
+/home/*/.xsession-errors
 
 # root
+/root/.ICEauthority
+/root/.Xauthority
+/root/.aptitude
 /root/.arduino15
 /root/.cache
-/root/.config/Slack/Cache
-/root/.config/discord/Cache
-/root/.config/Slack/Service\ Worker/CacheStorage
-/root/.config/chromium/Default/Application Cache/
+/root/.cddb
+/root/.config/Ferdi/Cache
+/root/.config/Ferdi/Code\ Cache
+/root/.config/Ferdi/GPUCache
+/root/.config/Ferdi/Local\ Storage
+/root/.config/Ferdi/Partitions
+/root/.config/Ferdi/Session\ Storage
+/root/.config/Franz/Cache
+/root/.config/Franz/Code\ Cache
+/root/.config/Franz/GPUCache
+/root/.config/Franz/Local\ Storage
 /root/.config/Franz/Partitions
+/root/.config/Franz/Session\ Storage
 /root/.config/Mailspring/Cache
+/root/.config/Mailspring/Code\ Cache
+/root/.config/Mailspring/GPUCache
+/root/.config/Mailspring/Local\ Storage
+/root/.config/Mailspring/Partitions
+/root/.config/Mailspring/Session\ Storage
+/root/.config/Mailspring/compile-cache
 /root/.config/Mailspring/mailsync-*.log
-/root/.npm/_cacache
-/root/.local/lib
+/root/.config/Slack/Cache
+/root/.config/Slack/Code\ Cache/
+/root/.config/Slack/GPUCache
+/root/.config/Slack/IndexedDB/
+/root/.config/Slack/Local\ Storage/
+/root/.config/Slack/Service\ Worker/
+/root/.config/Slack/TransportSecurity
+/root/.config/chromium/*/Application\ Cache
+/root/.config/chromium/*/Extension\ State
+/root/.config/chromium/*/Extensions
+/root/.config/chromium/*/Feature\ Engagement\ Tracker
+/root/.config/chromium/*/GrShaderCache
+/root/.config/chromium/*/History\ Index
+/root/.config/chromium/*/IndexedDB
+/root/.config/chromium/*/InterventionPolicyDatabase
+/root/.config/chromium/*/Local\ Extension\ Settings
+/root/.config/chromium/*/Local\ Storage
+/root/.config/chromium/*/MEIPreload
+/root/.config/chromium/*/Managed\ Extension\ Settings
+/root/.config/chromium/*/Platform\ Notifications
+/root/.config/chromium/*/QuotaManager
+/root/.config/chromium/*/QuotaManager-journal
+/root/.config/chromium/*/SSLErrorAssistant
+/root/.config/chromium/*/Safe\ Browsing
+/root/.config/chromium/*/SafetyTips
+/root/.config/chromium/*/Service\ Worker
+/root/.config/chromium/*/Session\ Storage
+/root/.config/chromium/*/ShaderCache
+/root/.config/chromium/*/Subsource\ Filter
+/root/.config/chromium/*/Sync\ App\ Settings
+/root/.config/chromium/*/Sync\ Extension\ Settings
+/root/.config/chromium/*/TLSDeprecationConfig
+/root/.config/chromium/*/WidevineCdm
+/root/.config/discord/Cache
+/root/.dbus
+/root/.esd_auth
+/root/.gksu.lock
+/root/.gnupg/*.lock
+/root/.gnupg/.#*
+/root/.gnupg/gpg-agent-info-*
+/root/.gnupg/random_seed
+/root/.gnupg/rnd
+/root/.gvfs
 /root/.local/bin
-/root/.local/share/Steam/steamapps
-/root/.local/share/Steam/ubuntu*
-/root/.local/share/Steam/package
+/root/.local/lib
 /root/.local/share/Steam/appcache
+/root/.local/share/Steam/package
+/root/.local/share/Steam/steamapps
 /root/.local/share/Steam/tenfoot
+/root/.local/share/Steam/ubuntu*
+/root/.local/share/gvfs-metada
+/root/.local/share/nvim/shada
+/root/.npm/_cacache
+/root/.pulse
+/root/.pulse-cookie
+/root/.recently-used
+/root/.recently-used.xbel
+/root/.thumbnails
+/root/.xsession-errors
 
 # /etc
 /etc/at.deny

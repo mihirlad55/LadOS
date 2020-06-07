@@ -2,14 +2,18 @@
 Description=Backup computer using restic to B2
 Requires=network.target
 After=network.target
+# Stop after 5 failed restarts
+StartLimitIntervalSec=330
+StartLimitBurst=5
 
 [Service]
+# Run as root to set environment variables such as $HOME, so restic can set a
+# cache directory accordingly
+User=root
 ExecStart=/root/backup/backup.sh
-
-Type=oneshot
-
-RestartSec=10
+Type=simple
+RestartSec=60
 Restart=on-failure
-
-[Install]
-WantedBy=multi-user.target
+# TEMPFAIL is returned by the script if b2-clean.service is active, so it will
+# retry when activated by the timer again
+SuccessExitStatus=TEMPFAIL

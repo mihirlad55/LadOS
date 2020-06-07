@@ -1,10 +1,11 @@
 [Unit]
-Description=Backup system to B2 using restic every day
+Description=Backup system to B2 using restic every hour
 Requires=network.target
 After=network.target
 
 [Timer]
-OnCalendar=*-*-* 6:00:00
+OnBootSec=60
+OnUnitInactiveSec=3600
 Persistent=true
 
 Unit=b2-backup.service

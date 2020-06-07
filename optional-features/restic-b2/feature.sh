@@ -27,15 +27,16 @@ readonly NEW_FILES=( \
     "$NEW_BACKUP_DIR" \
     "$NEW_BACKUP_DIR/b2.png" \
     "$NEW_BACKUP_DIR/backup.sh" \
+    "$NEW_BACKUP_DIR/unlock.sh" \
     "$NEW_BACKUP_DIR/excludes.txt" \
     "$NEW_BACKUP_DIR/includes.txt" \
-    "$NEW_BACKUP_DIR/prune.sh" \
+    "$NEW_BACKUP_DIR/clean.sh" \
     "$NEW_BACKUP_DIR/unset-constants.sh" \
     "$NEW_BACKUP_DIR/utils.sh" \
     "$SYSTEMD_DIR/b2-backup.service" \
     "$SYSTEMD_DIR/b2-backup.timer" \
-    "$SYSTEMD_DIR/b2-prune.service" \
-    "$SYSTEMD_DIR/b2-prune.timer" \
+    "$SYSTEMD_DIR/b2-clean.service" \
+    "$SYSTEMD_DIR/b2-clean.timer" \
 )
 readonly MODIFIED_FILES=()
 readonly TEMP_FILES=("$TMP_CONSTANTS_SH")
@@ -43,6 +44,10 @@ readonly DEPENDS_AUR=()
 readonly DEPENDS_PACMAN=(restic)
 
 
+
+function escape_replacement() {
+    echo "$1" | sed -e 's/[]\/$*.^|[]/\\&/g'
+}
 
 function check_conf() (
     if [[ -f "$CONF_CONSTANTS_SH" ]] &&
@@ -113,6 +118,12 @@ function prepare() {
     qecho "Copying constants.sh to /tmp and applying configuration..."
     cp -f "$CONF_CONSTANTS_SH" "$TMP_CONSTANTS_SH"
 
+    B2_KEY_NAME="$(escape_replacement "$B2_KEY_NAME")"
+    B2_BUCKET="$(escape_replacement "$B2_BUCKET")"
+    B2_ACCOUNT_ID="$(escape_replacement "$B2_ACCOUNT_ID")"
+    B2_ACCOUNT_KEY="$(escape_replacement "$B2_ACCOUNT_KEY")"
+    RESTIC_PASSWORD="$(escape_replacement "$RESTIC_PASSWORD")"
+
     sed -i "$TMP_CONSTANTS_SH" \
         -e "s/B2_KEY_NAME=.*$/B2_KEY_NAME='$B2_KEY_NAME'/" \
         -e "s/B2_BUCKET=.*$/B2_BUCKET='$B2_BUCKET'/" \
@@ -143,7 +154,7 @@ function install() {
 function post_install() {
     qecho "Enabling systemd timers..."
     sudo systemctl enable "${SYSTEMD_FLAGS[@]}" b2-backup.timer
-    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" b2-prune.timer
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" b2-clean.timer
 }
 
 function uninstall() {
