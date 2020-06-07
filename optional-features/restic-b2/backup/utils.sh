@@ -27,9 +27,13 @@ function notify() {
 
     echo -e "$body" >&2
 
-    sudo -u "$NOTIFY_USER" \
-        DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$NOTIFY_UID/bus" \
-        dunstify -i "$ICON_PATH" "${args[@]}" "$summary" "$body"
+    if loginctl list-users | grep -q "$NOTIFY_USER"; then
+        sudo -u "$NOTIFY_USER" \
+            DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$NOTIFY_UID/bus" \
+            dunstify -i "$ICON_PATH" "${args[@]}" "$summary" "$body"
+    else
+        echo "Not sending notification to $NOTIFY_USER. User is not logged on."
+    fi
 }
 
 function error_trap() {
