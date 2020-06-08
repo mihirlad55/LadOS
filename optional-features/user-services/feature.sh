@@ -14,7 +14,6 @@ readonly BASE_NITROGEN_DELAYED_SVC="$BASE_SERVICE_DIR/nitrogen-delayed.service"
 readonly BASE_NITROGEN_SVC="$BASE_SERVICE_DIR/nitrogen.service"
 readonly BASE_POLYBAR_SVC="$BASE_SERVICE_DIR/polybar.service"
 readonly BASE_REDSHIFT_SVC="$BASE_SERVICE_DIR/redshift.service"
-readonly BASE_STARTUP_APP_SVC="$BASE_SERVICE_DIR/startup-application@.service"
 readonly BASE_UPDATE_NOTIFY_SVC="$BASE_SERVICE_DIR/update-notify.service"
 readonly BASE_NOTIFY_TMR="$BASE_SERVICE_DIR/update-notify.timer"
 readonly BASE_XAUTOLOCK_SVC="$BASE_SERVICE_DIR/xautolock.service"
@@ -29,7 +28,6 @@ readonly NEW_NITROGEN_DELAYED_SVC="$INSTALL_DIR/nitrogen-delayed.service"
 readonly NEW_NITROGEN_SVC="$INSTALL_DIR/nitrogen.service"
 readonly NEW_POLYBAR_SVC="$INSTALL_DIR/polybar.service"
 readonly NEW_REDSHIFT_SVC="$INSTALL_DIR/redshift.service"
-readonly NEW_STARTUP_APP_SVC="$INSTALL_DIR/startup-application@.service"
 readonly NEW_UPDATE_NOTIFY_SVC="$INSTALL_DIR/update-notify.service"
 readonly NEW_NOTIFY_TMR="$INSTALL_DIR/update-notify.timer"
 readonly NEW_XAUTOLOCK_SVC="$INSTALL_DIR/xautolock.service"
@@ -65,7 +63,6 @@ readonly NEW_FILES=( \
     "$NEW_NITROGEN_SVC" \
     "$NEW_POLYBAR_SVC" \
     "$NEW_REDSHIFT_SVC" \
-    "$NEW_STARTUP_APP_SVC" \
     "$NEW_UPDATE_NOTIFY_SVC" \
     "$NEW_NOTIFY_TMR" \
     "$NEW_XAUTOLOCK_SVC" \
@@ -127,7 +124,6 @@ function install() {
         "$BASE_SERVICE_DIR/nitrogen.service" \
         "$BASE_SERVICE_DIR/polybar.service" \
         "$BASE_SERVICE_DIR/redshift.service" \
-        "$BASE_SERVICE_DIR/startup-application@.service" \
         "$BASE_SERVICE_DIR/update-notify.service" \
         "$BASE_SERVICE_DIR/update-notify.timer" \
         "$BASE_SERVICE_DIR/xautolock.service" \
@@ -162,13 +158,6 @@ function post_install() {
         "$INSTALL_DIR/suckless-notify.timer" \
         "/usr/lib/systemd/user/insync.service" \
         "/usr/lib/systemd/user/spotify-listener.service"
-
-    ln -sf "$INSTALL_DIR/startup-application@.service" \
-        "$TARGET_DIR/startup-application@slack.service"
-    ln -sf "$INSTALL_DIR/startup-application@.service" \
-        "$TARGET_DIR/startup-application@mailspring.service"
-    ln -sf "$INSTALL_DIR/startup-application@.service" \
-        "$TARGET_DIR/startup-application@ferdi.service"
     
     qecho "Done"
 }
