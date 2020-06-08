@@ -21,13 +21,12 @@
 # Chromium
 /home/*/.config/chromium/*/Application\ Cache
 /home/*/.config/chromium/*/AutofillStrikeDatabase
-/home/*/.config/chromium/BrowserMetrics
 /home/*/.config/chromium/*/BudgetDatabase
 /home/*/.config/chromium/*/Extension\ Rules
 /home/*/.config/chromium/*/Extension\ State
 /home/*/.config/chromium/*/Extensions
 /home/*/.config/chromium/*/Feature\ Engagement\ Tracker
-/home/*/.config/chromium/*/GCMStore
+/home/*/.config/chromium/*/GCM\ Store
 /home/*/.config/chromium/*/GPUCache
 /home/*/.config/chromium/*/GrShaderCache
 /home/*/.config/chromium/*/History\ Index
@@ -63,6 +62,8 @@
 /home/*/.config/chromium/*/data_reduction_proxy_leveldb
 /home/*/.config/chromium/*/databases
 /home/*/.config/chromium/*/shared_proto_db
+/home/*/.config/chromium/BrowserMetrics
+/home/*/.config/chromium/BrowserMetrics-*
 /home/*/.config/chromium/Local\ State
 /home/*/.config/chromium/SafetyTips
 # Discord
@@ -126,7 +127,6 @@
 # Chromium
 /root/.config/chromium/*/Application\ Cache
 /root/.config/chromium/*/AutofillStrikeDatabase
-/root/.config/chromium/BrowserMetrics
 /root/.config/chromium/*/BudgetDatabase
 /root/.config/chromium/*/Extension\ Rules
 /root/.config/chromium/*/Extension\ State
@@ -168,6 +168,8 @@
 /root/.config/chromium/*/data_reduction_proxy_leveldb
 /root/.config/chromium/*/databases
 /root/.config/chromium/*/shared_proto_db
+/root/.config/chromium/BrowserMetrics
+/root/.config/chromium/BrowserMetrics-*
 /root/.config/chromium/Local\ State
 /root/.config/chromium/SafetyTips
 # Discord
