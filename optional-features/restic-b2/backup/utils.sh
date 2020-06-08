@@ -37,6 +37,8 @@ function notify() {
 }
 
 function error_trap() {
+    local error_code last_command command_caller msg
+
     error_code="$?"
     last_command="$BASH_COMMAND"
     command_caller="$(caller)"
@@ -45,6 +47,8 @@ function error_trap() {
 
     echo "$msg" >&2
     notify "$msg" -u critical
+
+    source "$BASE_DIR/unset-constants.sh"
 
     exit $error_code
 }

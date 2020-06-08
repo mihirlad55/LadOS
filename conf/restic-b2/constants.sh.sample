@@ -21,4 +21,5 @@ if [[ -z "$CONSTANTS_SH_" ]]; then
     export RESTIC_CACHE_DIR="/root/.cache"
 
     export DISPLAY=:0
+    export XAUTHORITY="/home/$NOTIFY_USER/.Xauthority"
 fi

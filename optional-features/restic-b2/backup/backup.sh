@@ -79,7 +79,11 @@ function display_last_backup_stats() {
     body="Backup complete!"
     body="$body\n$files_stat\n$size_stat\n$total_size_stat"
 
-    notify "$body"
+    res="$(notify "$body" -A "yes, Show Last Diff")"
+
+    if [[ "$res" == "yes" ]]; then
+        st sh -c "sudo $BASE_DIR/last-diff.sh"
+    fi
 }
 
 
