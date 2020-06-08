@@ -1,5 +1,5 @@
 [Desktop Entry]
 Name=Lock Screen
 Comment=Lock Screen
-Exec=bash -c "exec $HOME/.scripts/lock"
+Exec=xautolock -locknow
 Type=Application
