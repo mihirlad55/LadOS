@@ -28,11 +28,12 @@ readonly NEW_FILES=( \
     "$NEW_BACKUP_DIR/b2.png" \
     "$NEW_BACKUP_DIR/backup.sh" \
     "$NEW_BACKUP_DIR/unlock.sh" \
+    "$NEW_BACKUP_DIR/clean.sh" \
+    "$NEW_BACKUP_DIR/utils.sh" \
+    "$NEW_BACKUP_DIR/last-diff.sh" \
     "$NEW_BACKUP_DIR/excludes.txt" \
     "$NEW_BACKUP_DIR/includes.txt" \
-    "$NEW_BACKUP_DIR/clean.sh" \
     "$NEW_BACKUP_DIR/unset-constants.sh" \
-    "$NEW_BACKUP_DIR/utils.sh" \
     "$SYSTEMD_DIR/b2-backup.service" \
     "$SYSTEMD_DIR/b2-backup.timer" \
     "$SYSTEMD_DIR/b2-clean.service" \
