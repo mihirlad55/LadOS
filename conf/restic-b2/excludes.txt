@@ -11,6 +11,7 @@
 /home/*/.config/*/Service\ Worker/
 /home/*/.config/*/Session\ Storage
 /home/*/.config/*/TransportSecurity
+/home/*/.config/*/User\ Data
 /home/*/.config/*/VideoDecodeStats
 /home/*/.config/*/blob_storage
 /home/*/.config/*/shared_proto_db
@@ -117,6 +118,7 @@
 /root/.config/*/Service\ Worker/
 /root/.config/*/Session\ Storage
 /root/.config/*/TransportSecurity
+/root/.config/*/User\ Data
 /root/.config/*/VideoDecodeStats
 /root/.config/*/blob_storage
 /root/.config/*/shared_proto_db
