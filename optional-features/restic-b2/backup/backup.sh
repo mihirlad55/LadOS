@@ -9,18 +9,13 @@ source "$BASE_DIR/utils.sh"
 
 
 function check_ready() {
-    local time res
+    local res
 
     # Check if another restic process is running
     if pgrep restic; then
         # If b2-clean is running, skip this backup
         if systemctl is-active --quiet b2-clean.service; then
-            time="$(systemctl status b2-backup.timer \
-                | grep Trigger: \
-                | cut -d';' -f2 \
-                | sed -e 's/ //' -e 's/ left//')"
-
-            notify "Cannot begin backup. Cleaning in progress. Retrying in $time."
+            notify "Cannot begin backup. Cleaning in progress. Retrying at next normally scheduled backup."
             # TEMPFAIL exit code considered successful exit by systemd
             # This will restart the backup at its next normally scheduled time
             # instead of after RestartSec
