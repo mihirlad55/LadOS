@@ -1,10 +1,10 @@
 [Unit]
-Description=Check B2 backup, prune, and forget snapshots using restic weekly
+Description=Check B2 backup, prune, and forget snapshots using restic on the first saturday of every month
 Requires=network.target
 After=network.target
 
 [Timer]
-OnCalendar=Wed *-*-* 6:00:00
+OnCalendar=Sun *-*-1..7 18:00:00
 Persistent=true
 
 Unit=b2-clean.service
