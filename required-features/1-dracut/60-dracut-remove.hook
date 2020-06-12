@@ -2,6 +2,7 @@
 Type = Path
 Operation = Remove
 Target = usr/lib/modules/*/pkgbase
+Target = /boot/*-ucode.img
 
 [Action]
 Description = Removing linux initcpios...

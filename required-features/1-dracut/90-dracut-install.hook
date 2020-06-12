@@ -3,6 +3,7 @@ Type = Path
 Operation = Install
 Operation = Upgrade
 Target = usr/lib/modules/*/pkgbase
+Target = /boot/*-ucode.img
 
 [Action]
 Description = Updating linux initcpios with dracut
