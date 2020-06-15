@@ -60,4 +60,5 @@ CONF_EXCLUDE_FEATURES=( "corsair-headset" \
                             "setup-gpu-passthrough" \
                             "webkit2-greeter" \
                             "systemd-boot" \
-                            "secure-boot-shim")
+                            "secure-boot-shim" \
+                            "configure-backlight")
