@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly DEFAULT_MON="eDP1"
+readonly DEFAULT_MON="eDP-1"
 MONITORS=()
 
 mapfile -t MONITORS < <(xrandr | grep -P -e "\bconnected\b" | cut -d' ' -f1)
@@ -15,7 +15,8 @@ for mon in "${MONITORS[@]}"; do
     fi
 
     echo "Trying to fix output $mon..."
-    xrandr --output "$mon" --mode 1920x1080 --above eDP1 --primary -v -d :0
+    xrandr --output "$mon" --mode 1920x1080 --above "$DEFAULT_MON" \
+        --primary -v -d :0
     res="$?"
 
     if [ "$res" -eq 0 ]; then
