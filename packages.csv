@@ -116,7 +116,6 @@ xbindkeys,Main custom keybinds,aur,required
 xclip,Interfacing with X11 clipboard,system,required
 xdotool,Interfacing with window manager,system,optional
 xf86-video-amdgpu,Graphics driver,system,required
-xf86-video-intel,Graphics driver,system,required
 xorg-appres,Troubleshooting Xresources,system,required
 xorg-server-common,X11,system,required
 acpilight,Controlling backlight,system,required
