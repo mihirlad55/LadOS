@@ -23,7 +23,7 @@
 /home/*/.config/chromium/*/Application\ Cache
 /home/*/.config/chromium/*/AutofillStrikeDatabase
 /home/*/.config/chromium/*/BudgetDatabase
-/home/*/.config/chromium/*/CertificateRevocation
+/home/*/.config/chromium/CertificateRevocation
 /home/*/.config/chromium/*/Extension\ Rules
 /home/*/.config/chromium/*/Extension\ State
 /home/*/.config/chromium/*/Extensions
@@ -131,7 +131,7 @@
 /root/.config/chromium/*/Application\ Cache
 /root/.config/chromium/*/AutofillStrikeDatabase
 /root/.config/chromium/*/BudgetDatabase
-/root/.config/chromium/*/CertificateRevocation
+/root/.config/chromium/CertificateRevocation
 /root/.config/chromium/*/Extension\ Rules
 /root/.config/chromium/*/Extension\ State
 /root/.config/chromium/*/Extensions
