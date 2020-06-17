@@ -182,11 +182,11 @@ function create_swap_file() {
         rm -f /mnt/swapfile
     fi
 
-    total_mem="$(free -k | grep Mem | tr -s ' ' | cut -d' ' -f2)"
+    total_mem="$(free -m | grep Mem | tr -s ' ' | cut -d' ' -f2)"
     swap_path="/mnt/swapfile"
 
-    msg2 "Allocating ${total_mem}k file at $swap_path..."
-    fallocate -l "${total_mem}k" "$swap_path"
+    msg2 "Allocating ${total_mem}MiB file at $swap_path..."
+    dd if=/dev/zero of="$swap_path" bs=1M count="$total_mem" status=progress
 
     msg2 "Setting permissions on $swap_path"
     chmod 600 "$swap_path"
