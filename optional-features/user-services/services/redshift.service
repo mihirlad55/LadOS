@@ -1,5 +1,8 @@
 [Unit]
 Description=Redshift
+After=compton.service
+StartLimitBurst=5
+StartLimitIntervalSec=20
 
 [Service]
 ExecStart=redshift

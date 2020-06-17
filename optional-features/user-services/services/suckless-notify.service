@@ -1,5 +1,7 @@
 [Unit]
 Description=Sends notification when mihirlad55's forked version of st or dwm are out-of-date with suckless's version.
+StartLimitBurst=5
+StartLimitInterval=20
 
 [Service]
 ExecStart=%h/.scripts/notifications/suckless/suckless-notify

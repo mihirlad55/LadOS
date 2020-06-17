@@ -1,8 +1,10 @@
 [Unit]
 Description=Polybar
+After=compton.service
+StartLimitBurst=5
+StartLimitIntervalSec=20
 
 [Service]
-ExecStartPre=sleep 4s
 ExecStart=%h/.scripts/polybar/launch-polybar
 
 Type=forking

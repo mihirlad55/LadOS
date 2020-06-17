@@ -1,5 +1,7 @@
 [Unit]
 Description=Compton compositor
+StartLimitBurst=5
+StartLimitIntervalSec=20
 
 [Service]
 ExecStart=compton --config %h/.config/compton.conf

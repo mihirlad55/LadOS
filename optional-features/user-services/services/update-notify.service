@@ -1,9 +1,12 @@
 [Unit]
 Description=Package update notification
+StartLimitBurst=5
+StartLimitInterval=20
 
 [Service]
 ExecStart=%h/.scripts/notifications/update/update-notify
 Type=simple
+RestartSec=3
 
 [Install]
 WantedBy=default.target

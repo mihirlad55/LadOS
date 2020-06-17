@@ -1,5 +1,7 @@
 [Unit]
 Description=Xbindkeys
+StartLimitBurst=5
+StartLimitInterval=20
 
 [Service]
 ExecStart=xbindkeys -n

@@ -1,5 +1,8 @@
 [Unit]
 Description=Dunst Notification Manager
+After=compton.service
+StartLimitBurst=5
+StartLimitIntervalSec=20
 
 [Service]
 ExecStart=dunst

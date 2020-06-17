@@ -1,5 +1,7 @@
 [Unit]
 Description=xautolock
+StartLimitBurst=5
+StartLimitInterval=20
 
 [Service]
 Environment=AUTOLOCK_DELAY=3

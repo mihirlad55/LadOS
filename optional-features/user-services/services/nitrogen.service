@@ -1,5 +1,7 @@
 [Unit]
 Description=Restore desktop wallpaper using nitrogen on startup
+StartLimitBurst=5
+StartLimitIntervalSec=20
 
 [Service]
 ExecStart=nitrogen --restore

@@ -4,6 +4,8 @@ Requires=nitrogen.service
 Requires=compton.service
 After=nitrogen.service
 After=compton.service
+StartLimitBurst=5
+StartLimitIntervalSec=20
 
 [Service]
 ExecStartPre=-sleep 1s
