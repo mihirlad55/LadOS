@@ -1,4 +1,5 @@
 acpi,Getting battery info,system,required
+acpilight,Controlling backlight,system,required
 alsa-utils,Audio utilities,system,required
 amd-ucode,CPU microcode,system,required
 arc-gtk-theme,GTK theme,system,required
@@ -22,11 +23,11 @@ dracut,Generating initramfs,system,required
 dunst,Main notification agent,system,required
 elinks,If stuck in TTY,system,optional
 emacs,Experimenting with new editor,system,optional
+ferdi-bin,For web apps,aur,optional
 ffmpeg,Video encoding and screen capture,system,optional
 ffmpegthumbnailer,Thumbnails,system,required
 firefox,Backup browser,system,optional
 fontpreview-git,Font previews in vifm,aur,optional
-ferdi-bin,For web apps,aur,optional
 gdb,C Debugger,system,optional
 geoclue2,For redshift location,system,required
 gimp,Main image editor,system,optional
@@ -52,7 +53,6 @@ maia-gtk-theme,Theme for gtk-greeter,aur,optional
 mailspring,Main email client,aur,optional
 make,For making stuff,system,required
 man-db,Man pages,system,required
-ttf-material-design-icons,Main icon font,aur,required
 nautilus,File explorer mainly for thumbnails,system,required
 neovim,Main editor,system,required
 nerd-fonts-complete,Icon fonts,aur,required
@@ -101,6 +101,7 @@ ttf-comfortaa,Cool font,aur,optional
 ttf-fantasque-sans-mono,Cool font,system,optional
 ttf-font-awesome,Icon font for polybar,system,required
 ttf-iosevka,Cool font,aur,optional
+ttf-material-design-icons,Main icon font,aur,required
 ttf-opensans,Good font,system,required
 ttf-roboto,Good font,system,required
 ttf-weather-icons,Weather icons for polybar,aur,required
@@ -110,8 +111,8 @@ valgrind,C debugging tool,system,optional
 vifm,Main file explorer,system,required
 vlc,Main video viewer,system,optional
 watchman,Watching commands,system,optional
-wpa_supplicant,WiFi,system,required
 wget,Downloading files,system,required
+wpa_supplicant,WiFi,system,required
 x11vnc,For VNC control,system,optional
 xautolock,Auto screenlock,system,required
 xbindkeys,Main custom keybinds,aur,required
@@ -120,7 +121,6 @@ xdotool,Interfacing with window manager,system,optional
 xf86-video-amdgpu,Graphics driver,system,required
 xorg-appres,Troubleshooting Xresources,system,required
 xorg-server-common,X11,system,required
-acpilight,Controlling backlight,system,required
 xorg-xev,Discovering key codes for xbindkeys,system,optional
 xorg-xmodmap,Unbinding escape key,system,required
 xorg-xprop,Interfacing with X11,system,required
