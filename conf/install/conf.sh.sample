@@ -61,4 +61,5 @@ CONF_EXCLUDE_FEATURES=( "corsair-headset" \
                             "webkit2-greeter" \
                             "systemd-boot" \
                             "secure-boot-shim" \
-                            "configure-backlight")
+                            "configure-backlight" \
+                            "powertop")
