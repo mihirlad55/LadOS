@@ -93,6 +93,7 @@ texlive-bibtexextra,LaTeX,system,optional
 texlive-latexextra,LaTeX,system,optional
 thefuck,When I fuck up,system,optional
 tigervnc,VNC viewer,system,optional
+tlp,Optimize power usage,system,required
 tmux,Terminal multiplexer,system,optional
 transmission-cli,Torrenting,system,optional
 ttf-comfortaa,Cool font,aur,optional
