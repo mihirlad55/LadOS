@@ -5,10 +5,8 @@ readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly BASE_RULES="$BASE_DIR/50-monitor.rules"
-readonly BASE_SH="$BASE_DIR/fix-monitor-layout"
 readonly BASE_SVC="$BASE_DIR/on-monitor-change@.service"
 readonly NEW_RULES="/etc/udev/rules.d/50-monitor.rules"
-readonly NEW_SH="/usr/local/bin/fix-monitor-layout"
 readonly NEW_SVC="/etc/systemd/user/on-monitor-change@.service"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -19,7 +17,6 @@ automatically outputs to newly connected monitors and restarts polybar"
 readonly PROVIDES=()
 readonly NEW_FILES=( \
     "$NEW_RULES" \
-    "$NEW_SH" \
     "$NEW_SVC" \
 )
 readonly MODIFIED_FILES=()
@@ -46,8 +43,7 @@ function check_install() {
 
 function install() {
     qecho "Installing configuration files..."
-    sudo install -Dm 755 "$BASE_RULES" "$NEW_RULES"
-    sudo install -Dm 755 "$BASE_SH" "$NEW_SH"
+    sudo install -Dm 644 "$BASE_RULES" "$NEW_RULES"
     sudo install -Dm 644 "$BASE_SVC" "$NEW_SVC"
 }
 

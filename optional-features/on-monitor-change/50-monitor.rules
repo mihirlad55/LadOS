@@ -1,4 +1,4 @@
 ACTION=="change" \
-, KERNEL=="card0" \
+, SUBSYSTEM=="drm" \
 , ENV{SYSTEMD_USER_WANTS}+="on-monitor-change@$env{SEQNUM}.service" \
 , TAG+="systemd"

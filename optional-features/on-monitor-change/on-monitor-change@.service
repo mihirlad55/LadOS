@@ -1,10 +1,11 @@
 [Unit]
 Description=Custom Monitor Script %i
-After=graphical.target
+StartLimitBurst=5
+StartLimitIntervalSec=1
+StopWhenUnneeded=yes
 
 [Service]
-ExecStartPre=sleep 2s
-ExecStart=/usr/local/bin/fix-monitor-layout
+ExecStart=/usr/bin/systemctl --user --no-block restart polybar.service nitrogen.service
+KillMode=process
 Type=oneshot
-
-RestartSec=5
+RemainAfterExit=false
