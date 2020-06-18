@@ -1,0 +1,16 @@
+[Unit]
+Description=Autorandr user hook
+StartLimitBurst=5
+StartLimitIntervalSec=20
+
+[Service]
+ExecStartPre=sleep 2s
+ExecStart=/usr/bin/autorandr --change
+Type=oneshot
+Restart=on-failure
+RestartSec=3
+RemainAfterExit=false
+KillMode=process
+
+[Install]
+WantedBy=default.target

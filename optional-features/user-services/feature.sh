@@ -7,6 +7,7 @@ readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly INSTALL_DIR="$HOME/.local/share/systemd/user"
 readonly TARGET_DIR="$HOME/.config/systemd/user/default.target.wants"
 readonly BASE_SERVICE_DIR="$BASE_DIR/services"
+readonly BASE_AUTORANDR_SVC="$BASE_SERVICE_DIR/autorandr.service"
 readonly BASE_BATTERY_CHECK_SVC="$BASE_SERVICE_DIR/battery-check-notify.service"
 readonly BASE_COMPTON_SVC="$BASE_SERVICE_DIR/compton.service"
 readonly BASE_DUNST_SVC="$BASE_SERVICE_DIR/dunst.service"
@@ -21,6 +22,7 @@ readonly BASE_XBINDKEYS_SVC="$BASE_SERVICE_DIR/xbindkeys.service"
 readonly BASE_STARTUP_SVC="$BASE_SERVICE_DIR/startup.service"
 readonly BASE_SUCKLESS_NOTIFY_SVC="$BASE_SERVICE_DIR/suckless-notify.service"
 readonly BASE_SUCKLESS_NOTIFY_TMR="$BASE_SERVICE_DIR/suckless-notify.timer"
+readonly NEW_AUTORANDR_SVC="$INSTALL_DIR/autorandr.service"
 readonly NEW_BATTERY_CHECK_SVC="$INSTALL_DIR/battery-check-notify.service"
 readonly NEW_COMPTON_SVC="$INSTALL_DIR/compton.service"
 readonly NEW_DUNST_SVC="$INSTALL_DIR/dunst.service"
@@ -35,6 +37,7 @@ readonly NEW_XBINDKEYS_SVC="$INSTALL_DIR/xbindkeys.service"
 readonly NEW_STARTUP_SVC="$INSTALL_DIR/startup.service"
 readonly NEW_SUCKLESS_NOTIFY_SVC="$INSTALL_DIR/suckless-notify.service"
 readonly NEW_SUCKLESS_NOTIFY_TMR="$INSTALL_DIR/suckless-notify.timer"
+readonly SYM_AUTORANDR_SVC="$TARGET_DIR/autorandr.service"
 readonly SYM_BATTERY_CHECK_SVC="$TARGET_DIR/battery-check-notify.service"
 readonly SYM_COMPTON_SVC="$TARGET_DIR/compton.service"
 readonly SYM_DUNST_SVC="$TARGET_DIR/dunst.service"
@@ -56,6 +59,7 @@ readonly FEATURE_NAME="user-services"
 readonly FEATURE_DESC="Install custom user-services for applications"
 readonly PROVIDES=()
 readonly NEW_FILES=( \
+    "$NEW_AUTORANDR_SVC" \
     "$NEW_BATTERY_CHECK_SVC" \
     "$NEW_COMPTON_SVC" \
     "$NEW_DUNST_SVC" \
@@ -70,6 +74,7 @@ readonly NEW_FILES=( \
     "$NEW_STARTUP_SVC" \
     "$NEW_SUCKLESS_NOTIFY_SVC" \
     "$NEW_SUCKLESS_NOTIFY_TMR" \
+    "$SYM_AUTORANDR_SVC" \
     "$SYM_BATTERY_CHECK_SVC" \
     "$SYM_COMPTON_SVC" \
     "$SYM_DUNST_SVC" \
@@ -117,6 +122,7 @@ function install() {
 
     qecho "Copying service files..."
     command install -m 644 \
+        "$BASE_SERVICE_DIR/autorandr.service" \
         "$BASE_SERVICE_DIR/battery-check-notify.service" \
         "$BASE_SERVICE_DIR/compton.service" \
         "$BASE_SERVICE_DIR/dunst.service" \
@@ -143,6 +149,7 @@ function post_install() {
     mkdir -p "$TARGET_DIR"
 
     ln -sft "$TARGET_DIR" \
+        "$INSTALL_DIR/autorandr.service" \
         "$INSTALL_DIR/compton.service" \
         "$INSTALL_DIR/dunst.service" \
         "$INSTALL_DIR/nitrogen-delayed.service" \

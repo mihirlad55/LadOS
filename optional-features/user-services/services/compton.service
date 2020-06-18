@@ -1,9 +1,11 @@
 [Unit]
 Description=Compton compositor
+After=autorandr.service
 StartLimitBurst=5
 StartLimitIntervalSec=20
 
 [Service]
+ExecStartPre=sleep 3s
 ExecStart=compton --config %h/.config/compton.conf
 Type=simple
 
