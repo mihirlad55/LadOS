@@ -62,4 +62,9 @@ CONF_EXCLUDE_FEATURES=( "corsair-headset" \
                             "systemd-boot" \
                             "secure-boot-shim" \
                             "configure-backlight" \
-                            "powertop")
+                            "powertop" \
+                            "luks-encryption-tpm" \
+                            "gcp-tunnel" \
+                            "restic-b2" \
+                            "weather-polybar-module" \
+                            "win10-fonts")
