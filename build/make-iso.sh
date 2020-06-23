@@ -955,7 +955,7 @@ function interactive() {
         echo "is to remaster an existing archiso. Please download an Arch Linux"
         echo "ISO from https://www.archlinux.org/download/"
         echo "Please also install squashfs-tools libisoburn dosfstools lynx"
-        echo "syslinux"
+        echo "syslinux edk2-shell"
 
         show_menu "Make ISO" \
             "Remaster ISO"          "remaster_iso" \
