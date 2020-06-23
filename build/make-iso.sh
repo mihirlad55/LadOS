@@ -1,5 +1,5 @@
 #!/usr/bin/bash
- 
+
 # Catch errors
 set -o errtrace
 set -o pipefail
@@ -256,7 +256,7 @@ function build_win10_fonts() {
 
         msg3 "Building ttf-ms-win10..."
         mkdir -p "$FONTS_DIR"
-        "$BUILD_SH" "${Q_FLAG[@]}" "${V_FLAG[@]}" "$FONTS_DIR"
+        "$BUILD_SH" ${Q_FLAG[@]} ${V_FLAG[@]} "$FONTS_DIR"
 
         msg3 "Moving files to $PKG_DIR..."
         sudo mv -f "$FONTS_DIR"/* "$PKG_DIR"
@@ -304,13 +304,13 @@ function build_aur_packages() {
 
         # Clone if not already done
         if [[ ! -d "$pkg_dir" ]]; then
-            git clone "${GIT_FLAGS[@]}" "$pkg_url" "$pkg_dir"
+            git clone ${GIT_FLAGS[@]} -- "$pkg_url" "$pkg_dir"
         fi
 
         # Source PKGBUILD to build beginning of package file name
         (
             source "/var/tmp/$pkg_name/PKGBUILD"
-            
+
             if [[ "$epoch" != "" ]]; then
                 tar_name_prefix="$pkg_name-$epoch:"
             else
@@ -506,7 +506,7 @@ function create_localrepo() {
 
     msg2 "Adding all packages to localrepo database..."
     # If all packages are already present, repo-add returns 1
-    (cd "$LOCAL_REPO_DIR" && sudo repo-add "${Q_FLAG[@]}" -n -R -p --nocolor \
+    (cd "$LOCAL_REPO_DIR" && sudo repo-add ${Q_FLAG[@]} -n -R -p --nocolor \
         localrepo.db.tar.gz pkg/*) || true
 }
 
@@ -598,7 +598,7 @@ function build_from_scratch() {
             -o "$BASE_DIR" \
             -k "$sb_key_path" \
             -c "$sb_crt_path" \
-            "${V_FLAG[@]}"
+            ${V_FLAG[@]}
     )
     res="$?"
 
@@ -796,7 +796,7 @@ function remaster() {
         msg "Cleaning up old mount $ARCH_ISO_DIR..."
         sudo umount "$ARCH_ISO_DIR"
     fi
-    
+
     # Mount archiso
     msg "Mounting archiso to $ARCH_ISO_DIR..."
     sudo mkdir -p "$ARCH_ISO_DIR"
@@ -817,7 +817,7 @@ function remaster() {
         msg "Creating localrepo..."
         create_localrepo "$SQUASHFS_ROOT_DIR" "$PACMAN_CONF"
     fi
-    
+
     msg "Making recovery files..."
     make_recovery "$RECOVERY_DIR"
 
@@ -864,7 +864,7 @@ function remaster() {
         sudo find "$EFI_BOOT_DIR" \( -iname '*.efi' -o -iname 'vmlinuz*' \) \
             -exec sbsign --key "$sb_key_path" --cert "$sb_crt_path" \
             --output {} {} \;
-        
+
         msg2 "Unmounting efiboot.img..."
         sudo umount "$EFI_BOOT_DIR"
     fi
@@ -1025,6 +1025,7 @@ while [[ "$#" -gt 0 ]]; do
             VERBOSITY=1
             V_FLAG=("")
             Q_FLAG=("-q")
+            GIT_FLAGS=("${GIT_FLAGS[@]}" "${Q_FLAG[@]}")
             shift
             ;;
         -vv)
@@ -1037,6 +1038,7 @@ while [[ "$#" -gt 0 ]]; do
             VERBOSITY=3
             V_FLAG=("-v")
             Q_FLAG=("")
+            GIT_FLAGS=("${GIT_FLAGS[@]}" "${V_FLAG[@]}")
             shift
             ;;
         *)
@@ -1050,9 +1052,7 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-GIT_FLAGS=("${GIT_FLAGS[@]}" "${V_FLAG[@]}" "${Q_FLAG[@]}")
-
-readonly CMD AUTO_DOWNLOAD_ISO SB_CRT_PATH DEV SB_KEY_PATH CREATE_LOCAL_REPO 
+readonly CMD AUTO_DOWNLOAD_ISO SB_CRT_PATH DEV SB_KEY_PATH CREATE_LOCAL_REPO
 readonly BUILD_TTF_MS_WIN_10 VERBOSITY Q_FLAG V_FLAG GIT_FLAGS
 
 
