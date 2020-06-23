@@ -557,8 +557,10 @@ function build_from_scratch() {
     fi
 
     if ! pacman -Q archiso-git &> /dev/null; then
+        if pacman -Q archiso &> /dev/null; then
+            sudo pacman -R archiso --noconfirm
+        fi
         msg "Installing archiso-git..."
-        sudo pacman -R archiso --noconfirm
         yay -S archiso-git --noconfirm --needed --mflags -m
     fi
 
