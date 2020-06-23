@@ -88,7 +88,6 @@ spotify,Music,aur,optional
 sudo,So I don't have to login as root,system,required
 sxiv,Main image viewer,system,optional
 synergy,For mouse/keyboard sharing,system,optional
-teamviewer,Remote control,aur,optional
 termdown,Countdown/timer,system,optional
 texlive-bibtexextra,LaTeX,system,optional
 texlive-latexextra,LaTeX,system,optional
