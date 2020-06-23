@@ -18,7 +18,14 @@
 # Mailspring
 /home/*/.config/Mailspring/Partitions
 /home/*/.config/Mailspring/compile-cache
-/home/*/.config/Mailspring/mailsync-*.log
+/home/*/.config/Mailspring/mailsync-*.log*
+# Slack
+/home/*/.config/Slack/logs
+/home/*/.config/Slack/Cookies
+# Insync
+/home/*/.config/Insync/logs.db
+# DWM
+/home/*/.dwm.log
 # Chromium
 /home/*/.config/chromium/*/Application\ Cache
 /home/*/.config/chromium/*/AutofillStrikeDatabase
@@ -33,6 +40,7 @@
 /home/*/.config/chromium/*/GrShaderCache
 /home/*/.config/chromium/*/History\ Index
 /home/*/.config/chromium/*/History\ Provider\ Cache
+/home/*/.config/chromium/*/File\ System
 /home/*/.config/chromium/*/IndexedDB
 /home/*/.config/chromium/*/InterventionPolicyDatabase
 /home/*/.config/chromium/*/Local\ Extension\ Settings
@@ -126,7 +134,14 @@
 # Mailspring
 /root/.config/Mailspring/Partitions
 /root/.config/Mailspring/compile-cache
-/root/.config/Mailspring/mailsync-*.log
+/root/.config/Mailspring/mailsync-*.log*
+# Slack
+/root/.config/Slack/logs
+/root/.config/Slack/Cookies
+# Insync
+/root/.config/Insync/logs.db
+# DWM
+/root/.dwm.log
 # Chromium
 /root/.config/chromium/*/Application\ Cache
 /root/.config/chromium/*/AutofillStrikeDatabase
@@ -136,11 +151,12 @@
 /root/.config/chromium/*/Extension\ State
 /root/.config/chromium/*/Extensions
 /root/.config/chromium/*/Feature\ Engagement\ Tracker
-/root/.config/chromium/*/GCMStore
+/root/.config/chromium/*/GCM\ Store
 /root/.config/chromium/*/GPUCache
 /root/.config/chromium/*/GrShaderCache
 /root/.config/chromium/*/History\ Index
 /root/.config/chromium/*/History\ Provider\ Cache
+/root/.config/chromium/*/File\ System
 /root/.config/chromium/*/IndexedDB
 /root/.config/chromium/*/InterventionPolicyDatabase
 /root/.config/chromium/*/Local\ Extension\ Settings
