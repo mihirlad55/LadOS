@@ -6,6 +6,7 @@ virsh destroy --domain ArchLinux
 virsh undefine --nvram --domain ArchLinux
 
 mkdir -p "$HOME/shared"
+mkdir -p "$HOME/virtual-machines"
 
 virt-install \
     --connect qemu:///session \
