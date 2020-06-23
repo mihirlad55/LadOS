@@ -508,6 +508,9 @@ function create_localrepo() {
     # If all packages are already present, repo-add returns 1
     (cd "$LOCAL_REPO_DIR" && sudo repo-add ${Q_FLAG[@]} -n -R -p --nocolor \
         localrepo.db.tar.gz pkg/*) || true
+
+    # Symlink LadOS directory for localrepo
+    sudo ln -sfT "$LAD_OS_DIR" /LadOS
 }
 
 ################################################################################
