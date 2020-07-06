@@ -131,3 +131,4 @@ youtube-dl,Downloading youtube videos,system,optional
 zathura-pdf-poppler,Main PDF viewer,system,optional
 zip,Zipping files,system,required
 zsh,Main shell,system,required
+xorg-xinput
