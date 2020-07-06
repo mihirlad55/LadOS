@@ -8,14 +8,11 @@ readonly RECIPES_DIR="$HOME/.config/Ferdi/recipes"
 readonly BASE_CAL_PATCH="$BASE_DIR/googlecalendar-webview.patch"
 readonly TMP_MSGR_DIR="/tmp/DarkNight-FBMessenger"
 readonly TMP_CAL_DIR="/tmp/Dark_Google_Calendar"
-readonly TMP_WHATSAPP_DIR="/tmp/dark-whatsapp"
 readonly TMP_TRELLO_CSS="/tmp/trello-darkmode.css"
 readonly NEW_CAL_CSS="$RECIPES_DIR/googlecalendar/darkmode.css"
 readonly NEW_CAL_LICENSE="$RECIPES_DIR/googlecalendar/LICENSE"
 readonly NEW_MSGR_CSS="$RECIPES_DIR/messenger/darkmode.css"
 readonly NEW_MSGR_LICENSE="$RECIPES_DIR/messenger/LICENSE"
-readonly NEW_WHATSAPP_CSS="$RECIPES_DIR/whatsapp/darkmode.css"
-readonly NEW_WHATSAPP_LICENSE="$RECIPES_DIR/whatsapp/LICENSE"
 readonly NEW_TRELLO_CSS="$RECIPES_DIR/trello/darkmode.css"
 readonly NEW_TRELLO_LICENSE="$RECIPES_DIR/trello/LICENSE"
 readonly MOD_CAL_WEBVIEW="$RECIPES_DIR/googlecalendar/webview.js"
@@ -24,22 +21,19 @@ source "$LAD_OS_DIR/common/feature_header.sh"
 
 readonly FEATURE_NAME="Ferdi Dark Mode Themes"
 readonly FEATURE_DESC="Install Dark Mode Themes for Google Calendar, Facebook \
-Messenger, WhatsApp, and Trello"
+Messenger, and Trello"
 readonly PROVIDES=()
 readonly NEW_FILES=( \
     "$NEW_CAL_CSS" \
     "$NEW_CAL_LICENSE" \
     "$NEW_MSGR_CSS" \
     "$NEW_MSGR_LICENSE" \
-    "$NEW_WHATSAPP_CSS" \
-    "$NEW_WHATSAPP_LICENSE" \
     "$NEW_TRELLO_CSS" \
 )
 readonly MODIFIED_FILES=("$MOD_CAL_WEBVIEW")
 readonly TEMP_FILES=( \
     "$TMP_MSGR_DIR" \
     "$TMP_CAL_DIR" \
-    "$TMP_WHATSAPP_DIR" \
     "$TMP_TRELLO_CSS" \
 )
 readonly DEPENDS_AUR=()
@@ -48,7 +42,6 @@ readonly DEPENDS_PIP3=()
 
 readonly MSGR_GIT_URL="https://github.com/cicerakes/DarkNight-FBMessenger"
 readonly CAL_GIT_URL="https://github.com/pyxelr/Dark_Google_Calendar"
-readonly WHATSAPP_GIT_URL="https://github.com/vednoc/dark-whatsapp"
 readonly TRELLO_CSS_URL="https://userstyles.org/api/v1/styles/css/179512"
 
 
@@ -112,11 +105,6 @@ function prepare() {
         git clone "${GIT_FLAGS[@]}" "$CAL_GIT_URL" "$TMP_CAL_DIR"
     fi
 
-    if [[ ! -d "$TMP_WHATSAPP_DIR" ]]; then
-        qecho "Cloning WhatsApp theme..."
-        git clone "${GIT_FLAGS[@]}" "$WHATSAPP_GIT_URL" "$TMP_WHATSAPP_DIR"
-    fi
-
     if [[ ! -f "$TMP_TRELLO_CSS" ]]; then
         qecho "Downloading Trello CSS theme..."
         curl "${S_FLAG[@]}" "$TRELLO_CSS_URL" --output "$TMP_TRELLO_CSS"
@@ -136,7 +124,6 @@ function prepare() {
     qecho "Replacing @-moz-document rules with @media screen in css files..."
     replace_moz_document "$TMP_MSGR_DIR/DarkNightFBM.user.css"
     replace_moz_document "$TMP_CAL_DIR/Google-DarkCalendar.user.css"
-    replace_moz_document "$TMP_WHATSAPP_DIR/wa.user.css"
     replace_moz_document "$TMP_TRELLO_CSS"
 }
 
@@ -150,18 +137,13 @@ function install() {
     command install -Dm 644 "$TMP_CAL_DIR/Google-DarkCalendar.user.css" \
         "$NEW_CAL_CSS"
     command install -Dm 644 "$TMP_CAL_DIR/LICENSE" "$NEW_CAL_LICENSE"
-    
+
     if ! is_patch_applied "$MOD_CAL_WEBVIEW" "$BASE_CAL_PATCH"; then
         qecho "Patching $MOD_CAL_WEBVIEW..."
         patch -N -f "${S_FLAG[@]}" "$MOD_CAL_WEBVIEW" "$BASE_CAL_PATCH"
     else
         qecho "$MOD_CAL_WEBVIEW already patched"
     fi
-
-    qecho "Installing WhatsApp theme..."
-    command install -Dm 644 "$TMP_WHATSAPP_DIR/wa.user.css" \
-        "$NEW_WHATSAPP_CSS"
-    command install -Dm 644 "$TMP_WHATSAPP_DIR/license" "$NEW_WHATSAPP_LICENSE"
 
     qecho "Installing Trello theme..."
     command install -Dm 644 "$TMP_TRELLO_CSS" "$NEW_TRELLO_CSS"
