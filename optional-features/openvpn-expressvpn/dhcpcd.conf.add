@@ -1,0 +1,5 @@
+ipv4only
+nodhcp6
+noipv6
+noipv6rs
+nohook resolv.conf
