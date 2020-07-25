@@ -75,7 +75,7 @@ powertop,Optimizing battery life,system,required
 pulseaudio,Audio,system,required
 python,It's python,system,optional
 python-pip,Python package manager,system,optional
-python-ueberzug,Image previews for vifm,aur,required
+ueberzug,Image previews for vifm,pacman,required
 redshift,For screen temperature control,system,required
 restic,Backup,system,required
 rofi,Main applet launcher,system,required
