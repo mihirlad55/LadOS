@@ -5,3 +5,6 @@
 
 # and network.conf.sample
 !network.conf.sample
+
+# and conf.sh.sample
+!conf.sh.sample

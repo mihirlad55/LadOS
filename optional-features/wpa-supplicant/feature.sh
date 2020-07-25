@@ -6,6 +6,7 @@ readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly CONF_DIR="$LAD_OS_DIR/conf/wpa-supplicant"
 readonly CONF_NETWORK_CONF="$CONF_DIR/network.conf"
+readonly CONF_SH="$CONF_DIR/conf.sh"
 readonly BASE_NOTIFY_SERVICE="$BASE_DIR/wpa-cli-notify@.service"
 readonly BASE_NOTIFY_SH="$BASE_DIR/wpa-cli-notify.sh"
 readonly NEW_NOTIFY_SERVICE="/etc/systemd/system/wpa-cli-notify@.service"
@@ -33,11 +34,12 @@ readonly DEPENDS_PIP3=()
 
 
 function check_install() {
+    wpa_file="$(sudo find "$NEW_WPA_SUPPLICANT_DIR" -iname 'wpa_supplicant-*.conf')"
     if pacman -Q wpa_supplicant > /dev/null &&
         pacman -Q dhcpcd > /dev/null &&
         [[ -f "$NEW_NOTIFY_SH" ]] &&
         [[ -f "$NEW_NOTIFY_SERVICE" ]] &&
-        test -f "$NEW_WPA_SUPPLICANT_DIR"/wpa_supplicant-*.conf; then
+        [[ "$wpa_file" != "" ]]; then
         qecho "$FEATURE_NAME is installed"
         return 0
     else
@@ -46,7 +48,21 @@ function check_install() {
     fi
 }
 
-function check_conf() {
+function check_conf_sh() {
+    if [[ -f "$CONF_SH" ]]; then
+        # Check if file contains errors
+        source "$CONF_SH"
+        if [[ -n "$CARD" ]]; then
+            qecho "Configuration found at $CONF_SH"
+            return 0
+        fi
+    fi
+
+    echo "Configuration not found or not set correctly at $CONF_SH"
+    return 1
+}
+
+function check_network_conf() {
     local conf
 
     # Check if network configuration exists and is non-empty
@@ -63,30 +79,46 @@ function check_conf() {
     return 1
 }
 
+function load_conf() {
+    source "$CONF_SH"
+}
+
 function prepare() {
-    ip link
-    echo "Note that the name of this card may change when you boot the system"
-    read -rp "Enter name of network card: " card
+    if ! check_conf_sh; then
+        ip link
+        echo "Note that the name of this card may change when you boot the system"
+        read -rp "Enter name of network card: " card
+    else
+        load_conf
+        card="$CARD"
+    fi
 
     # Boilerplate
     echo "ctrl_interface=/run/wpa_supplicant" > "$TMP_WPA_SUPPLICANT_CONF"
     echo "update_config=1" >> "$TMP_WPA_SUPPLICANT_CONF"
 
-    if check_conf; then
+    if check_network_conf; then
         cat "$CONF_NETWORK_CONF" >> "$TMP_WPA_SUPPLICANT_CONF"
     fi
 
-    echo "Opening wpa_supplicant file..."
-    read -rp "Press enter to continue..."
-    if [[ "$EDITOR" != "" ]]; then
-        "$EDITOR" "$TMP_WPA_SUPPLICANT_CONF"
-    else
-        vim "$TMP_WPA_SUPPLICANT_CONF"
+    if ! check_network_conf; then
+        echo "Opening wpa_supplicant file..."
+        read -rp "Press enter to continue..."
+        if [[ "$EDITOR" != "" ]]; then
+            "$EDITOR" "$TMP_WPA_SUPPLICANT_CONF"
+        else
+            vim "$TMP_WPA_SUPPLICANT_CONF"
+        fi
     fi
 }
 
 function install() {
     local name new_wpa_supplicant_conf
+
+    if check_conf_sh; then
+        load_conf
+        card="$CARD"
+    fi
 
     name="wpa_supplicant-${card}.conf"
     new_wpa_supplicant_conf="$NEW_WPA_SUPPLICANT_DIR/$name"
@@ -123,8 +155,12 @@ function uninstall() {
     local card wpa_supplicant_service notify_service name
     local new_wpa_supplicant_conf
 
-    ip link
-    read -rp "Enter name of network card: " card
+    if !check_conf_sh; then
+        ip link
+        read -rp "Enter name of network card: " card
+    else
+        load_conf
+    fi
 
     wpa_supplicant_service="wpa_supplicant@${card}.service"
     notify_service="wpa-cli-notify@${card}.service"
@@ -137,7 +173,7 @@ function uninstall() {
     sudo systemctl disable "${SYSTEMD_FLAGS[@]}" "$notify_service"
     sudo systemctl disable "${SYSTEMD_FLAGS[@]}" dhcpcd.service
 
-    qecho "Removing $new_wpa_supplicant_conf..." 
+    qecho "Removing $new_wpa_supplicant_conf..."
     sudo rm -rf "$new_wpa_supplicant_conf"
 }
 
