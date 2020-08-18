@@ -331,7 +331,7 @@ function build_aur_packages() {
 
                 cd "$pkg_dir"
                 makepkg -s --noconfirm --nocolor
-                sudo cp -f ./*.pkg.tar.xz "$PKG_DIR"
+                sudo cp -f ./*.pkg.tar.* "$PKG_DIR"
             else
                 msg4 "$pkg_name already exists"
             fi
@@ -381,7 +381,7 @@ function copy_pacman_packages() {
     # Include packages.x86_64 if found
     if [[ -f "$ARCH_ISO_PACKAGE_LIST" ]]; then
         msg3 "Found package list at $ARCH_ISO_PACKAGE_LIST..."
-        mapfile -t arch_iso_packages < "$ARCH_ISO_PACKAGE_LIST"
+        mapfile -t arch_iso_packages < <(grep -v '^#' "$ARCH_ISO_PACKAGE_LIST")
 
         # Add packages from archiso
         pacman_packages=("${pacman_packages[@]}" "${arch_iso_packages[@]}")
