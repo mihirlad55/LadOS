@@ -376,7 +376,7 @@ function copy_pacman_packages() {
     readonly PKG_DIR ARCH_ISO_DIR PACMAN_CONF TMP_DB_DIR ARCH_ISO_PACKAGE_LIST
 
     # Sync pacman and upgrade system
-    sudo pacman -Syu --noconfirm
+    sudo pacman -Syu --noconfirm --ignore linux
 
     # Include packages.x86_64 if found
     if [[ -f "$ARCH_ISO_PACKAGE_LIST" ]]; then
