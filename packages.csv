@@ -58,6 +58,7 @@ neovim,Main editor,system,required
 nerd-fonts-complete,Icon fonts,aur,required
 nitrogen,For desktop background,system,required
 nmap,Network analysis,system,optional
+npm,Neovim COC,system,required
 ntfs-3g,Accessing ntfs drives,system,required
 ntp,Syncing clock over Internet,system,required
 openconnect,School VPN,system,optional,
@@ -75,7 +76,6 @@ powertop,Optimizing battery life,system,required
 pulseaudio,Audio,system,required
 python,It's python,system,optional
 python-pip,Python package manager,system,optional
-ueberzug,Image previews for vifm,pacman,required
 redshift,For screen temperature control,system,required
 restic,Backup,system,required
 rofi,Main applet launcher,system,required
@@ -105,6 +105,7 @@ ttf-opensans,Good font,system,required
 ttf-roboto,Good font,system,required
 ttf-weather-icons,Weather icons for polybar,aur,required
 ttf-yosemite-san-francisco-font-git,Cool font,aur,required
+ueberzug,Image previews for vifm,pacman,required
 unzip,Unzipping files,system,required
 valgrind,C debugging tool,system,optional
 vifm,Main file explorer,system,required
