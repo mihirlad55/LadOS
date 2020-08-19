@@ -18,9 +18,8 @@ readonly MOK_DIR="/root/sb-keys/MOK"
 readonly MOK_KEY="$MOK_DIR/MOK.key"
 readonly MOK_CRT="$MOK_DIR/MOK.crt"
 readonly EFI_BINARIES=( \
-    "$MOUNT_POINT/shellx64_v2.efi" \
-    "$MOUNT_POINT/shellx64_v1.efi" \
     "$MOUNT_POINT/boot/x86_64/vmlinuz" \
+    "$MOUNT_POINT/shellx64.efi" \
 )
 
 source "$LAD_OS_DIR/common/feature_header.sh"
@@ -32,8 +31,7 @@ readonly PROVIDES=()
 readonly NEW_FILES=( \
     "$NEW_RECOVERY_CONF" \
     "$MOUNT_POINT" \
-    "$MOUNT_POINT/shellx64_v2.efi" \
-    "$MOUNT_POINT/shellx64_v1.efi" \
+    "$MOUNT_POINT/shellx64.efi" \
     "$MOUNT_POINT/x86_64" \
     "$MOUNT_POINT/pkglist.x86_64.txt" \
     "$MOUNT_POINT/x86_64/airootfs.sfs" \
