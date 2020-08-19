@@ -31,7 +31,7 @@ readonly DEPENDS_PACMAN=( \
     python-pip \
     poppler \
 )
-readonly DEPENDS_PIP3=()
+readonly DEPENDS_PIP3=(Pillow)
 
 readonly EPUB_THUMBNAILER_URL="https://github.com/marianosimone/epub-thumbnailer"
 
