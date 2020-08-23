@@ -5,6 +5,7 @@ StartLimitBurst=5
 StartLimitIntervalSec=20
 
 [Service]
+ExecStartPre=redshift -x
 ExecStart=redshift
 
 Type=simple
