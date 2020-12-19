@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 COUNTRY="US"
-URL="https://www.archlinux.org/mirrorlist/?country=${COUNTRY}&protocol=https&use_mirror_status=on"
+URL="https://archlinux.org/mirrorlist/?country=${COUNTRY}&protocol=https&use_mirror_status=on"
 
 echo "Waiting for Internet connection..."
 until ping -c 1 www.google.com &> /dev/null; do sleep 1; done
