@@ -4,8 +4,8 @@
 readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
-readonly BASE_MAIN_RULES="$BASE_DIR/main.rules"
-readonly NEW_IPTABLES_RULES="/etc/iptables/iptables.rules"
+readonly BASE_NFTABLES_RULES="$BASE_DIR/nftables.conf"
+readonly NEW_NFTABLES_RULES="/etc/nftables.conf"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
@@ -18,14 +18,14 @@ readonly NEW_FILES=( \
 readonly MODIFIED_FILES=()
 readonly TEMP_FILES=()
 readonly DEPENDS_AUR=()
-readonly DEPENDS_PACMAN=(iptables)
+readonly DEPENDS_PACMAN=(iptables-nft sshguard)
 readonly DEPENDS_PIP3=()
 
 
 
 function check_install() {
-    if pacman -Q iptables > /dev/null &&
-      diff "$BASE_MAIN_RULES" "$NEW_IPTABLES_RULES"; then
+    if pacman -Q "$DEPENDS_PACMAN" > /dev/null &&
+      diff "$BASE_NFTABLES_RULES" "$NEW_NFTABLES_RULES"; then
         qecho "$FEATURE_NAME is installed"
         return 0
     else
@@ -35,23 +35,32 @@ function check_install() {
 }
 
 function install() {
-    local name new_wpa_supplicant_conf
+    qecho "Copying "$BASE_NFTABLES_RULES" to $NEW_NFTABLES_RULES..."
+    sudo install -Dm 644 "$BASE_NFTABLES_RULES" "$NEW_NFTABLES_RULES"
 
-    qecho "Copying "$BASE_MAIN_RULES" to $NEW_IPTABLES_RULES..."
-    sudo install -Dm 644 "$BASE_MAIN_RULES" "$NEW_IPTABLES_RULES"
+    qecho "Editing sshguard.conf to use nftables..."
+    sudo sed -i \
+      's/^BACKEND=.*$/BACKEND="\/usr\/lib\/sshguard\/sshg-fw-nft-sets"/' \
+      /etc/sshguard.conf
 }
 
 function post_install() {
-    qecho "Enabling iptables.service"
-    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" iptables.service
+    qecho "Enabling nftables.service"
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" nftables.service
+
+    qecho "Enabling sshguard.service"
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" sshguard.service
 }
 
 function uninstall() {
-    qecho "Disabling iptables.service"
-    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" iptables.service
+    qecho "Disabling nftables.service"
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" nftables.service
 
-    qecho "Removing $NEW_IPTABLES_RULES..."
-    sudo rm -f "$NEW_IPTABLES_RULES"
+    qecho "Disabling sshguard.service"
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" sshguard.service
+
+    qecho "Removing $NEW_NFTABLES_RULES..."
+    sudo rm -f "$NEW_NFTABLES_RULES"
 }
 
 
