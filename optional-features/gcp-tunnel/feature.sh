@@ -44,6 +44,7 @@ function check_conf() (
         [[ "$REMOTE_USERNAME" = "" ]] ||
         [[ "$LOCAL_PORT" = "" ]] ||
         [[ "$REMOTE_PORT" = "" ]] ||
+        [[ "$SSH_PORT" = "" ]] ||
         [[ "$PRIVATE_KEY_PATH" = "" ]]; then
         echo "Configuration not fully set" >&2
         return 1

@@ -9,7 +9,7 @@ After=network.target
 EnvironmentFile=/etc/gcp-tunnel.env
 
 ExecStartPre=-/usr/bin/ssh ${REMOTE_USERNAME}@${HOSTNAME} \
-    -o StrictHostKeyChecking=no -p $LOCAL_PORT \
+    -o StrictHostKeyChecking=no -p $SSH_PORT \
     -i $PRIVATE_KEY_PATH \
     sudo /usr/local/bin/free-port $REMOTE_PORT
 
@@ -19,7 +19,7 @@ ExecStart=/usr/bin/ssh -o StrictHostKeyChecking=no \
     -i $PRIVATE_KEY_PATH \
     -R ${REMOTE_PORT}:localhost:${LOCAL_PORT} \
     ${REMOTE_USERNAME}@${HOSTNAME} \
-    -p $LOCAL_PORT \
+    -p $SSH_PORT \
     -N
 
 RestartSec=5
