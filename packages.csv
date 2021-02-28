@@ -74,6 +74,7 @@ polybar,Status bar,aur, required
 polybar-spotify-module,Polybar spotify module,aur,optional
 powertop,Optimizing battery life,system,required
 pulseaudio,Audio,system,required
+pulseaudio-bluetooth,Bluetooth speakers module,required
 python,It's python,system,optional
 python-pip,Python package manager,system,optional
 redshift,For screen temperature control,system,required
