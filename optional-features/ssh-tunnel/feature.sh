@@ -4,22 +4,22 @@
 readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 # Get absolute path to root of repo
 readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
-readonly CONF_DIR="$LAD_OS_DIR/conf/gcp-tunnel"
-readonly BASE_ENV="$BASE_DIR/gcp-tunnel.env"
-readonly BASE_SERVICE="$BASE_DIR/gcp-tunnel.service"
-readonly CONF_ENV="$CONF_DIR/gcp-tunnel.env"
+readonly CONF_DIR="$LAD_OS_DIR/conf/ssh-tunnel"
+readonly BASE_ENV="$BASE_DIR/ssh-tunnel.env"
+readonly BASE_SERVICE="$BASE_DIR/ssh-tunnel.service"
+readonly CONF_ENV="$CONF_DIR/ssh-tunnel.env"
 readonly MOD_SSHD_CONFIG="/etc/ssh/sshd_config"
-readonly TMP_ENV="/tmp/gcp-tunnel.env"
-readonly NEW_ENV="/etc/gcp-tunnel.env"
-readonly NEW_SERVICE="/etc/systemd/system/gcp-tunnel.service"
+readonly TMP_ENV="/tmp/ssh-tunnel.env"
+readonly NEW_ENV="/etc/ssh-tunnel.env"
+readonly NEW_SERVICE="/etc/systemd/system/ssh-tunnel@.service"
 readonly ROOT_SSH_PRIV_KEY="/root/.ssh/id_rsa"
 
 source "$LAD_OS_DIR/common/feature_header.sh"
 
-readonly FEATURE_NAME="GCP Tunnel"
-readonly FEATURE_DESC="Install gcp-tunnel which remote forwards your \
-computer's SSH port to a Google Cloud Platform instance allowing it \
-to be accessible over the Internet"
+readonly FEATURE_NAME="SSH Tunnel"
+readonly FEATURE_DESC="Install ssh-tunnel which remote forwards your \
+computer's ports to another server allowing it to be accessible over the \
+Internet"
 readonly PROVIDES=()
 readonly NEW_FILES=( \
     "$NEW_ENV" \
@@ -89,7 +89,7 @@ function prepare() {
             port="$new_port"
         fi
 
-        # Update port in gcp-tunnel.env
+        # Update port in ssh-tunnel.env
         sed -i "$TMP_ENV" -e "s/^LOCAL_PORT=[0-9]*$/LOCAL_PORT=$port/"
 
         echo "Opening environment file for updates..."
@@ -123,8 +123,8 @@ function install() {
 }
 
 function post_install() {
-    qecho "Enabling gcp-tunnel.service..."
-    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" gcp-tunnel.service
+    qecho "Enabling ssh-tunnel.service..."
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" ssh-tunnel.service
 
     qecho "Enabling sshd.service"
     sudo systemctl enable "${SYSTEMD_FLAGS[@]}" sshd.service
@@ -138,8 +138,8 @@ function cleanup() {
 }
 
 function uninstall() {
-    qecho "Disabling gcp-tunnel.service..."
-    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" gcp-tunnel.service
+    qecho "Disabling ssh-tunnel.service..."
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" ssh-tunnel.service
 
     qecho "Disabling sshd.service"
     sudo systemctl disable "${SYSTEMD_FLAGS[@]}" sshd.service

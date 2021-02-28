@@ -1,14 +1,14 @@
 [Unit]
-Description=OpenSSH
+Description=Forward port over SSH Tunnel to expose %i
 Wants=sshd.service
 Requires=network.target
 After=sshd.service
 After=network.target
 
 [Service]
-EnvironmentFile=/etc/gcp-tunnel.env
+EnvironmentFile=/etc/ssh-tunnel-%i.env
 
-ExecStartPre=-/usr/bin/ssh ${REMOTE_USERNAME}@${HOSTNAME} \
+ExecStartPre=-/usr/bin/ssh ${REMOTE_USERNAME}@${REMOTE_HOSTNAME} \
     -o StrictHostKeyChecking=no -p $SSH_PORT \
     -i $PRIVATE_KEY_PATH \
     sudo /usr/local/bin/free-port $REMOTE_PORT
@@ -17,8 +17,8 @@ ExecStart=/usr/bin/ssh -o StrictHostKeyChecking=no \
     -o ServerAliveInterval=60 \
     -o ExitOnForwardFailure=yes \
     -i $PRIVATE_KEY_PATH \
-    -R ${REMOTE_PORT}:localhost:${LOCAL_PORT} \
-    ${REMOTE_USERNAME}@${HOSTNAME} \
+    -R ${REMOTE_IP}:${REMOTE_PORT}:${LOCAL_IP}:${LOCAL_PORT} \
+    ${REMOTE_USERNAME}@${REMOTE_HOSTNAME} \
     -p $SSH_PORT \
     -N
 
