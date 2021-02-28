@@ -36,7 +36,7 @@ gnome-keyring,For mailspring,system,optional
 gucharmap,Viewing character map,system,optional
 hunspell-en_US,Spell check,system,required
 i3-gaps,Backup window manager,system,optional
-i3lock-color,Lockscreen,system,required
+i3lock-color,Lockscreen,aur,required
 inkscape,Main SVG editor,system,optional
 insync,Google Drive sync,aur,optional
 intel-media-driver,Hardware acceleration,system,required
@@ -111,7 +111,7 @@ unzip,Unzipping files,system,required
 valgrind,C debugging tool,system,optional
 vifm,Main file explorer,system,required
 vlc,Main video viewer,system,optional
-watchman,Watching commands,system,optional
+watchman,Watching commands,aur,optional
 wget,Downloading files,system,required
 wpa_supplicant,WiFi,system,required
 x11vnc,For VNC control,system,optional
