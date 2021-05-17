@@ -130,6 +130,8 @@ function print_usage() {
     echo "    conflicts             Print names of features this feature"
     echo "                          conflicts with"
     echo
+    echo "    pre_depends           Run pre-dependency installation hook"
+    echo
     echo "    check_conf            Check if feature's configuration is set"
     echo "                          correctly"
     echo

@@ -6,6 +6,11 @@ case "$1" in
             exit 1
         fi
 
+        if type -p pre_depends; then
+            qecho "Running pre-dependency hook..."
+            pre_depends
+        fi
+
         if type -p check_conf && type -p load_conf; then
             qecho "Checking and loading configuration..."
             check_conf && load_conf
@@ -52,7 +57,7 @@ case "$1" in
         ;;
 
     check_conf | load_conf | check_install | prepare | install |  post_install \
-        | cleanup | check_conflicts)
+        | cleanup | check_conflicts | pre_depends)
         if type -p "$1"; then
             qecho "Starting $1..."
             res=0
