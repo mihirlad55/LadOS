@@ -21,7 +21,12 @@ readonly DEPENDS_AUR=()
 readonly DEPENDS_PACMAN=(iptables-nft sshguard)
 readonly DEPENDS_PIP3=()
 
-
+function pre_depends() {
+    if pacman -Q "iptables" > /dev/null && ! pacman -Q "iptables-nft"; then
+        sudo pacman -Rdd iptables
+        sudo pacman -S iptables-nft --noconfirm --needed
+    fi
+}
 
 function check_install() {
     if pacman -Q "$DEPENDS_PACMAN" > /dev/null &&

@@ -147,7 +147,7 @@ function rank_mirrors() {
     fi
 
     msg2 "Beginning mirror ranking..." "(This may take a minute)"
-    curl -s "https://www.archlinux.org/mirrorlist/?country=${country}&protocol=https&use_mirror_status=on" \
+    curl -sL "https://www.archlinux.org/mirrorlist/?country=${country}&protocol=https&use_mirror_status=on" \
         | sed -e 's/^#Server/Server/' -e '/^#/d' \
         | "$BASE_DIR"/rankmirrors -n 5 -m 1 - \
         > /etc/pacman.d/mirrorlist

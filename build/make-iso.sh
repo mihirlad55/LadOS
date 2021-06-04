@@ -200,7 +200,7 @@ function make_recovery() {
     sudo chown -R root:root "$RECOVERY_DIR"
 
     msg2 "Building recovery..."
-    ( cd "$RECOVERY_DIR" && sudo ./build.sh )
+    ( cd "$RECOVERY_DIR" && sudo ./build.sh "${V_FLAG[@]}" )
 
     msg2 "Copying recovery to $install_dir..."
     sudo cp -rft "$install_dir" "$RECOVERY_DIR/work/iso/recovery"

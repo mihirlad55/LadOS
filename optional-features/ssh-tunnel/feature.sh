@@ -6,11 +6,11 @@ readonly BASE_DIR="$( readlink -f "$(dirname "$0")" )"
 readonly LAD_OS_DIR="$( echo "$BASE_DIR" | grep -o ".*/LadOS/" | sed 's/.$//' )"
 readonly CONF_DIR="$LAD_OS_DIR/conf/ssh-tunnel"
 readonly BASE_ENV="$BASE_DIR/ssh-tunnel.env"
-readonly BASE_SERVICE="$BASE_DIR/ssh-tunnel.service"
+readonly BASE_SERVICE="$BASE_DIR/ssh-tunnel@.service"
 readonly CONF_ENV="$CONF_DIR/ssh-tunnel.env"
 readonly MOD_SSHD_CONFIG="/etc/ssh/sshd_config"
 readonly TMP_ENV="/tmp/ssh-tunnel.env"
-readonly NEW_ENV="/etc/ssh-tunnel.env"
+readonly NEW_ENV_DIR="/etc/"
 readonly NEW_SERVICE="/etc/systemd/system/ssh-tunnel@.service"
 readonly ROOT_SSH_PRIV_KEY="/root/.ssh/id_rsa"
 
@@ -21,8 +21,8 @@ readonly FEATURE_DESC="Install ssh-tunnel which remote forwards your \
 computer's ports to another server allowing it to be accessible over the \
 Internet"
 readonly PROVIDES=()
-readonly NEW_FILES=( \
-    "$NEW_ENV" \
+NEW_FILES=( \
+    # Also see new files in $NEW_ENV_DIR
     "$NEW_SERVICE" \
     "$MOD_SSHD_CONFIG" \
 )
@@ -32,8 +32,14 @@ readonly DEPENDS_AUR=()
 readonly DEPENDS_PACMAN=(openssh)
 
 port=
+service=""
 
-
+function set_service_name() {
+    if [[ "$service" == "" ]]; then
+        echo -n "Enter the name of the service being forwarded: "
+        read -r service
+    fi
+}
 
 function check_conf() (
     if [[ -f "$CONF_ENV" ]]; then
@@ -59,7 +65,12 @@ function load_conf() {
 }
 
 function check_install() {
-    local f
+    local f service_path env_path
+
+    set_service_name
+    env_path="$NEW_ENV_DIR/ssh-tunnel-$service.env"
+
+    NEW_FILES=("${NEW_FILES[@]}" "$env_path")
 
     for f in "${NEW_FILES[@]}"; do
         if [[ ! -e "$f" ]]; then
@@ -77,7 +88,9 @@ function prepare() {
     local new_port
 
     # Get ssh port from SSHD config
-    port=$(grep -P "^#*Port [0-9]*$" "$MOD_SSHD_CONFIG")
+    port=$(grep -P "^#*Port [0-9]*$" "$MOD_SSHD_CONFIG" | sed 's/^Port //')
+
+    set_service_name
 
     if ! check_conf; then
         cp -f "$BASE_ENV" "$TMP_ENV"
@@ -106,6 +119,8 @@ function prepare() {
 }
 
 function install() {
+    local env_path
+
     # Update port setting in sshd config
     sudo sed -i "$MOD_SSHD_CONFIG" -e "s/^#*Port [0-9]*$/Port $port/"
 
@@ -115,16 +130,19 @@ function install() {
 
     sudo install -Dm 644 "$BASE_SERVICE" "$NEW_SERVICE"
 
+    env_path="$NEW_ENV_DIR/ssh-tunnel-$service.env"
     if ! check_conf; then
-        sudo install -Dm 600 "$TMP_ENV" "$NEW_ENV"
+        sudo install -Dm 600 "$TMP_ENV" "$env_path"
     else
-        sudo install -Dm 600 "$CONF_ENV" "$NEW_ENV"
+        sudo install -Dm 600 "$CONF_ENV" "$env_path"
     fi
 }
 
 function post_install() {
-    qecho "Enabling ssh-tunnel.service..."
-    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" ssh-tunnel.service
+    set_service_name
+
+    qecho "Enabling ssh-tunnel@$service.service..."
+    sudo systemctl enable "${SYSTEMD_FLAGS[@]}" "ssh-tunnel@$service.service"
 
     qecho "Enabling sshd.service"
     sudo systemctl enable "${SYSTEMD_FLAGS[@]}" sshd.service
@@ -138,8 +156,10 @@ function cleanup() {
 }
 
 function uninstall() {
-    qecho "Disabling ssh-tunnel.service..."
-    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" ssh-tunnel.service
+    set_service_name
+
+    qecho "Disabling ssh-tunnel@$service.service..."
+    sudo systemctl disable "${SYSTEMD_FLAGS[@]}" "ssh-tunnel@$service.service"
 
     qecho "Disabling sshd.service"
     sudo systemctl disable "${SYSTEMD_FLAGS[@]}" sshd.service
