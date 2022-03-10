@@ -76,9 +76,13 @@
 /home/*/.config/chromium/BrowserMetrics-*
 /home/*/.config/chromium/Local\ State
 /home/*/.config/chromium/SafetyTips
+# Firefox
+/home/*/.mozilla/firefox/*.default-release/storage
 # Discord
 /home/*/.config/discord/*/modules
 /home/*/.config/discord/Cache
+/home/*/.config/discord/Cookies
+/home/*/.config/discord/modules.log
 # Steam
 /home/*/.local/share/Steam/appcache
 /home/*/.local/share/Steam/package
@@ -192,9 +196,13 @@
 /root/.config/chromium/BrowserMetrics-*
 /root/.config/chromium/Local\ State
 /root/.config/chromium/SafetyTips
+# Firefox
+/root/.mozilla/firefox/*.default-release/storage
 # Discord
 /root/.config/discord/*/modules
 /root/.config/discord/Cache
+/root/.config/discord/Cookies
+/root/.config/discord/modules.log
 # Steam
 /root/.local/share/Steam/appcache
 /root/.local/share/Steam/package
